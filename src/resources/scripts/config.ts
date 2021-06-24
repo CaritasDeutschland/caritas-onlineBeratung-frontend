@@ -1,6 +1,5 @@
 const nodeEnv: string = process.env.NODE_ENV as string;
 export const tld = nodeEnv === 'development' ? 'http://caritas.local' : '';
-export const endpointPort = nodeEnv === 'development' ? ':9000' : '';
 
 export const config = {
 	endpoints: {
@@ -54,17 +53,17 @@ export const config = {
 	urls: {
 		loginRedirectToRegistrationOverview:
 			'https://www.caritas.de/onlineberatung',
-		toLogin: tld + endpointPort + '/',
-		redirectToApp: tld + endpointPort + `/app`,
+		toLogin: tld + '/',
+		redirectToApp: tld + `/app`,
 		home: 'https://www.caritas.de',
 		finishedAnonymousChatRedirect:
 			'https://www.caritas.de/hilfeundberatung/hilfeundberatung',
 		imprint: 'https://www.caritas.de/impressum',
 		privacy:
 			'https://www.caritas.de/hilfeundberatung/onlineberatung/datenschutz',
-		error500: tld + endpointPort + '/error.500.html',
-		error401: tld + endpointPort + '/error.401.html',
-		error404: tld + endpointPort + '/error.404.html',
+		error500: tld + '/error.500.html',
+		error401: tld + '/error.401.html',
+		error404: tld + '/error.404.html',
 		registrationDisabilityPostcodeFallback:
 			'https://www.caritas.de/hilfeundberatung/onlineberatung/behinderung-und-psychische-erkrankung/adressen',
 		registrationMigrationPostcodeFallback:
