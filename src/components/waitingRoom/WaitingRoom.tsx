@@ -7,7 +7,7 @@ import { ReactComponent as WelcomeIllustration } from '../../resources/img/illus
 import { ReactComponent as WaitingIllustration } from '../../resources/img/illustrations/waiting.svg';
 import { translate } from '../../utils/translate';
 import { useContext, useEffect, useState } from 'react';
-import { endpointPort, tld } from '../../resources/scripts/config';
+import { tld } from '../../resources/scripts/config';
 import {
 	AnonymousRegistrationResponse,
 	apiPostAnonymousRegistration
@@ -61,9 +61,7 @@ export const WaitingRoom = (props: WaitingRoomProps) => {
 		anonymousConversationFinished,
 		setAnonymousConversationFinished
 	} = useContext(AnonymousConversationFinishedContext);
-	const registrationUrl = `${tld + endpointPort}/${
-		props.consultingTypeSlug
-	}/registration`;
+	const registrationUrl = `${tld}/${props.consultingTypeSlug}/registration`;
 
 	useEffect(() => {
 		const registeredUsername = getValueFromCookie('registeredUsername');
