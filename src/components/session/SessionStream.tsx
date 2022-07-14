@@ -201,11 +201,8 @@ export const SessionStream = ({
 						setIsOverlayActive(true);
 					}
 				}
-				if (event === 'updated') {
-					reloadActiveSession();
-				}
 			},
-			[groupChatStoppedOverlay, reloadActiveSession]
+			[groupChatStoppedOverlay]
 		)
 	);
 
