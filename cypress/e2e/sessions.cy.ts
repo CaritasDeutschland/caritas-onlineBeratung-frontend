@@ -134,7 +134,7 @@ describe('Sessions', () => {
 		});
 
 		describe('Access Token expires while logged in', () => {
-			it('should logout if trying to paginate sessions', () => {
+			it.only('should logout if trying to paginate sessions', () => {
 				generateMultipleConsultantSessions(15);
 
 				cy.fastLogin({
@@ -143,6 +143,7 @@ describe('Sessions', () => {
 				cy.wait('@consultingTypeServiceBaseBasic');
 
 				cy.get('a[href="/sessions/consultant/sessionView"]').click();
+				cy.wait('@consultantSessions');
 				cy.get('.sessionsListItem').should('exist');
 
 				cy.willReturn('consultantSessions', 401);
