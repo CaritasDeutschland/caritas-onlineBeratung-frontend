@@ -21,6 +21,7 @@ import { decodeUsername } from '../../../src/utils/encryptionHelpers';
 import { getMessages, setMessages } from './messages';
 import apiAppointments from './api/appointments';
 import apiVideocalls from './api/videocalls';
+import { SETTING_E2E_ENABLE } from '../../../src/api/apiRocketChatSettingsPublic';
 
 let overrides = {};
 
@@ -188,6 +189,14 @@ Cypress.Commands.add('mockApi', () => {
 	cy.intercept('GET', `${config.endpoints.consultantEnquiriesBase}*`, {}).as(
 		'consultantEnquiriesBase'
 	);
+
+	cy.intercept('GET', `${config.endpoints.rc.settings.public}*`, {
+		settings: [{ _id: SETTING_E2E_ENABLE, value: true, enterprise: false }],
+		count: 1,
+		offset: 0,
+		total: 1,
+		success: true
+	});
 
 	cy.intercept('POST', config.endpoints.keycloakLogout, {}).as('authLogout');
 
