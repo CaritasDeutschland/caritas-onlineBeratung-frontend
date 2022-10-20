@@ -20,7 +20,6 @@ import {
 import { useSearchParam } from '../../hooks/useSearchParams';
 import { SESSION_LIST_TAB } from './sessionHelpers';
 import { useE2EE } from '../../hooks/useE2EE';
-import { createGroupKey } from '../../utils/encryptionHelpers';
 import { encryptRoom } from '../../utils/e2eeHelper';
 import { translate } from '../../utils/translate';
 import { apiEnquiryAcceptance, FETCH_ERRORS } from '../../api';

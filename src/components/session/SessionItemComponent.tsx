@@ -7,7 +7,7 @@ import {
 	useRef,
 	useState
 } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { ResizeObserver } from '@juggle/resize-observer';
 import clsx from 'clsx';
 import {

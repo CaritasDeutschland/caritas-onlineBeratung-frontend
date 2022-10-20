@@ -183,7 +183,6 @@ export const MessageSubmitInterfaceComponent = (
 		null
 	);
 	const [uploadProgress, setUploadProgress] = useState(null);
-	//const [uploadOnLoadHandling, setUploadOnLoadHandling] = useState(null);
 	const [isRequestInProgress, setIsRequestInProgress] = useState(false);
 	const [attachmentUpload, setAttachmentUpload] =
 		useState<XMLHttpRequest | null>(null);
@@ -214,7 +213,15 @@ export const MessageSubmitInterfaceComponent = (
 	} = useE2EEViewElements();
 
 	const { visible: requestOverlayVisible, overlay: requestOverlay } =
-		useTimeoutOverlay(isRequestInProgress, null, null, null, 5000);
+		useTimeoutOverlay(
+			isRequestInProgress &&
+				uploadProgress === 0 &&
+				uploadProgress === 100,
+			null,
+			null,
+			null,
+			5000
+		);
 
 	const groupIdOrSessionId =
 		activeSession.item.groupId || activeSession.item.id;

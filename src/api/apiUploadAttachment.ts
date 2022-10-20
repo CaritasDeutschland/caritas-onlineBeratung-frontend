@@ -35,7 +35,10 @@ export const apiUploadAttachment = (
 		xhr.withCredentials = true;
 
 		xhr.upload.onprogress = (e) => {
-			let percentUpload = Math.ceil((100 * e.loaded) / e.total);
+			let percentUpload = Math.min(
+				Math.ceil((100 * e.loaded) / e.total),
+				100
+			);
 			uploadProgress(percentUpload);
 		};
 

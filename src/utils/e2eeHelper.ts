@@ -9,7 +9,6 @@ import {
 	apiSendAliasMessage
 } from '../api/apiSendAliasMessage';
 import { encryptForParticipant, getTmpMasterKey } from './encryptionHelpers';
-import { filter } from 'cypress/types/minimatch';
 
 export const ENCRYPT_ROOM_STATE_GET_MEMBERS = 'get_members';
 export const ENCRYPT_ROOM_STATE_GET_USERS_WITHOUT_KEY = 'get_users_without_key';
