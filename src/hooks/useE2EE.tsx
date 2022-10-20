@@ -4,11 +4,20 @@ import { apiRocketChatGroupMembers } from '../api/apiRocketChatGroupMembers';
 import { apiRocketChatUpdateGroupKey } from '../api/apiRocketChatUpdateGroupKey';
 import { E2EEContext } from '../globalState';
 import {
+	createGroupKey,
 	encryptForParticipant,
 	importGroupKey
 } from '../utils/encryptionHelpers';
 import { RocketChatSubscriptionsContext } from '../globalState/provider/RocketChatSubscriptionsProvider';
 import { getValueFromCookie } from '../components/sessionCookie/accessSessionCookie';
+import {
+	ENCRYPT_ROOM_STATE_DONE,
+	ENCRYPT_ROOM_STATE_ENCRYPTING_USERS,
+	ENCRYPT_ROOM_STATE_ERROR,
+	ENCRYPT_ROOM_STATE_GET_MEMBERS,
+	ENCRYPT_ROOM_STATE_GET_USERS_WITHOUT_KEY,
+	TEncryptRoomState
+} from '../utils/e2eeHelper';
 
 export type e2eeParams = {
 	key?: CryptoKey;
@@ -28,8 +37,14 @@ export const useE2EE = (
 	rid: string | null,
 	triggerReEncrypt: boolean = false
 ): UseE2EEParams => {
-	const { key: e2eePrivateKey } = useContext(E2EEContext);
-	const { subscriptions, rooms } = useContext(RocketChatSubscriptionsContext);
+	const {
+		key: e2eePrivateKey,
+		isE2eeEnabled,
+		e2EEReady
+	} = useContext(E2EEContext);
+	const { subscriptionsReady, subscriptions, roomsReady, rooms } = useContext(
+		RocketChatSubscriptionsContext
+	);
 	const [key, setKey] = useState(null);
 	const [keyID, setKeyID] = useState(null);
 	const [encrypted, setEncrypted] = useState(false);
@@ -43,57 +58,136 @@ export const useE2EE = (
 	const keyIdRef = useRef(null);
 	const sessionKeyExportedStringRef = useRef(null);
 
-	const addNewUsersToEncryptedRoom = useCallback(async () => {
-		try {
-			if (subscriptionKeyLost) {
-				return;
-			}
+	const addNewUsersToEncryptedRoom = useCallback(
+		async (onStateChange?: (state: TEncryptRoomState) => void) => {
+			try {
+				if (!encrypted || subscriptionKeyLost) {
+					onStateChange &&
+						onStateChange({
+							state: ENCRYPT_ROOM_STATE_DONE,
+							count: 0,
+							total: 0
+						});
+					return;
+				}
 
-			const { members } = await apiRocketChatGroupMembers(rid);
+				onStateChange &&
+					onStateChange({
+						state: ENCRYPT_ROOM_STATE_GET_MEMBERS,
+						count: 0,
+						total: 0
+					});
+				const { members } = await apiRocketChatGroupMembers(rid);
 
-			const filteredMembers = members
-				// Filter system user and users with unencrypted username (Maybe more system users)
-				.filter(
-					(member) =>
-						member.username !== 'System' &&
-						member.username.indexOf('enc.') === 0 &&
-						member._id !== rcUid
-				);
-
-			if (filteredMembers.length <= 0) {
-				return;
-			}
-
-			const { users } = await apiRocketChatGetUsersOfRoomWithoutKey(rid);
-
-			if (users.length <= 0) {
-				return;
-			}
-
-			await Promise.all(
-				users.map(async (user) => {
-					// only check in filtered members for the user
-					if (
-						!filteredMembers.find(
-							(member) => member._id === user._id
-						)
-					) {
-						return;
-					}
-
-					const userKey = await encryptForParticipant(
-						user.e2e.public_key,
-						keyIdRef.current,
-						sessionKeyExportedStringRef.current
+				const filteredMembers = members
+					// Filter system user and users with unencrypted username (Maybe more system users)
+					.filter(
+						(member) =>
+							member.username !== 'System' &&
+							member.username.indexOf('enc.') === 0 &&
+							member._id !== rcUid
 					);
 
-					return apiRocketChatUpdateGroupKey(user._id, rid, userKey);
-				})
-			);
-		} catch (e) {
-			// no error handling // intentional
-		}
-	}, [rcUid, rid, subscriptionKeyLost]);
+				if (filteredMembers.length <= 0) {
+					onStateChange &&
+						onStateChange({
+							state: ENCRYPT_ROOM_STATE_DONE,
+							count: 0,
+							total: 0
+						});
+					return;
+				}
+
+				let unhandledMembers = filteredMembers.length;
+				onStateChange &&
+					onStateChange({
+						state: ENCRYPT_ROOM_STATE_GET_USERS_WITHOUT_KEY,
+						count: filteredMembers.length - unhandledMembers,
+						total: filteredMembers.length
+					});
+				const { users } = await apiRocketChatGetUsersOfRoomWithoutKey(
+					rid
+				);
+
+				if (users.length <= 0) {
+					onStateChange &&
+						onStateChange({
+							state: ENCRYPT_ROOM_STATE_DONE,
+							count: 0,
+							total: 0
+						});
+					return;
+				}
+
+				onStateChange &&
+					onStateChange({
+						state: ENCRYPT_ROOM_STATE_ENCRYPTING_USERS,
+						count: filteredMembers.length - unhandledMembers,
+						total: filteredMembers.length
+					});
+
+				await Promise.all(
+					users.map(async (user) => {
+						// only check in filtered members for the user
+						if (
+							!filteredMembers.find(
+								(member) => member._id === user._id
+							)
+						) {
+							unhandledMembers--;
+							onStateChange &&
+								onStateChange({
+									state: ENCRYPT_ROOM_STATE_ENCRYPTING_USERS,
+									count:
+										filteredMembers.length -
+										unhandledMembers,
+									total: filteredMembers.length
+								});
+							return;
+						}
+
+						const userKey = await encryptForParticipant(
+							user.e2e.public_key,
+							keyIdRef.current,
+							sessionKeyExportedStringRef.current
+						);
+
+						return apiRocketChatUpdateGroupKey(
+							user._id,
+							rid,
+							userKey
+						).then(() => {
+							unhandledMembers--;
+							onStateChange &&
+								onStateChange({
+									state: ENCRYPT_ROOM_STATE_ENCRYPTING_USERS,
+									count:
+										filteredMembers.length -
+										unhandledMembers,
+									total: filteredMembers.length
+								});
+						});
+					})
+				);
+
+				onStateChange &&
+					onStateChange({
+						state: ENCRYPT_ROOM_STATE_DONE,
+						count: filteredMembers.length - unhandledMembers,
+						total: filteredMembers.length
+					});
+			} catch (e) {
+				// no error handling // intentional
+				onStateChange &&
+					onStateChange({
+						state: ENCRYPT_ROOM_STATE_ERROR,
+						count: 0,
+						total: 0
+					});
+			}
+		},
+		[encrypted, rcUid, rid, subscriptionKeyLost]
+	);
 
 	useEffect(() => {
 		keyIdRef.current = keyID;
@@ -109,14 +203,34 @@ export const useE2EE = (
 		}
 	}, [addNewUsersToEncryptedRoom, triggerReEncrypt]);
 
+	const generateKeys = useCallback(() => {
+		// Generate new keys for feature encryption
+		createGroupKey().then(({ keyID, key, sessionKeyExportedString }) => {
+			setKey(key);
+			setKeyID(keyID);
+			setSessionKeyExportedString(sessionKeyExportedString);
+			setReady(true);
+		});
+	}, []);
+
 	useEffect(() => {
 		const cleanup = () => {
 			setSubscriptionKeyLost(false);
 			setRoomNotFound(false);
 		};
 
-		if (!rid) {
+		// Wait for e2ee logic is fully loaded
+		if (!e2EEReady) {
+			return cleanup;
+		}
+
+		if (!isE2eeEnabled) {
 			setReady(true);
+			return cleanup;
+		}
+
+		// Wait for rooms and subscriptions are loaded
+		if (!roomsReady || !subscriptionsReady) {
 			return cleanup;
 		}
 
@@ -124,17 +238,14 @@ export const useE2EE = (
 
 		if (!currentRoom) {
 			setRoomNotFound(true);
-			setReady(true);
+			generateKeys();
 			return cleanup;
 		}
 
 		if (!currentRoom.e2eKeyId) {
 			// not encrypted -> reset
 			setEncrypted(false);
-			setKey(null);
-			setKeyID(null);
-			setSessionKeyExportedString(null);
-			setReady(true);
+			generateKeys();
 			return cleanup;
 		}
 
@@ -148,14 +259,8 @@ export const useE2EE = (
 			return cleanup;
 		}
 
-		// Prevent multiple decryptions
-		if (keyID) {
-			setReady(true);
-			return cleanup;
-		}
-
-		importGroupKey(subscription.E2EKey, e2eePrivateKey).then(
-			({ key, keyID, sessionKeyExportedString }) => {
+		importGroupKey(subscription.E2EKey, e2eePrivateKey)
+			.then(({ key, keyID, sessionKeyExportedString }) => {
 				setKey(key);
 				// Generate key with old generation logic for old chats
 				// ToDo: Could be removed if no old chats with room.e2eKeyId === 'eyJhbGciOiJB' exists anymore
@@ -167,11 +272,23 @@ export const useE2EE = (
 				);
 				setSessionKeyExportedString(sessionKeyExportedString);
 				setReady(true);
-			}
-		);
+			})
+			.catch(() => {
+				console.log(rid, subscription.E2EKey);
+			});
 
 		return cleanup;
-	}, [e2eePrivateKey, keyID, rid, rooms, subscriptions]);
+	}, [
+		e2EEReady,
+		e2eePrivateKey,
+		generateKeys,
+		isE2eeEnabled,
+		rid,
+		rooms,
+		roomsReady,
+		subscriptions,
+		subscriptionsReady
+	]);
 
 	useEffect(() => {
 		return () => {

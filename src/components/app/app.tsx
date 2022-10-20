@@ -11,13 +11,13 @@ import '../../resources/styles/styles';
 import { WaitingRoomLoader } from '../waitingRoom/WaitingRoomLoader';
 import { ContextProvider } from '../../globalState/state';
 import { WebsocketHandler } from './WebsocketHandler';
-import ErrorBoundary from './ErrorBoundary';
 import { languageIsoCodesSortedByName } from '../../resources/scripts/i18n/de/languages';
 import { FixedLanguagesContext } from '../../globalState/provider/FixedLanguagesProvider';
 import { TenantThemingLoader } from './TenantThemingLoader';
 import { LegalLinkInterface } from '../../globalState';
 import VideoConference from '../videoConference/VideoConference';
 import { config } from '../../resources/scripts/config';
+import { PreConditions, preConditionsMet } from './PreConditions';
 
 export const history = createBrowserHistory();
 
@@ -42,6 +42,10 @@ export const App = ({
 	// optional resort name. Since resort names are dynamic, we have
 	// to find out if the provided path is a resort name. If not, we
 	// use the authenticated app as a catch-all fallback.
+	const [failedPreCondition, setFailedPreCondition] = useState(
+		preConditionsMet()
+	);
+
 	const [
 		hasUnmatchedLoginConsultingType,
 		setHasUnmatchedLoginConsultingType
@@ -76,93 +80,95 @@ export const App = ({
 		}
 	}, []); // eslint-disable-line
 
+	if (failedPreCondition) {
+		return (
+			<PreConditions
+				legalLinks={legalLinks}
+				stageComponent={stageComponent}
+				onPreConditionsMet={setFailedPreCondition}
+			/>
+		);
+	}
+
 	return (
-		<ErrorBoundary>
-			<Router history={history}>
-				<FixedLanguagesContext.Provider value={fixedLanguages}>
-					<ContextProvider>
-						<TenantThemingLoader />
-						{startWebsocket && (
-							<WebsocketHandler
-								disconnect={disconnectWebsocket}
-							/>
-						)}
-						<Switch>
-							{extraRoutes}
+		<Router history={history}>
+			<FixedLanguagesContext.Provider value={fixedLanguages}>
+				<ContextProvider>
+					<TenantThemingLoader />
+					{startWebsocket && (
+						<WebsocketHandler disconnect={disconnectWebsocket} />
+					)}
+					<Switch>
+						{extraRoutes}
 
-							{!hasUnmatchedRegistrationConsultingType &&
-								!hasUnmatchedRegistrationConsultant && (
-									<Route
-										path={[
-											'/registration',
-											'/:consultingTypeSlug/registration'
-										]}
-									>
-										<Registration
-											handleUnmatchConsultingType={() =>
-												setHasUnmatchedRegistrationConsultingType(
-													true
-												)
-											}
-											handleUnmatchConsultant={() => {
-												setHasUnmatchedRegistrationConsultant(
-													true
-												);
-											}}
-											legalLinks={legalLinks}
-											stageComponent={stageComponent}
-										/>
-									</Route>
-								)}
-
-							{!hasUnmatchedAnonymousConversation && (
-								<Route path="/:consultingTypeSlug/warteraum">
-									<WaitingRoomLoader
-										legalLinks={legalLinks}
-										handleUnmatch={() =>
-											setHasUnmatchedAnonymousConversation(
-												true
-											)
-										}
-										onAnonymousRegistration={() =>
-											setStartWebsocket(true)
-										}
-									/>
-								</Route>
-							)}
-							{!hasUnmatchedLoginConsultingType && (
+						{!hasUnmatchedRegistrationConsultingType &&
+							!hasUnmatchedRegistrationConsultant && (
 								<Route
-									path={['/login', '/:consultingTypeSlug']}
-									exact
+									path={[
+										'/registration',
+										'/:consultingTypeSlug/registration'
+									]}
 								>
-									<LoginLoader
-										handleUnmatch={() =>
-											setHasUnmatchedLoginConsultingType(
+									<Registration
+										handleUnmatchConsultingType={() =>
+											setHasUnmatchedRegistrationConsultingType(
 												true
 											)
 										}
+										handleUnmatchConsultant={() => {
+											setHasUnmatchedRegistrationConsultant(
+												true
+											);
+										}}
 										legalLinks={legalLinks}
 										stageComponent={stageComponent}
 									/>
 								</Route>
 							)}
-							<Route path={config.urls.videoConference} exact>
-								<VideoConference legalLinks={legalLinks} />
-							</Route>
-							{isInitiallyLoaded && (
-								<AuthenticatedApp
+
+						{!hasUnmatchedAnonymousConversation && (
+							<Route path="/:consultingTypeSlug/warteraum">
+								<WaitingRoomLoader
 									legalLinks={legalLinks}
-									spokenLanguages={spokenLanguages}
-									onAppReady={() => setStartWebsocket(true)}
-									onLogout={() =>
-										setDisconnectWebsocket(true)
+									handleUnmatch={() =>
+										setHasUnmatchedAnonymousConversation(
+											true
+										)
+									}
+									onAnonymousRegistration={() =>
+										setStartWebsocket(true)
 									}
 								/>
-							)}
-						</Switch>
-					</ContextProvider>
-				</FixedLanguagesContext.Provider>
-			</Router>
-		</ErrorBoundary>
+							</Route>
+						)}
+						{!hasUnmatchedLoginConsultingType && (
+							<Route
+								path={['/login', '/:consultingTypeSlug']}
+								exact
+							>
+								<LoginLoader
+									handleUnmatch={() =>
+										setHasUnmatchedLoginConsultingType(true)
+									}
+									legalLinks={legalLinks}
+									stageComponent={stageComponent}
+								/>
+							</Route>
+						)}
+						<Route path={config.urls.videoConference} exact>
+							<VideoConference legalLinks={legalLinks} />
+						</Route>
+						{isInitiallyLoaded && (
+							<AuthenticatedApp
+								legalLinks={legalLinks}
+								spokenLanguages={spokenLanguages}
+								onAppReady={() => setStartWebsocket(true)}
+								onLogout={() => setDisconnectWebsocket(true)}
+							/>
+						)}
+					</Switch>
+				</ContextProvider>
+			</FixedLanguagesContext.Provider>
+		</Router>
 	);
 };

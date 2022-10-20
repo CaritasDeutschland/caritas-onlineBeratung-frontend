@@ -5,7 +5,7 @@ import {
 } from '../support/websocket';
 import attachmentsI18n from '../../src/resources/scripts/i18n/de/attachments';
 import attachmentsInformalI18n from '../../src/resources/scripts/i18n/de/attachmentsInformal';
-import { SOCKET_COLLECTION } from '../../src/api';
+import { SUB_STREAM_ROOM_MESSAGES } from '../../src/components/app/RocketChat';
 
 describe('Messages', () => {
 	before(() => {
@@ -169,7 +169,7 @@ describe('Messages', () => {
 						cy.get('.cy-socket-connected-rc');
 						cy.waitForSubscriptions([
 							'/user/events',
-							SOCKET_COLLECTION.ROOM_MESSAGES
+							SUB_STREAM_ROOM_MESSAGES
 						]);
 
 						//stream-room-messages

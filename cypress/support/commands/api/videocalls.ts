@@ -6,7 +6,8 @@ const videocallsApi = (cy) => {
 		`${config.endpoints.videocallServiceBase}/*/jwt`,
 		(req) => {
 			req.reply({
-				domain: `${Cypress.env('REACT_APP_UI_URL')
+				domain: `${cy
+					.env('REACT_APP_UI_URL')
 					.replace('http://', '')
 					.replace('https://', '')}/jitsi`,
 				jwt: 'any_token'

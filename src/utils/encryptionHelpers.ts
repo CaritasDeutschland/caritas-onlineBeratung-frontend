@@ -343,8 +343,7 @@ export type GroupKeyType = {
 };
 
 export const createGroupKey = (): Promise<GroupKeyType> =>
-	new Promise(async (resolve, reject) => {
-		console.log('Creating room key');
+	new Promise(async (resolve) => {
 		// Create group key
 		let key;
 		try {
@@ -371,15 +370,13 @@ export const importGroupKey = (
 	e2eePrivateKey
 ): Promise<GroupKeyType> =>
 	new Promise(async (resolve, reject) => {
-		// Get existing group key
-		// const keyID = groupKey.slice(0, 12);
-		groupKey = groupKey.slice(12);
-		groupKey = atob(groupKey);
-		groupKey = Uint8Array.from(Object.values(JSON.parse(groupKey)));
-
 		// Decrypt obtained encrypted session key
 		let sessionKeyExportedString;
 		try {
+			groupKey = groupKey.slice(12);
+			groupKey = atob(groupKey);
+			groupKey = Uint8Array.from(Object.values(JSON.parse(groupKey)));
+
 			const decryptedKey = await decryptRSA(e2eePrivateKey, groupKey);
 			sessionKeyExportedString = toString(decryptedKey);
 		} catch (error) {
