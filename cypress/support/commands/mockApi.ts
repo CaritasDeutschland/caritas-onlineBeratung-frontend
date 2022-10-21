@@ -202,12 +202,15 @@ Cypress.Commands.add('mockApi', () => {
 
 	cy.intercept('POST', config.endpoints.rc.logout, {}).as('apiLogout');
 
-	cy.intercept(`${config.endpoints.liveservice}/**/*`, {
-		entropy: -1197552011,
-		origins: ['*:*'],
-		cookie_needed: false,
-		websocket: true
-	});
+	cy.intercept(
+		`${config.endpoints.liveservice}/**/*`,
+		JSON.stringify({
+			entropy: '-1197552011',
+			origins: ['*:*'],
+			cookie_needed: false,
+			websocket: true
+		})
+	);
 
 	cy.intercept('GET', config.endpoints.draftMessages, {}).as('draftMessages');
 
@@ -329,14 +332,26 @@ Cypress.Commands.add('mockApi', () => {
 		statusCode: 200
 	});
 
-	cy.intercept('GET', config.endpoints.sessionRooms, (req) => {
+	cy.intercept('GET', `${config.endpoints.sessionRooms}*`, (req) => {
 		const data = { ...defaultReturns['sessionRooms'] };
+		const rcGroupId = new URL(req.url).searchParams.get('rcGroupIds');
+		let foundSession = null;
+		getAskerSessions().forEach((session, index) => {
+			if (session.session.groupId === rcGroupId) {
+				foundSession = session;
+			}
+		});
+
+		getConsultantSessions().forEach((session, index) => {
+			if (session.session.groupId === rcGroupId) {
+				foundSession = session;
+			}
+		});
+
 		data.body.sessions[0].session = {
-			...data.body.sessions[0].session,
+			...foundSession,
 			...overrides['sessionRooms']
 		};
-
-		console.log(overrides['sessionRooms']);
 
 		req.reply(data);
 	}).as('sessionRooms');

@@ -24,10 +24,10 @@ describe('Messages', () => {
 	xdescribe('Attachments', () => {
 		it('should allow to send a message with attachment', () => {
 			cy.fastLogin();
+			cy.get('.cy-socket-connected-rc');
 			cy.wait('@consultingTypeServiceBaseBasic');
 
-			cy.get('[data-cy=sessions-list-items-wrapper]').click();
-			cy.wait('@consultingTypeServiceBaseFull');
+			cy.get('[data-cy=session-list-item]').click();
 			cy.wait('@messages');
 
 			cy.get('.textarea__attachmentInput').attachFile('empty.pdf');
