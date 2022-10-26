@@ -12,6 +12,11 @@ import { useE2EE } from '../../hooks/useE2EE';
 import { E2EEContext } from '../../globalState';
 import { convertFromRaw, EditorState } from 'draft-js';
 import { markdownToDraft } from 'markdown-draft-js';
+import { EVENT_PRE_LOGOUT } from '../logout/logout';
+import {
+	addEventListener,
+	removeEventListener
+} from '../../utils/eventHandler';
 
 const SAVE_DRAFT_TIMEOUT = 10000;
 
@@ -165,6 +170,26 @@ export const useDraftMessage = (
 			willUnmount.current = true;
 		};
 	}, []);
+
+	const onLogout = useCallback(
+		async (args) => {
+			if (draftSaveTimeout.current) {
+				clearTimeout(draftSaveTimeout.current);
+				draftSaveTimeout.current = null;
+			}
+			await saveDraftMessage(message);
+			return args;
+		},
+		[message, saveDraftMessage]
+	);
+
+	useEffect(() => {
+		addEventListener(EVENT_PRE_LOGOUT, onLogout);
+
+		return () => {
+			removeEventListener(EVENT_PRE_LOGOUT, onLogout);
+		};
+	}, [onLogout]);
 
 	useEffect(() => {
 		return () => {
