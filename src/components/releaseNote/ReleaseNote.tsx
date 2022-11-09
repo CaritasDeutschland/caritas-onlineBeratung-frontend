@@ -21,7 +21,7 @@ import {
 
 interface ReleaseNoteProps {}
 
-const MAX_CONCURRENT_RELEASE_NOTES = 3;
+const MAX_CONCURRENT_RELEASE_NOTES = 1;
 const STORAGE_KEY_RELEASE_NOTE = 'releaseNote';
 
 type TReleases = {
@@ -49,7 +49,7 @@ export const ReleaseNote: React.FC<ReleaseNoteProps> = () => {
 			.then((releases: TReleases) =>
 				Object.entries(releases)
 					.reverse()
-					.slice(MAX_CONCURRENT_RELEASE_NOTES * -3)
+					.slice(MAX_CONCURRENT_RELEASE_NOTES * -1)
 					.filter(
 						([key]) => parseInt(key) > parseInt(readReleaseNote)
 					)
