@@ -117,7 +117,7 @@ export const Profile = () => {
 					})
 				)
 		);
-	}, [consultingTypes, translate, settings, userData]);
+	}, [consultingTypes, translate, settings, userData, selectableLocales]);
 
 	const [subpage, setSubpage] = useState(undefined);
 	useEffect(() => {
