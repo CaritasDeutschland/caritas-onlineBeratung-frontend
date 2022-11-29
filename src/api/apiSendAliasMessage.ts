@@ -1,4 +1,4 @@
-import { config } from '../resources/scripts/config';
+import { endpoints } from '../resources/scripts/endpoints';
 import { fetchData, FETCH_METHODS } from './fetchData';
 
 export enum ALIAS_MESSAGE_TYPES {
@@ -10,19 +10,39 @@ export enum ALIAS_MESSAGE_TYPES {
 	VIDEOCALL = 'VIDEOCALL',
 	USER_MUTED = 'USER_MUTED',
 	USER_UNMUTED = 'USER_UNMUTED',
-	MASTER_KEY_LOST = 'MASTER_KEY_LOST'
+	REASSIGN_CONSULTANT = 'REASSIGN_CONSULTANT',
+	MASTER_KEY_LOST = 'MASTER_KEY_LOST',
+	REASSIGN_CONSULTANT_RESET_LAST_MESSAGE = 'REASSIGN_CONSULTANT_RESET_LAST_MESSAGE',
+	APPOINTMENT_SET = 'APPOINTMENT_SET',
+	APPOINTMENT_CANCELLED = 'APPOINTMENT_CANCELLED',
+	APPOINTMENT_RESCHEDULED = 'APPOINTMENT_RESCHEDULED'
+}
+export interface ConsultantReassignment {
+	toConsultantId: string;
+	toConsultantName: string;
+	toAskerName: string;
+	fromConsultantId: string;
+	fromConsultantName: string;
+	status: ReassignStatus;
 }
 
+export enum ReassignStatus {
+	REQUESTED = 'REQUESTED',
+	CONFIRMED = 'CONFIRMED',
+	REJECTED = 'REJECTED'
+}
 interface AliasMessageParams {
 	rcGroupId: string;
 	type: ALIAS_MESSAGE_TYPES;
+	args?: ConsultantReassignment;
 }
 
 export const apiSendAliasMessage = async ({
 	rcGroupId,
-	type
+	type,
+	args
 }: AliasMessageParams): Promise<any> => {
-	const url = `${config.endpoints.sendAliasMessage}`;
+	const url = `${endpoints.sendAliasMessage}`;
 
 	return fetchData({
 		url,
@@ -30,7 +50,8 @@ export const apiSendAliasMessage = async ({
 		method: FETCH_METHODS.POST,
 		rcValidation: true,
 		bodyData: JSON.stringify({
-			messageType: type
+			messageType: type,
+			args: args
 		})
 	});
 };

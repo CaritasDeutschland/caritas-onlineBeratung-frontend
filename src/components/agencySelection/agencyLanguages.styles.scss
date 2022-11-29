@@ -5,9 +5,9 @@ $input-size: 24px;
 	margin-top: 8px;
 	text-align: left;
 
-	font-size: $font-size-tertiary;
-	line-height: 19px;
-	color: $tertiary;
+	font-size: $font-size-primary;
+	line-height: $line-height-primary;
+	color: $black-65-opacity;
 
 	.agencySelection__proposedAgency & {
 		margin-left: #{$input-size + $grid-base};
@@ -36,5 +36,15 @@ $input-size: 24px;
 		color: var(--skin-color-primary-contrast-safe, $primary);
 		text-decoration: underline;
 		cursor: pointer;
+
+		&:focus {
+			outline: $focus-outline;
+			outline-offset: 2px;
+			border-radius: 4px;
+		}
+
+		&:focus:not(:focus-visible) {
+			outline: none;
+		}
 	}
 }

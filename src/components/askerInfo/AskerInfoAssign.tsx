@@ -1,16 +1,17 @@
 import * as React from 'react';
 import { useContext } from 'react';
-import { translate } from '../../utils/translate';
 import {
 	UserDataContext,
 	hasUserAuthority,
 	AUTHORITIES
 } from '../../globalState';
-import { SessionAssign } from '../sessionAssign/SessionAssign';
+import { RequestSessionAssign } from '../sessionAssign/RequestSessionAssign';
 import { Text } from '../text/Text';
 import { ActiveSessionContext } from '../../globalState/provider/ActiveSessionProvider';
+import { useTranslation } from 'react-i18next';
 
 export const AskerInfoAssign = () => {
+	const { t: translate } = useTranslation();
 	const { activeSession } = useContext(ActiveSessionContext);
 	const { userData } = useContext(UserDataContext);
 
@@ -27,7 +28,7 @@ export const AskerInfoAssign = () => {
 					text={translate('userProfile.reassign.description')}
 					type="infoSmall"
 				/>
-				<SessionAssign
+				<RequestSessionAssign
 					value={
 						activeSession.consultant
 							? activeSession.consultant.id

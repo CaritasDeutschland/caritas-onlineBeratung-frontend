@@ -5,7 +5,6 @@ import {
 	ConsultantDataInterface,
 	ConsultingTypeInterface
 } from '../../globalState';
-import { translate } from '../../utils/translate';
 import './consultingTypeAgencySelection.styles';
 import '../profile/profile.styles';
 import { RadioButton } from '../radioButton/RadioButton';
@@ -21,6 +20,8 @@ import {
 } from '../select/SelectDropdown';
 import { Text } from '../text/Text';
 import { AgencyLanguages } from '../agencySelection/AgencyLanguages';
+import { useTranslation } from 'react-i18next';
+import { useAppConfig } from '../../hooks/useAppConfig';
 
 export interface ConsultingTypeAgencySelectionProps {
 	consultant: ConsultantDataInterface;
@@ -29,6 +30,7 @@ export interface ConsultingTypeAgencySelectionProps {
 	agency?: any;
 	preselectedConsultingType?: ConsultingTypeInterface;
 	preselectedAgency?: any;
+	onKeyDown?: Function;
 }
 
 export const useConsultingTypeAgencySelection = (
@@ -36,6 +38,7 @@ export const useConsultingTypeAgencySelection = (
 	consultingType: ConsultingTypeInterface,
 	agency: AgencyDataInterface
 ) => {
+	const settings = useAppConfig();
 	const [consultingTypes, setConsultingTypes] = useState<
 		ConsultingTypeInterface[]
 	>([]);
@@ -43,6 +46,17 @@ export const useConsultingTypeAgencySelection = (
 
 	useEffect(() => {
 		if (!consultant) {
+			return;
+		}
+
+		// When we've the multi tenancy with single domain we can simply ignore the
+		// consulting types because we'll get agencies across tenants
+		if (
+			settings.multitenancyWithSingleDomainEnabled &&
+			consultant?.agencies?.length > 0
+		) {
+			setAgencies(consultant?.agencies);
+			setConsultingTypes([consultingType]);
 			return;
 		}
 
@@ -86,7 +100,12 @@ export const useConsultingTypeAgencySelection = (
 		}
 
 		setConsultingTypes(consultingTypes);
-	}, [consultant, consultingType, agency]);
+	}, [
+		consultant,
+		consultingType,
+		agency,
+		settings.multitenancyWithSingleDomainEnabled
+	]);
 
 	return { agencies, consultingTypes };
 };
@@ -97,8 +116,11 @@ export const ConsultingTypeAgencySelection = ({
 	onValidityChange,
 	agency,
 	preselectedConsultingType,
-	preselectedAgency
+	preselectedAgency,
+	onKeyDown
 }: ConsultingTypeAgencySelectionProps) => {
+	const { t: translate } = useTranslation(['common', 'consultingTypes']);
+	const settings = useAppConfig();
 	const [selectedConsultingTypeOption, setSelectedConsultingTypeOption] =
 		useState<SelectOption>(null);
 	const [consultingTypeOptions, setConsultingTypeOptions] = useState<
@@ -121,12 +143,18 @@ export const ConsultingTypeAgencySelection = ({
 		const consultingTypeOptions = possibleConsultingTypes.map(
 			(consultingType) => ({
 				value: consultingType.id.toString(),
-				label: consultingType.titles.long
+				label: translate(
+					[
+						`consultingType.${consultingType.id}.titles.long`,
+						consultingType.titles.long
+					],
+					{ ns: 'consultingTypes' }
+				)
 			})
 		);
 		setConsultingTypeOptions(consultingTypeOptions);
 		setSelectedConsultingTypeOption(consultingTypeOptions[0]);
-	}, [possibleConsultingTypes]);
+	}, [possibleConsultingTypes, translate]);
 
 	useEffect(() => {
 		if (!selectedConsultingTypeOption) {
@@ -135,17 +163,24 @@ export const ConsultingTypeAgencySelection = ({
 			return;
 		}
 
-		const agencyOptions = possibleAgencies.filter(
-			(agency) =>
-				agency.consultingType.toString() ===
-				selectedConsultingTypeOption.value
-		);
+		const agencyOptions = settings.multitenancyWithSingleDomainEnabled
+			? possibleAgencies
+			: possibleAgencies.filter(
+					(agency) =>
+						agency.consultingType.toString() ===
+						selectedConsultingTypeOption.value
+			  );
 
 		setAgencyOptions(agencyOptions);
 		if (agencyOptions.length >= 1) {
 			onChange(agencyOptions[0]);
 		}
-	}, [onChange, possibleAgencies, selectedConsultingTypeOption]);
+	}, [
+		onChange,
+		possibleAgencies,
+		selectedConsultingTypeOption,
+		settings.multitenancyWithSingleDomainEnabled
+	]);
 
 	useEffect(() => {
 		if (!onValidityChange) {
@@ -177,9 +212,12 @@ export const ConsultingTypeAgencySelection = ({
 						text={translate(
 							'registration.consultingTypeAgencySelection.consultingType.infoText'
 						)}
-						type="infoLargeAlternative"
+						type="infoMedium"
 					/>
-					<SelectDropdown {...consultingTypeSelect} />
+					<SelectDropdown
+						{...consultingTypeSelect}
+						onKeyDown={onKeyDown}
+					/>
 				</div>
 			)}
 
@@ -190,7 +228,7 @@ export const ConsultingTypeAgencySelection = ({
 							text={translate(
 								'registration.consultingTypeAgencySelection.agency.infoText'
 							)}
-							type="infoLargeAlternative"
+							type="infoMedium"
 						/>
 					)}
 					<AgencySelection
@@ -208,13 +246,16 @@ type AgencySelectionProps = {
 	agencies: AgencyDataInterface[];
 	selectedAgency?: AgencyDataInterface;
 	onChange: Function;
+	onKeyDown?: Function;
 };
 
 const AgencySelection = ({
 	agencies,
 	onChange,
-	selectedAgency
+	selectedAgency,
+	onKeyDown
 }: AgencySelectionProps) => {
+	const { t: translate } = useTranslation(['agencies']);
 	return (
 		<div>
 			{agencies.map((agency: AgencyDataInterface) => (
@@ -231,7 +272,11 @@ const AgencySelection = ({
 							selectedAgency && agency.id === selectedAgency.id
 						}
 						inputId={agency.id.toString()}
-						label={agency.name}
+						label={translate(
+							[`agency.${agency.id}.name`, agency.name],
+							{ ns: 'agencies' }
+						)}
+						onKeyDown={onKeyDown}
 					/>
 					<AgencyInfo agency={agency} />
 					<AgencyLanguages agencyId={agency.id} />

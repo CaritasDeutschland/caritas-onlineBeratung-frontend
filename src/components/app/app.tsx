@@ -1,85 +1,127 @@
 import '../../polyfill';
 import * as React from 'react';
-import { ComponentType, ReactNode, useEffect, useState } from 'react';
-import { Router, Switch, Route } from 'react-router-dom';
-import { createBrowserHistory } from 'history';
+import { useHistory } from 'react-router-dom';
+import { ComponentType, useState } from 'react';
+import {
+	BrowserRouter as Router,
+	Switch,
+	Route,
+	RouteProps,
+	Redirect
+} from 'react-router-dom';
 import { AuthenticatedApp } from './AuthenticatedApp';
 import { Registration } from '../registration/Registration';
-import { LoginLoader } from './LoginLoader';
 import { StageProps } from '../stage/stage';
 import '../../resources/styles/styles';
 import { WaitingRoomLoader } from '../waitingRoom/WaitingRoomLoader';
 import { ContextProvider } from '../../globalState/state';
 import { WebsocketHandler } from './WebsocketHandler';
 import ErrorBoundary from './ErrorBoundary';
-import { languageIsoCodesSortedByName } from '../../resources/scripts/i18n/de/languages';
-import { FixedLanguagesContext } from '../../globalState/provider/FixedLanguagesProvider';
+import { LanguagesProvider } from '../../globalState/provider/LanguagesProvider';
 import { TenantThemingLoader } from './TenantThemingLoader';
-import { LegalLinkInterface } from '../../globalState';
+import {
+	AppConfigInterface,
+	AppConfigProvider,
+	LegalLinkInterface,
+	LocaleProvider
+} from '../../globalState';
 import VideoConference from '../videoConference/VideoConference';
-import { config } from '../../resources/scripts/config';
+import VideoCall from '../videoCall/VideoCall';
+import { LegalLinksProvider } from '../../globalState/provider/LegalLinksProvider';
+import { useAppConfig } from '../../hooks/useAppConfig';
+import { DevToolbarWrapper } from '../devToolbar/DevToolbar';
+import { Login } from '../login/Login';
+import { PreConditions, preConditionsMet } from './PreConditions';
 
-export const history = createBrowserHistory();
+type TExtraRoute = {
+	route: RouteProps;
+	component: ComponentType;
+};
 
 interface AppProps {
 	stageComponent: ComponentType<StageProps>;
-	legalLinks: Array<LegalLinkInterface>;
+	legalLinks?: Array<LegalLinkInterface>;
 	entryPoint: string;
-	extraRoutes?: ReactNode;
+	extraRoutes?: TExtraRoute[];
 	spokenLanguages?: string[];
 	fixedLanguages?: string[];
+	config: AppConfigInterface;
 }
 
 export const App = ({
 	stageComponent,
 	legalLinks,
 	entryPoint,
-	extraRoutes,
-	spokenLanguages = languageIsoCodesSortedByName,
-	fixedLanguages = ['de']
+	extraRoutes = [],
+	spokenLanguages = null,
+	fixedLanguages = ['de'],
+	config
 }: AppProps) => {
 	// The login is possible both at the root URL as well as with an
 	// optional resort name. Since resort names are dynamic, we have
 	// to find out if the provided path is a resort name. If not, we
 	// use the authenticated app as a catch-all fallback.
-	const [
-		hasUnmatchedLoginConsultingType,
-		setHasUnmatchedLoginConsultingType
-	] = useState(false);
-	const [
-		hasUnmatchedAnonymousConversation,
-		setHasUnmatchedAnonymousConversation
-	] = useState(false);
-	const [
-		hasUnmatchedRegistrationConsultingType,
-		setHasUnmatchedRegistrationConsultingType
-	] = useState(false);
-	const [
-		hasUnmatchedRegistrationConsultant,
-		setHasUnmatchedRegistrationConsultant
-	] = useState(false);
-	const [startWebsocket, setStartWebsocket] = useState<boolean>(false);
-	const [disconnectWebsocket, setDisconnectWebsocket] =
-		useState<boolean>(false);
-	const [isInitiallyLoaded, setIsInitiallyLoaded] = useState<boolean>(false);
-
-	const activateInitialRedirect = () => {
-		setIsInitiallyLoaded(true);
-		history.push(entryPoint);
-	};
-
-	useEffect(() => {
-		if (!isInitiallyLoaded && window.location.pathname === '/') {
-			activateInitialRedirect();
-		} else {
-			setIsInitiallyLoaded(true);
-		}
-	}, []); // eslint-disable-line
 
 	return (
 		<ErrorBoundary>
-			<Router history={history}>
-				<FixedLanguagesContext.Provider value={fixedLanguages}>
+			<AppConfigProvider config={config}>
+				<LocaleProvider>
+					<LanguagesProvider
+						fixed={fixedLanguages}
+						spoken={spokenLanguages}
+					>
+						<LegalLinksProvider legalLinks={legalLinks}>
+							<RouterWrapper
+								stageComponent={stageComponent}
+								extraRoutes={extraRoutes}
+								entryPoint={entryPoint}
+							/>
+						</LegalLinksProvider>
+					</LanguagesProvider>
+				</LocaleProvider>
+			</AppConfigProvider>
+			<DevToolbarWrapper />
+		</ErrorBoundary>
+	);
+};
+
+interface RouterWrapperProps {
+	stageComponent: ComponentType<StageProps>;
+	entryPoint: string;
+	extraRoutes?: TExtraRoute[];
+}
+
+const RouterWrapper = ({
+	extraRoutes,
+	stageComponent,
+	entryPoint
+}: RouterWrapperProps) => {
+	const history = useHistory();
+	const settings = useAppConfig();
+
+	const [startWebsocket, setStartWebsocket] = useState<boolean>(false);
+	const [disconnectWebsocket, setDisconnectWebsocket] =
+		useState<boolean>(false);
+	const [failedPreCondition, setFailedPreCondition] = useState(
+		preConditionsMet()
+	);
+
+	if (failedPreCondition) {
+		return (
+			<PreConditions
+				stageComponent={stageComponent}
+				onPreConditionsMet={setFailedPreCondition}
+			/>
+		);
+	}
+
+	return (
+		<Router>
+			<Switch>
+				{entryPoint !== '/' && (
+					<Redirect from="/" to={entryPoint} exact />
+				)}
+				<Route>
 					<ContextProvider>
 						<TenantThemingLoader />
 						{startWebsocket && (
@@ -88,81 +130,65 @@ export const App = ({
 							/>
 						)}
 						<Switch>
-							{extraRoutes}
-
-							{!hasUnmatchedRegistrationConsultingType &&
-								!hasUnmatchedRegistrationConsultant && (
-									<Route
-										path={[
-											'/registration',
-											'/:consultingTypeSlug/registration'
-										]}
-									>
-										<Registration
-											handleUnmatchConsultingType={() =>
-												setHasUnmatchedRegistrationConsultingType(
-													true
-												)
-											}
-											handleUnmatchConsultant={() => {
-												setHasUnmatchedRegistrationConsultant(
-													true
-												);
-											}}
-											legalLinks={legalLinks}
-											stageComponent={stageComponent}
-										/>
+							{extraRoutes.map(
+								({ route, component: Component }) => (
+									<Route {...route}>
+										<Component />
 									</Route>
-								)}
+								)
+							)}
 
-							{!hasUnmatchedAnonymousConversation && (
-								<Route path="/:consultingTypeSlug/warteraum">
-									<WaitingRoomLoader
-										legalLinks={legalLinks}
-										handleUnmatch={() =>
-											setHasUnmatchedAnonymousConversation(
-												true
-											)
-										}
-										onAnonymousRegistration={() =>
-											setStartWebsocket(true)
-										}
-									/>
-								</Route>
-							)}
-							{!hasUnmatchedLoginConsultingType && (
-								<Route
-									path={['/login', '/:consultingTypeSlug']}
-									exact
-								>
-									<LoginLoader
-										handleUnmatch={() =>
-											setHasUnmatchedLoginConsultingType(
-												true
-											)
-										}
-										legalLinks={legalLinks}
-										stageComponent={stageComponent}
-									/>
-								</Route>
-							)}
-							<Route path={config.urls.videoConference} exact>
-								<VideoConference legalLinks={legalLinks} />
+							<Route
+								path={[
+									'/registration',
+									'/:consultingTypeSlug/registration'
+								]}
+							>
+								<Registration
+									handleUnmatchConsultingType={() =>
+										history.push('/login')
+									}
+									handleUnmatchConsultant={() =>
+										history.push('/login')
+									}
+									stageComponent={stageComponent}
+								/>
 							</Route>
-							{isInitiallyLoaded && (
-								<AuthenticatedApp
-									legalLinks={legalLinks}
-									spokenLanguages={spokenLanguages}
-									onAppReady={() => setStartWebsocket(true)}
-									onLogout={() =>
-										setDisconnectWebsocket(true)
+
+							<Route path="/:consultingTypeSlug/warteraum">
+								<WaitingRoomLoader
+									handleUnmatch={() => history.push('/login')}
+									onAnonymousRegistration={() =>
+										setStartWebsocket(true)
 									}
 								/>
-							)}
+							</Route>
+							<Route path="/:consultingTypeSlug/warteraum">
+								<WaitingRoomLoader
+									handleUnmatch={() => history.push('/login')}
+									onAnonymousRegistration={() =>
+										setStartWebsocket(true)
+									}
+								/>
+							</Route>
+
+							<Route path="/login" exact>
+								<Login stageComponent={stageComponent} />
+							</Route>
+							<Route path={settings.urls.videoConference} exact>
+								<VideoConference />
+							</Route>
+							<Route path={settings.urls.videoCall} exact>
+								<VideoCall />
+							</Route>
+							<AuthenticatedApp
+								onAppReady={() => setStartWebsocket(true)}
+								onLogout={() => setDisconnectWebsocket(true)}
+							/>
 						</Switch>
 					</ContextProvider>
-				</FixedLanguagesContext.Provider>
-			</Router>
-		</ErrorBoundary>
+				</Route>
+			</Switch>
+		</Router>
 	);
 };

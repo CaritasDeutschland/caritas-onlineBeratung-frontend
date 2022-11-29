@@ -1,11 +1,11 @@
-import { useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import { apiGetTenantTheming } from '../api/apiGetTenantTheming';
 import { TenantContext } from '../globalState';
 import { TenantDataInterface } from '../globalState/interfaces/TenantDataInterface';
-import { config } from '../resources/scripts/config';
 import getLocationVariables from './getLocationVariables';
 import decodeHTML from './decodeHTML';
 import contrast from 'get-contrast';
+import { useAppConfig } from '../hooks/useAppConfig';
 
 const RGBToHSL = (r, g, b) => {
 	// Make r, g, and b fractions of 1
@@ -89,7 +89,7 @@ const adjustHSLColor = ({
 const injectCss = ({ primaryColor, secondaryColor }) => {
 	// make HSL colors over RGB from hex
 	const primaryHSL = hexToRGB(primaryColor);
-	const secondaryHSL = hexToRGB(secondaryColor);
+	const secondaryHSL = secondaryColor && hexToRGB(secondaryColor);
 	// The level AA WCAG scrore requires a contrast ratio of at least 4.5:1 for normal text and 3:1 for large text (at least 18pt) or bold text.
 	const contrastThreshold = 4.5;
 
@@ -136,12 +136,16 @@ const injectCss = ({ primaryColor, secondaryColor }) => {
 						adjust: primaryHSL.l - 1
 				  }) // darker
 		};
-		--skin-color-secondary: ${secondaryColor};
-		--skin-color-secondary-light: ${adjustHSLColor({
-			color: secondaryHSL,
-			adjust: 90
-		})};
-		--skin-color-secondary-contrast-safe: ${secondaryColorContrastSafe};
+		--skin-color-secondary: ${secondaryColor || ''};
+		--skin-color-secondary-light: ${
+			secondaryHSL
+				? adjustHSLColor({
+						color: secondaryHSL,
+						adjust: 90
+				  })
+				: ''
+		};
+		--skin-color-secondary-contrast-safe: ${secondaryColorContrastSafe || ''};
 		--skin-color-primary-contrast-safe: ${primaryColorContrastSafe};
 		--text-color-contrast-switch: ${textColorContrastSwitch};
 		--text-color-secondary-contrast-switch: ${textColorSecondaryContrastSwitch};
@@ -213,23 +217,18 @@ const applyTheming = (tenant: TenantDataInterface) => {
 };
 
 const useTenantTheming = () => {
+	const settings = useAppConfig();
 	const tenantContext = useContext(TenantContext);
 	const { subdomain } = getLocationVariables();
 	const [isLoadingTenant, setIsLoadingTenant] = useState(
-		config.enableTenantTheming
+		settings.useTenantService
 	);
 
-	useEffect(() => {
-		if (!subdomain || !config.enableTenantTheming) {
-			apiGetTenantTheming({ subdomain }).then(({ settings }) => {
+	const onTenantServiceResponse = useCallback(
+		(tenant: TenantDataInterface) => {
+			if (!subdomain) {
 				tenantContext?.setTenant({ settings } as any);
-				setIsLoadingTenant(false);
-			});
-			return;
-		}
-
-		apiGetTenantTheming({ subdomain })
-			.then((tenant) => {
+			} else {
 				// ToDo: See VIC-428 + VIC-427
 				const decodedTenant = JSON.parse(JSON.stringify(tenant));
 
@@ -242,7 +241,25 @@ const useTenantTheming = () => {
 
 				applyTheming(decodedTenant);
 				tenantContext?.setTenant(decodedTenant);
-			})
+			}
+			return;
+		},
+		[settings, subdomain, tenantContext]
+	);
+
+	useEffect(() => {
+		if (!settings.useTenantService) {
+			return;
+		}
+
+		apiGetTenantTheming({
+			subdomain,
+			useMultiTenancyWithSingleDomain:
+				settings?.multitenancyWithSingleDomainEnabled,
+			mainTenantSubdomainForSingleDomain:
+				settings.mainTenantSubdomainForSingleDomainMultitenancy
+		})
+			.then(onTenantServiceResponse)
 			.catch((error) => {
 				console.log('Theme could not be loaded', error);
 			})

@@ -7,7 +7,6 @@ import {
 } from '../inputField/InputField';
 import { ReactComponent as LockIcon } from '../../resources/img/icons/lock.svg';
 import { LABEL_TYPES, Text } from '../text/Text';
-import { translate } from '../../utils/translate';
 import {
 	inputValuesFit,
 	passwordCriteria,
@@ -20,18 +19,22 @@ import {
 	VALIDITY_VALID
 } from './registrationHelpers';
 import './registrationPassword.styles';
+import { useTranslation } from 'react-i18next';
 
 interface RegistrationPasswordProps {
 	onPasswordChange: Function;
 	onValidityChange: Function;
 	passwordNote: string;
+	onKeyDown?: Function;
 }
 
 export const RegistrationPassword = ({
 	onPasswordChange,
 	onValidityChange,
-	passwordNote
+	passwordNote,
+	onKeyDown
 }: RegistrationPasswordProps) => {
+	const { t: translate } = useTranslation();
 	const [isValid, setIsValid] =
 		useState<AccordionItemValidity>(VALIDITY_INITIAL);
 	const [password, setPassword] = useState<string>('');
@@ -64,7 +67,7 @@ export const RegistrationPassword = ({
 				setPasswordLabel(null);
 			}
 		}
-	}, [passwordCriteriaValidation, password]);
+	}, [passwordCriteriaValidation, password, translate]);
 
 	useEffect(() => {
 		let passwordFits = inputValuesFit(passwordConfirmation, password);
@@ -82,7 +85,7 @@ export const RegistrationPassword = ({
 			setPasswordConfirmationLabelState(null);
 			setPasswordConfirmationLabel(null);
 		}
-	}, [passwordConfirmation, password]);
+	}, [passwordConfirmation, password, translate]);
 
 	useEffect(() => {
 		onValidityChange(isValid);
@@ -179,7 +182,7 @@ export const RegistrationPassword = ({
 		<div className="registrationPassword">
 			<Text
 				text={translate('registration.password.intro')}
-				type="infoLargeAlternative"
+				type="infoMedium"
 			/>
 			<ul className="registrationPassword__validation">
 				{passwordCriteriaList}
@@ -187,10 +190,12 @@ export const RegistrationPassword = ({
 			<InputField
 				item={inputItemPassword}
 				inputHandle={handlepasswordChange}
+				onKeyDown={(e) => onKeyDown(e, false)}
 			/>
 			<InputField
 				item={inputItemPasswordConfirmation}
 				inputHandle={(e) => setPasswordConfirmation(e.target.value)}
+				onKeyDown={(e) => onKeyDown(e, true, false)}
 			/>
 			{passwordNote && (
 				<div data-cy="registration-password-note">

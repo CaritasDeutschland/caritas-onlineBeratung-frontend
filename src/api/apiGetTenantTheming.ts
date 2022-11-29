@@ -1,12 +1,24 @@
 import { fetchData, FETCH_METHODS, FETCH_ERRORS } from './fetchData';
-import { config } from '../resources/scripts/config';
+import { endpoints } from '../resources/scripts/endpoints';
 import { TenantDataInterface } from '../globalState/interfaces/TenantDataInterface';
 
-export const apiGetTenantTheming = async (params: {
+interface GetTenantThemingParams {
 	subdomain: string;
-}): Promise<TenantDataInterface> =>
+	useMultiTenancyWithSingleDomain: boolean;
+	mainTenantSubdomainForSingleDomain: string;
+}
+
+export const apiGetTenantTheming = async ({
+	subdomain,
+	useMultiTenancyWithSingleDomain,
+	mainTenantSubdomainForSingleDomain
+}: GetTenantThemingParams): Promise<TenantDataInterface> =>
 	fetchData({
-		url: config.endpoints.tenantServiceBase + '/public/' + params.subdomain,
+		url: `${endpoints.tenantServiceBase}/public/${
+			useMultiTenancyWithSingleDomain
+				? mainTenantSubdomainForSingleDomain
+				: subdomain
+		}`,
 		method: FETCH_METHODS.GET,
 		skipAuth: true,
 		responseHandling: [FETCH_ERRORS.CATCH_ALL]

@@ -1,16 +1,5 @@
 import { getValueFromCookie } from '../components/sessionCookie/accessSessionCookie';
-import { config } from '../resources/scripts/config';
-
-export const getVideoCallUrl = (
-	url: string,
-	isVideoActivated: boolean = false,
-	userName: string,
-	e2eEncryptionEnabled: boolean = false
-) => {
-	return `${url}${
-		e2eEncryptionEnabled ? '&e2eEncryptionEnabled=1' : ''
-	}#config.startWithVideoMuted=${!isVideoActivated}&userInfo.displayName="${userName}"`;
-};
+import { appConfig } from './appConfig';
 
 export const currentUserWasVideoCallInitiator = (initiatorRcUserId: string) =>
 	initiatorRcUserId === getValueFromCookie('rc_uid');
@@ -54,7 +43,7 @@ export const supportsE2EEncryptionVideoCall = (
 	return (
 		e2eEncryptionEnabled === false || // explicit false means deactivated
 		supportsInsertableStreams() ||
-		(config.jitsi.enableEncodedTransformSupport &&
+		(appConfig.jitsi.enableEncodedTransformSupport &&
 			supportsEncodedTransform())
 	);
 };

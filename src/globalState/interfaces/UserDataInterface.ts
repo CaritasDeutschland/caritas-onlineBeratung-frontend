@@ -1,24 +1,31 @@
 import { ConsultingTypeInterface } from './ConsultingTypeInterface';
+import { TWO_FACTOR_TYPES } from '../../components/twoFactorAuth/TwoFactorAuth';
 
 export interface UserDataInterface {
 	absenceMessage?: string;
-	absent: boolean;
+	absent?: boolean;
 	agencies: AgencyDataInterface[];
-	consultingTypes?: [
-		{ [consultingType: number]: ConsultingTypeDataInterface }
-	];
+	appointmentFeatureEnabled?: boolean;
+	consultingTypes?: { [consultingType: number]: ConsultingTypeDataInterface };
+	displayName?: string;
+	e2eEncryptionEnabled: boolean;
 	email?: string;
+	emailToggles: { name: string; state: boolean }[];
 	firstName?: string;
 	formalLanguage: boolean;
 	grantedAuthorities: [string];
 	hasAnonymousConversations: boolean;
+	hasArchive: boolean;
 	inTeamAgency: boolean;
+	isDisplayNameEditable: boolean;
+	isWalkThroughEnabled?: boolean;
+	languages?: string[];
 	lastName?: string;
+	preferredLanguage: string;
+	twoFactorAuth?: TwoFactorAuthInterface;
 	userId: string;
 	userName: string;
-	e2eEncryptionEnabled: boolean;
-	twoFactorAuth?: TwoFactorAuthInterface;
-	languages?: string[];
+	userRoles: string[];
 }
 
 export interface ConsultantDataInterface
@@ -53,6 +60,8 @@ export interface TwoFactorAuthInterface {
 	isActive: boolean;
 	secret: string;
 	qrCode: string;
+	isShown: boolean;
+	type?: typeof TWO_FACTOR_TYPES[keyof typeof TWO_FACTOR_TYPES];
 }
 
 export interface AgencyLanguagesInterface {

@@ -2,6 +2,7 @@
 @import './askerRegistration.styles';
 @import './statistics.styles';
 @import './spokenlanguages.styles';
+@import './locale.styles';
 
 $doubleNavHeight: 192px;
 $doubleNavHeightSmall: 168px;
@@ -178,6 +179,19 @@ $profile-footer-justify-content: center !default;
 			.generateQrCode {
 				margin-right: $grid-base-two;
 			}
+
+			& .button-as-link,
+			.generateQrCode > button {
+				&:focus {
+					outline: $focus-outline;
+					outline-offset: 1px;
+					border-radius: 4px;
+				}
+
+				&:focus:not(:focus-visible) {
+					outline: none;
+				}
+			}
 		}
 	}
 
@@ -222,6 +236,17 @@ $profile-footer-justify-content: center !default;
 		height: auto;
 		width: 100%;
 
+		& .button-as-link {
+			border: none;
+			background: none;
+			padding: 0 !important;
+			text-decoration: underline;
+
+			&:hover {
+				cursor: pointer;
+			}
+		}
+
 		&:after {
 			display: block;
 			content: '';
@@ -260,6 +285,10 @@ $profile-footer-justify-content: center !default;
 			@include breakpoint($fromLarge) {
 				max-width: $inputMaxWidth;
 			}
+		}
+
+		&__header {
+			display: flex;
 		}
 	}
 
@@ -390,6 +419,19 @@ $profile-footer-justify-content: center !default;
 					border: none;
 					padding-bottom: 0;
 				}
+
+				& .button-as-link,
+				.generateQrCode > button {
+					&:focus {
+						outline: $focus-outline;
+						outline-offset: 1px;
+						border-radius: 4px;
+					}
+
+					&:focus:not(:focus-visible) {
+						outline: none;
+					}
+				}
 			}
 		}
 
@@ -481,8 +523,16 @@ $profile-footer-justify-content: center !default;
 		}
 
 		&__innerWrapper {
-			height: calc(100vh - #{$grid-base-twelve});
+			// header + footer + additional space
+			height: calc(
+				100% - #{$grid-base-twelve + $grid-base-nine + $grid-base-three}
+			);
 			background-color: $background-light;
+			margin-top: 0;
+
+			@include breakpoint($fromLarge) {
+				height: calc(100% - #{$grid-base-twelve});
+			}
 		}
 
 		&__header {

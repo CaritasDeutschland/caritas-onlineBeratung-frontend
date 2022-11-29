@@ -3,7 +3,6 @@ import CryptoJS from 'crypto-js';
 import { getKeycloakAccessToken } from '../sessionCookie/getKeycloakAccessToken';
 import { getRocketchatAccessToken } from '../sessionCookie/getRocketchatAccessToken';
 import { setValueInCookie } from '../sessionCookie/accessSessionCookie';
-import { config } from '../../resources/scripts/config';
 import { generateCsrfToken } from '../../utils/generateCsrfToken';
 import {
 	createAndStoreKeys,
@@ -26,6 +25,13 @@ import { apiRocketChatSubscriptionsGet } from '../../api/apiRocketChatSubscripti
 import { apiRocketChatRoomsGet } from '../../api/apiRocketChatRoomsGet';
 import { apiRocketChatUpdateGroupKey } from '../../api/apiRocketChatUpdateGroupKey';
 import { apiRocketChatResetE2EKey } from '../../api/apiRocketChatResetE2EKey';
+import { getBudibaseAccessToken } from '../sessionCookie/getBudibaseAccessToken';
+import {
+	TenantDataInterface,
+	TenantDataSettingsInterface
+} from '../../globalState/interfaces/TenantDataInterface';
+import { appConfig } from '../../utils/appConfig';
+import { parseJwt } from '../../utils/parseJWT';
 
 export interface LoginData {
 	data: {
@@ -44,15 +50,23 @@ interface AutoLoginProps {
 	redirect: boolean;
 	otp?: string;
 	useOldUser?: boolean;
+	tenantData?: TenantDataInterface;
+	gcid?: string;
 }
 
 export const autoLogin = (autoLoginProps: AutoLoginProps): Promise<any> =>
 	new Promise((resolve, reject) => {
+		const tenantSettings = (autoLoginProps?.tenantData?.settings ||
+			{}) as TenantDataSettingsInterface;
 		const userHash = autoLoginProps.useOldUser
 			? autoLoginProps.username
 			: encodeUsername(autoLoginProps.username);
+		const username = autoLoginProps.useOldUser
+			? encodeURIComponent(userHash)
+			: userHash;
+
 		getKeycloakAccessToken(
-			autoLoginProps.useOldUser ? encodeURIComponent(userHash) : userHash,
+			username,
 			encodeURIComponent(autoLoginProps.password),
 			autoLoginProps.otp ? autoLoginProps.otp : null
 		)
@@ -63,6 +77,13 @@ export const autoLogin = (autoLoginProps: AutoLoginProps): Promise<any> =>
 					response.refresh_token,
 					response.refresh_expires_in
 				);
+
+				if (appConfig.useTenantService) {
+					const { tenantId } = parseJwt(response.access_token);
+					if (tenantId !== autoLoginProps.tenantData.id) {
+						return reject(new Error(FETCH_ERRORS.UNAUTHORIZED));
+					}
+				}
 
 				getRocketchatAccessToken(userHash, autoLoginProps.password)
 					.then(async (accesTokenResponse) => {
@@ -84,11 +105,23 @@ export const autoLogin = (autoLoginProps: AutoLoginProps): Promise<any> =>
 							autoLoginProps
 						);
 
-						if (autoLoginProps.redirect) {
-							redirectToApp();
-						}
+						const redirect = () =>
+							autoLoginProps.redirect &&
+							redirectToApp(autoLoginProps.gcid);
 
-						resolve(undefined);
+						if (tenantSettings?.featureToolsEnabled) {
+							getBudibaseAccessToken(
+								username,
+								autoLoginProps.password,
+								tenantSettings
+							).then(() => {
+								redirect();
+								resolve(undefined);
+							});
+						} else {
+							redirect();
+							resolve(undefined);
+						}
 					})
 					.catch((error) => {
 						reject(error);
@@ -104,7 +137,8 @@ export const autoLogin = (autoLoginProps: AutoLoginProps): Promise<any> =>
 						password: autoLoginProps.password,
 						redirect: autoLoginProps.redirect,
 						otp: autoLoginProps.otp,
-						useOldUser: true
+						useOldUser: true,
+						tenantData: autoLoginProps.tenantData
 					})
 						.then(() => resolve(undefined))
 						.catch((autoLoginError) => reject(autoLoginError));
@@ -114,8 +148,9 @@ export const autoLogin = (autoLoginProps: AutoLoginProps): Promise<any> =>
 			});
 	});
 
-export const redirectToApp = () => {
-	window.location.href = config.urls.redirectToApp;
+export const redirectToApp = (gcid?: string) => {
+	const params = gcid ? `?gcid=${gcid}` : '';
+	window.location.href = appConfig.urls.redirectToApp + params;
 };
 
 export const handleE2EESetup = (
@@ -234,8 +269,14 @@ const updateUserE2EKeysFallback = async (rcUserId) => {
 				return null;
 			}
 
+			// Little fix for broken dev chats
+			let sub = 16;
+			if (subscription.E2EKey.substring(4, 8) === 'null') {
+				sub = 8;
+			}
+
 			// Substring(16) because of 'tmp.' prefix
-			const roomKeyEncrypted = subscription.E2EKey.substring(16);
+			const roomKeyEncrypted = subscription.E2EKey.substring(sub);
 			const bytes = CryptoJS.AES.decrypt(
 				roomKeyEncrypted,
 				await getTmpMasterKey(rcUserId)

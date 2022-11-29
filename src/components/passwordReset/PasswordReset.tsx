@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { useState, useContext } from 'react';
-import { translate } from '../../utils/translate';
 import { InputField, InputFieldItem } from '../inputField/InputField';
 import { apiUpdatePassword } from '../../api';
 import {
@@ -8,9 +7,8 @@ import {
 	Overlay,
 	OVERLAY_FUNCTIONS,
 	OverlayItem
-} from '../overlay//Overlay';
+} from '../overlay/Overlay';
 import { BUTTON_TYPES } from '../button/Button';
-import { config } from '../../resources/scripts/config';
 import { logout } from '../logout/logout';
 import {
 	inputValuesFit,
@@ -26,10 +24,28 @@ import {
 } from '../../utils/encryptionHelpers';
 import { apiRocketChatSetUserKeys } from '../../api/apiRocketChatSetUserKeys';
 import { getValueFromCookie } from '../sessionCookie/accessSessionCookie';
-import { E2EEContext } from '../../globalState';
+import {
+	AUTHORITIES,
+	E2EEContext,
+	hasUserAuthority,
+	UserDataContext
+} from '../../globalState';
+import { useTranslation } from 'react-i18next';
+import { useAppConfig } from '../../hooks/useAppConfig';
+import { getTenantSettings } from '../../utils/tenantSettingsHelper';
+import { apiUpdatePasswordAppointments } from '../../api/apiUpdatePasswordAppointments';
 
 export const PasswordReset = () => {
+	const { t: translate } = useTranslation();
 	const rcUid = getValueFromCookie('rc_uid');
+	const { featureAppointmentsEnabled } = getTenantSettings();
+	const { userData } = useContext(UserDataContext);
+	const isConsultant = hasUserAuthority(
+		AUTHORITIES.CONSULTANT_DEFAULT,
+		userData
+	);
+
+	const settings = useAppConfig();
 
 	const [oldPassword, setOldPassword] = useState('');
 	const [newPassword, setNewPassword] = useState('');
@@ -53,11 +69,13 @@ export const PasswordReset = () => {
 
 	const overlayItem: OverlayItem = {
 		svg: CheckIcon,
-		headline: translate('profile.functions.passwordReset.overlay.headline'),
+		headline: translate(
+			'profile.functions.password.reset.overlay.headline'
+		),
 		buttonSet: [
 			{
 				label: translate(
-					'profile.functions.passwordReset.overlay.buttonLabel'
+					'profile.functions.password.reset.overlay.button.label'
 				),
 				function: OVERLAY_FUNCTIONS.CLOSE,
 				type: BUTTON_TYPES.AUTO_CLOSE
@@ -84,7 +102,7 @@ export const PasswordReset = () => {
 		),
 		id: 'passwordResetOld',
 		type: 'password',
-		label: translate('profile.functions.passwordResetOldLabel'),
+		label: translate('profile.functions.password.reset.old.label'),
 		infoText:
 			oldPasswordErrorMessage || oldPasswordSuccessMessage
 				? `${oldPasswordErrorMessage} ${oldPasswordSuccessMessage}`
@@ -100,7 +118,7 @@ export const PasswordReset = () => {
 		),
 		id: 'passwordResetNew',
 		type: 'password',
-		label: translate('profile.functions.passwordResetNewLabel'),
+		label: translate('profile.functions.password.reset.new.label'),
 		infoText:
 			newPasswordErrorMessage || newPasswordSuccessMessage
 				? `${newPasswordErrorMessage} ${newPasswordSuccessMessage}<br>`
@@ -116,7 +134,7 @@ export const PasswordReset = () => {
 		),
 		id: 'passwordResetConfirm',
 		type: 'password',
-		label: translate('profile.functions.passwordResetConfirmLabel'),
+		label: translate('profile.functions.password.reset.confirm.label'),
 		infoText:
 			confirmPasswordErrorMessage || confirmPasswordSuccessMessage
 				? `${confirmPasswordErrorMessage} ${confirmPasswordSuccessMessage}`
@@ -146,11 +164,11 @@ export const PasswordReset = () => {
 		if (newPassword.length >= 1 && passwordStrength < 4) {
 			setNewPasswordSuccessMessage('');
 			setNewPasswordErrorMessage(
-				translate('profile.functions.passwordResetInsecure')
+				translate('profile.functions.password.reset.insecure')
 			);
 		} else if (newPassword.length >= 1) {
 			setNewPasswordSuccessMessage(
-				translate('profile.functions.passwordResetSecure')
+				translate('profile.functions.password.reset.secure')
 			);
 			setNewPasswordErrorMessage('');
 			setHasMasterKeyError(false);
@@ -174,11 +192,11 @@ export const PasswordReset = () => {
 		if (confirmPassword.length >= 1 && !passwordFits) {
 			setConfirmPasswordSuccessMessage('');
 			setConfirmPasswordErrorMessage(
-				translate('profile.functions.passwordResetNotSame')
+				translate('profile.functions.password.reset.not.same')
 			);
 		} else if (confirmPassword.length >= 1) {
 			setConfirmPasswordSuccessMessage(
-				translate('profile.functions.passwordResetSame')
+				translate('profile.functions.password.reset.same')
 			);
 			setConfirmPasswordErrorMessage('');
 		} else {
@@ -220,9 +238,16 @@ export const PasswordReset = () => {
 						}
 						// TODO Update masterkey in localstorage same logic as autoLogin
 
+						isConsultant &&
+							featureAppointmentsEnabled &&
+							apiUpdatePasswordAppointments(
+								userData.email,
+								newPassword
+							);
+
 						setOverlayActive(true);
 						setIsRequestInProgress(false);
-						logout(false, config.urls.toLogin);
+						logout(false, settings.urls.toLogin);
 					} catch (e) {
 						if (isE2eeEnabled) {
 							// rechange password to the old password
@@ -235,12 +260,20 @@ export const PasswordReset = () => {
 							});
 							setHasMasterKeyError(true);
 						}
+
+						featureAppointmentsEnabled &&
+							apiUpdatePasswordAppointments(
+								userData.email,
+								oldPassword
+							);
 					}
 				})
 				.catch(() => {
 					// error handling for password update error
 					setOldPasswordErrorMessage(
-						translate('profile.functions.passwordResetOldIncorrect')
+						translate(
+							'profile.functions.password.reset.old.incorrect'
+						)
 					);
 					setIsRequestInProgress(false);
 				});
@@ -248,18 +281,20 @@ export const PasswordReset = () => {
 	};
 
 	const handleSuccess = () => {
-		window.location.href = config.urls.toLogin;
+		window.location.href = settings.urls.toLogin;
 	};
 
 	return (
 		<div id="passwordReset" className="passwordReset">
 			<div className="profile__content__title">
 				<Headline
-					text={translate('profile.functions.passwordResetTitle')}
+					text={translate('profile.functions.password.reset.title')}
 					semanticLevel="5"
 				/>
 				<Text
-					text={translate('profile.functions.passwordResetSubtitle')}
+					text={translate(
+						'profile.functions.password.reset.subtitle'
+					)}
 					type="standard"
 					className="tertiary"
 				/>
@@ -280,7 +315,7 @@ export const PasswordReset = () => {
 					className="text--tertiary tertiary pb--1"
 					dangerouslySetInnerHTML={{
 						__html: translate(
-							'profile.functions.passwordResetInstructions'
+							'profile.functions.password.reset.instructions'
 						)
 					}}
 				></div>
@@ -320,7 +355,7 @@ export const PasswordReset = () => {
 							(!isValid ? ' passwordReset__button--disabled' : '')
 						}
 					>
-						{translate('profile.functions.securityButton')}
+						{translate('profile.functions.security.button')}
 					</span>
 				</div>
 			</div>

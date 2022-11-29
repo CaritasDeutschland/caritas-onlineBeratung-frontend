@@ -1,23 +1,17 @@
 import * as React from 'react';
 import { useState, useEffect, useContext, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useHistory } from 'react-router-dom';
 
-import { history } from '../app/app';
 import { MessageSubmitInterfaceComponent } from '../messageSubmitInterface/messageSubmitInterfaceComponent';
-import { translate } from '../../utils/translate';
 import {
-	OverlayItem,
+	Overlay,
 	OVERLAY_FUNCTIONS,
-	OverlayWrapper,
-	Overlay
+	OverlayItem,
+	OverlayWrapper
 } from '../overlay/Overlay';
 import { BUTTON_TYPES } from '../button/Button';
-import { config } from '../../resources/scripts/config';
-import {
-	buildExtendedSession,
-	STATUS_EMPTY,
-	E2EEContext
-} from '../../globalState';
+import { endpoints } from '../../resources/scripts/endpoints';
+import { buildExtendedSession, STATUS_EMPTY } from '../../globalState';
 import { ActiveSessionContext } from '../../globalState/provider/ActiveSessionProvider';
 
 import {
@@ -31,50 +25,36 @@ import './enquiry.styles';
 import { Headline } from '../headline/Headline';
 import { Text } from '../text/Text';
 import { EnquiryLanguageSelection } from './EnquiryLanguageSelection';
-import { FixedLanguagesContext } from '../../globalState/provider/FixedLanguagesProvider';
+import { LanguagesContext } from '../../globalState/provider/LanguagesProvider';
 import { useResponsive } from '../../hooks/useResponsive';
-import { createGroupKey } from '../../utils/encryptionHelpers';
 
 import { Loading } from '../app/Loading';
 import { useSession } from '../../hooks/useSession';
 import { apiGetAskerSessionList } from '../../api';
-import { encryptRoom } from '../../utils/e2eeHelper';
+import { useTranslation } from 'react-i18next';
 
 export const WriteEnquiry: React.FC = () => {
-	const { sessionId: sessionIdFromParam } = useParams();
+	const { t: translate } = useTranslation();
+	const { sessionId } = useParams<{ sessionId: string }>();
+	const sessionIdFromParam = sessionId ? parseInt(sessionId) : null;
+	const history = useHistory();
 
-	const fixedLanguages = useContext(FixedLanguagesContext);
+	const { fixed: fixedLanguages } = useContext(LanguagesContext);
 
 	const [activeSession, setActiveSession] = useState(null);
 	const [overlayActive, setOverlayActive] = useState(false);
-	const [sessionId, setSessionId] = useState<number | null>(null);
-	const [groupId, setGroupId] = useState<string | null>(null);
+	const [redirectSessionId, setRedirectSessionId] = useState<number | null>(
+		null
+	);
+	const [redirectGroupId, setRedirectGroupId] = useState<string | null>(null);
 	const [selectedLanguage, setSelectedLanguage] = useState(fixedLanguages[0]);
 	const [isFirstEnquiry, setIsFirstEnquiry] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
-
-	const { isE2eeEnabled } = useContext(E2EEContext);
-	const [keyID, setKeyID] = useState(null);
-	const [key, setKey] = useState(null);
-	const [sessionKeyExportedString, setSessionKeyExportedString] =
-		useState(null);
 
 	const { session, ready: sessionReady } = useSession(
 		null,
 		sessionIdFromParam
 	);
-
-	useEffect(() => {
-		if (!isE2eeEnabled) {
-			return;
-		}
-
-		createGroupKey().then(({ keyID, key, sessionKeyExportedString }) => {
-			setKeyID(keyID);
-			setKey(key);
-			setSessionKeyExportedString(sessionKeyExportedString);
-		});
-	}, [isE2eeEnabled]);
 
 	useEffect(() => {
 		if (!sessionReady && sessionIdFromParam) {
@@ -119,7 +99,7 @@ export const WriteEnquiry: React.FC = () => {
 		if (buttonFunction === OVERLAY_FUNCTIONS.REDIRECT) {
 			activateListView();
 			history.push({
-				pathname: `${config.endpoints.userSessionsListView}/${groupId}/${sessionId}`
+				pathname: `${endpoints.userSessionsListView}/${redirectGroupId}/${redirectSessionId}`
 			});
 		}
 	};
@@ -165,8 +145,8 @@ export const WriteEnquiry: React.FC = () => {
 
 	const overlayItem: OverlayItem = {
 		svg: EnvelopeCheckIcon,
-		headline: translate('enquiry.write.overlayHeadline'),
-		copy: translate('enquiry.write.overlayCopy'),
+		headline: translate('enquiry.write.overlay.headline'),
+		copy: translate('enquiry.write.overlay.copy'),
 		buttonSet: [
 			{
 				label: translate('enquiry.write.overlay.button'),
@@ -176,23 +156,11 @@ export const WriteEnquiry: React.FC = () => {
 		]
 	};
 
-	const handleSendButton = useCallback(
-		async (response) => {
-			// ToDo: encrypt room logic could be moved to messageSubmitInterfaceComponent.tsx (SessionItemCompoent.tsx & WriteEnquiry.tsx)
-			await encryptRoom({
-				keyId: keyID,
-				isE2eeEnabled,
-				isRoomAlreadyEncrypted: false,
-				rcGroupId: response.rcGroupId,
-				sessionKeyExportedString
-			});
-
-			setSessionId(response.sessionId);
-			setGroupId(response.rcGroupId);
-			setOverlayActive(true);
-		},
-		[keyID, sessionKeyExportedString, isE2eeEnabled]
-	);
+	const handleSendButton = useCallback(async (response) => {
+		setRedirectSessionId(response.sessionId);
+		setRedirectGroupId(response.rcGroupId);
+		setOverlayActive(true);
+	}, []);
 
 	if (isLoading) {
 		return <Loading />;
@@ -213,7 +181,9 @@ export const WriteEnquiry: React.FC = () => {
 						<Headline
 							semanticLevel="4"
 							styleLevel="5"
-							text={translate('enquiry.write.infotext.copy')}
+							text={translate(
+								'enquiry.write.infotext.copy.title'
+							)}
 						/>
 						<Text
 							text={translate(
@@ -228,21 +198,18 @@ export const WriteEnquiry: React.FC = () => {
 				{isUnassignedSession && (
 					<EnquiryLanguageSelection
 						className="enquiry__languageSelection"
-						handleSelection={setSelectedLanguage}
+						onSelect={setSelectedLanguage}
+						value={selectedLanguage}
 					/>
 				)}
 			</div>
 			<ActiveSessionContext.Provider value={{ activeSession }}>
 				<MessageSubmitInterfaceComponent
-					handleSendButton={handleSendButton}
-					placeholder={translate('enquiry.write.input.placeholder')}
+					onSendButton={handleSendButton}
+					placeholder={translate(
+						'enquiry.write.input.placeholder.asker'
+					)}
 					language={selectedLanguage}
-					E2EEParams={{
-						keyID: keyID,
-						key: key,
-						sessionKeyExportedString: sessionKeyExportedString,
-						encrypted: !!keyID
-					}}
 				/>
 			</ActiveSessionContext.Provider>
 			{overlayActive && (

@@ -7,21 +7,31 @@ import {
 	useRef,
 	useState
 } from 'react';
-import { history } from '../app/app';
+import { useParams, useHistory } from 'react-router-dom';
 import { Loading } from '../app/Loading';
 import { SessionItemComponent } from './SessionItemComponent';
 import {
+	AnonymousConversationFinishedContext,
 	AUTHORITIES,
+	ConsultantListContext,
 	E2EEContext,
 	hasUserAuthority,
-	LegalLinkInterface,
 	RocketChatContext,
+	RocketChatGlobalSettingsContext,
 	SessionTypeContext,
 	STATUS_FINISHED,
 	UserDataContext
 } from '../../globalState';
-import { apiGetSessionData, FETCH_ERRORS } from '../../api';
-import { prepareMessages, SESSION_LIST_TAB } from './sessionHelpers';
+import {
+	apiGetAgencyConsultantList,
+	apiGetSessionData,
+	FETCH_ERRORS
+} from '../../api';
+import {
+	prepareMessages,
+	SESSION_LIST_TAB,
+	SESSION_LIST_TYPES
+} from './sessionHelpers';
 import { getValueFromCookie } from '../sessionCookie/accessSessionCookie';
 import {
 	Overlay,
@@ -29,7 +39,6 @@ import {
 	OverlayItem,
 	OverlayWrapper
 } from '../overlay/Overlay';
-import { translate } from '../../utils/translate';
 import { BUTTON_TYPES } from '../button/Button';
 import { logout } from '../logout/logout';
 import { ReactComponent as CheckIcon } from '../../resources/img/illustrations/check.svg';
@@ -46,23 +55,35 @@ import {
 import useUpdatingRef from '../../hooks/useUpdatingRef';
 import useDebounceCallback from '../../hooks/useDebounceCallback';
 import { useSearchParam } from '../../hooks/useSearchParams';
+import { useTranslation } from 'react-i18next';
+import { prepareConsultantDataForSelect } from '../sessionAssign/sessionAssignHelper';
+import {
+	IArraySetting,
+	SETTING_HIDE_SYSTEM_MESSAGES
+} from '../../api/apiRocketChatSettingsPublic';
 
 interface SessionStreamProps {
 	readonly: boolean;
-	legalLinks: Array<LegalLinkInterface>;
 	checkMutedUserForThisSession: () => void;
 	bannedUsers: string[];
 }
 
 export const SessionStream = ({
 	readonly,
-	legalLinks,
 	checkMutedUserForThisSession,
 	bannedUsers
 }: SessionStreamProps) => {
+	const { t: translate } = useTranslation();
+	const history = useHistory();
+
 	const { type, path: listPath } = useContext(SessionTypeContext);
 	const { userData } = useContext(UserDataContext);
 	const { subscribe, unsubscribe } = useContext(RocketChatContext);
+	const { getSetting } = useContext(RocketChatGlobalSettingsContext);
+	const { anonymousConversationFinished } = useContext(
+		AnonymousConversationFinishedContext
+	);
+	const { rcGroupId } = useParams<{ rcGroupId: string }>();
 
 	const subscribed = useRef(false);
 	const [messagesItem, setMessagesItem] = useState(null);
@@ -75,6 +96,7 @@ export const SessionStream = ({
 
 	const { addNewUsersToEncryptedRoom } = useE2EE(activeSession?.rid);
 	const { isE2eeEnabled } = useContext(E2EEContext);
+	const { setConsultantList } = useContext(ConsultantListContext);
 
 	const abortController = useRef<AbortController>(null);
 	const hasUserInitiatedStopOrLeaveRequest = useRef<boolean>(false);
@@ -97,11 +119,24 @@ export const SessionStream = ({
 			activeSession.rid,
 			abortController.current.signal
 		).then((messagesData) => {
+			const hiddenSystemMessages = getSetting<IArraySetting>(
+				SETTING_HIDE_SYSTEM_MESSAGES
+			);
 			setMessagesItem(
-				messagesData ? prepareMessages(messagesData.messages) : null
+				messagesData
+					? prepareMessages(
+							messagesData.messages.filter(
+								(message) =>
+									!hiddenSystemMessages ||
+									!hiddenSystemMessages.value.includes(
+										message.t
+									)
+							)
+					  )
+					: null
 			);
 		});
-	}, [activeSession]);
+	}, [activeSession.rid, getSetting]);
 
 	const setSessionRead = useCallback(() => {
 		if (readonly) {
@@ -129,7 +164,7 @@ export const SessionStream = ({
 	 */
 	const handleRoomMessage = useCallback(
 		(args) => {
-			if (args.length === 0) return;
+			if (args.length === 0 || anonymousConversationFinished) return;
 
 			args
 				// Map collected from debounce callback
@@ -141,25 +176,32 @@ export const SessionStream = ({
 					}
 
 					if (message.t === 'au') {
-						if (isE2eeEnabled) {
-							addNewUsersToEncryptedRoom();
+						// Handle this event only for groups because on session assigning its already handled
+						if (isE2eeEnabled && activeSession.isGroup) {
+							addNewUsersToEncryptedRoom().then();
 						}
 						return;
 					}
 
 					if (message.u?.username !== 'rocket-chat-technical-user') {
-						fetchSessionMessages().then(() => {
-							setSessionRead();
-						});
+						fetchSessionMessages()
+							.then(() => {
+								setSessionRead();
+							})
+							.catch(() => {
+								// prevent error from leaking to console
+							});
 					}
 				});
 		},
 
 		[
-			isE2eeEnabled,
-			fetchSessionMessages,
+			anonymousConversationFinished,
 			checkMutedUserForThisSession,
+			isE2eeEnabled,
+			activeSession.isGroup,
 			addNewUsersToEncryptedRoom,
+			fetchSessionMessages,
 			setSessionRead
 		]
 	);
@@ -185,7 +227,7 @@ export const SessionStream = ({
 				}
 			]
 		}),
-		[]
+		[translate]
 	);
 
 	const handleChatStopped = useUpdatingRef(
@@ -219,14 +261,36 @@ export const SessionStream = ({
 		)
 	);
 
+	const handleSubscriptionChanged = useUpdatingRef(
+		useCallback(
+			([event]) => {
+				if (event === 'removed') {
+					// user was removed from the session and is still in a session view
+					// then redirect him to the listview
+					if (type === SESSION_LIST_TYPES.MY_SESSION) {
+						if (activeSession?.item?.groupId === rcGroupId) {
+							history.push(listPath);
+						}
+					}
+				}
+			},
+			[activeSession, rcGroupId, listPath, type, history]
+		)
+	);
+
 	useEffect(() => {
 		if (subscribed.current) {
 			setLoading(false);
 		} else {
 			subscribed.current = true;
 
+			if (anonymousConversationFinished) {
+				setLoading(false);
+				return;
+			}
+
 			// check if any user needs to be added when opening session view
-			addNewUsersToEncryptedRoom();
+			addNewUsersToEncryptedRoom().then();
 
 			fetchSessionMessages()
 				.then(() => {
@@ -240,17 +304,30 @@ export const SessionStream = ({
 						onDebounceMessage
 					);
 
+					subscribe(
+						{
+							name: SUB_STREAM_NOTIFY_USER,
+							event: EVENT_SUBSCRIPTIONS_CHANGED,
+							userId: getValueFromCookie('rc_uid')
+						},
+						activeSession.isGroup || activeSession.isLive
+							? handleChatStopped
+							: handleSubscriptionChanged
+					);
+
 					if (activeSession.isGroup || activeSession.isLive) {
+						subscribeTyping();
+					}
+
+					if (activeSession.isLive) {
 						subscribe(
 							{
 								name: SUB_STREAM_NOTIFY_USER,
-								event: EVENT_SUBSCRIPTIONS_CHANGED,
+								event: EVENT_ROOMS_CHANGED,
 								userId: getValueFromCookie('rc_uid')
 							},
-							handleChatStopped
+							handleLiveChatStopped
 						);
-
-						subscribeTyping();
 					}
 
 					if (activeSession.isLive) {
@@ -292,17 +369,30 @@ export const SessionStream = ({
 					onDebounceMessage
 				);
 
+				unsubscribe(
+					{
+						name: SUB_STREAM_NOTIFY_USER,
+						event: EVENT_SUBSCRIPTIONS_CHANGED,
+						userId: getValueFromCookie('rc_uid')
+					},
+					activeSession.isGroup || activeSession.isLive
+						? handleChatStopped
+						: handleSubscriptionChanged
+				);
+
 				if (activeSession.isGroup || activeSession.isLive) {
+					unsubscribeTyping();
+				}
+
+				if (activeSession.isLive) {
 					unsubscribe(
 						{
 							name: SUB_STREAM_NOTIFY_USER,
-							event: EVENT_SUBSCRIPTIONS_CHANGED,
+							event: EVENT_ROOMS_CHANGED,
 							userId: getValueFromCookie('rc_uid')
 						},
-						handleChatStopped
+						handleLiveChatStopped
 					);
-
-					unsubscribeTyping();
 				}
 
 				if (activeSession.isLive) {
@@ -320,9 +410,11 @@ export const SessionStream = ({
 	}, [
 		activeSession,
 		addNewUsersToEncryptedRoom,
+		anonymousConversationFinished,
 		fetchSessionMessages,
 		handleChatStopped,
 		handleLiveChatStopped,
+		handleSubscriptionChanged,
 		onDebounceMessage,
 		setSessionRead,
 		subscribe,
@@ -330,6 +422,31 @@ export const SessionStream = ({
 		type,
 		unsubscribe,
 		unsubscribeTyping,
+		userData
+	]);
+
+	useEffect(() => {
+		if (
+			activeSession.isLive ||
+			activeSession.isGroup ||
+			hasUserAuthority(AUTHORITIES.ASKER_DEFAULT, userData)
+		) {
+			return;
+		}
+		const agencyId = activeSession.item.agencyId.toString();
+		apiGetAgencyConsultantList(agencyId)
+			.then((response) => {
+				const consultants = prepareConsultantDataForSelect(response);
+				setConsultantList(consultants);
+			})
+			.catch((error) => {
+				console.log(error);
+			});
+	}, [
+		activeSession.isGroup,
+		activeSession.isLive,
+		activeSession.item.agencyId,
+		setConsultantList,
 		userData
 	]);
 
@@ -357,7 +474,6 @@ export const SessionStream = ({
 				isTyping={handleTyping}
 				typingUsers={typingUsers}
 				messages={messagesItem}
-				legalLinks={legalLinks}
 				bannedUsers={bannedUsers}
 			/>
 			{isOverlayActive ? (

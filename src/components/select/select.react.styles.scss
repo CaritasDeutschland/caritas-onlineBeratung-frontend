@@ -29,6 +29,7 @@ $inputHeight: 50px;
 		display: block;
 		width: 100%;
 		margin: auto 0;
+		cursor: pointer;
 
 		&__iconWrapper {
 			width: $grid-base-three;
@@ -37,7 +38,7 @@ $inputHeight: 50px;
 
 		&__control {
 			border-radius: $select-dropdown-border-radius;
-			box-shadow: $input-field-box-shadow;
+			cursor: pointer;
 		}
 
 		&__option {
@@ -122,6 +123,7 @@ $inputHeight: 50px;
 			position: relative;
 			height: 24px;
 			width: 24px;
+			min-width: 24px;
 			border-radius: 50%;
 			background: $form-primary;
 			color: $white;
@@ -129,7 +131,7 @@ $inputHeight: 50px;
 			font-size: 9px;
 			line-height: 24px;
 			text-align: center;
-			margin: -4px $grid-base 0 0;
+			margin: 5px $grid-base 0 0;
 			top: -4px;
 		}
 

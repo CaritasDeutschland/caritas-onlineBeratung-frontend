@@ -7,8 +7,7 @@ import {
 	useRef,
 	useState
 } from 'react';
-import { useParams } from 'react-router-dom';
-import { E2EEContext } from '../../globalState';
+import { useParams, useHistory } from 'react-router-dom';
 import { ActiveSessionContext } from '../../globalState/provider/ActiveSessionProvider';
 import './session.styles';
 import {
@@ -20,17 +19,16 @@ import {
 import { useSearchParam } from '../../hooks/useSearchParams';
 import { SESSION_LIST_TAB } from './sessionHelpers';
 import { useE2EE } from '../../hooks/useE2EE';
-import { createGroupKey } from '../../utils/encryptionHelpers';
-import { encryptRoom } from '../../utils/e2eeHelper';
-import { translate } from '../../utils/translate';
 import { apiEnquiryAcceptance, FETCH_ERRORS } from '../../api';
-import { history } from '../app/app';
 import { Button, BUTTON_TYPES, ButtonItem } from '../button/Button';
 import { useWatcher } from '../../hooks/useWatcher';
 import { apiGetSessionRoomBySessionId } from '../../api/apiGetSessionRooms';
 import { SessionAssign } from '../sessionAssign/SessionAssign';
 import { ReactComponent as CheckIcon } from '../../resources/img/illustrations/check.svg';
 import { ReactComponent as XIcon } from '../../resources/img/illustrations/x.svg';
+import { useTranslation } from 'react-i18next';
+import { useE2EEViewElements } from '../../hooks/useE2EEViewElements';
+import { useTimeoutOverlay } from '../../hooks/useTimeoutOverlay';
 
 interface AcceptAssignProps {
 	assignable: boolean;
@@ -45,9 +43,11 @@ export const AcceptAssign = ({
 	btnLabel,
 	isAnonymous
 }: AcceptAssignProps) => {
-	const { activeSession } = useContext(ActiveSessionContext);
+	const { t: translate } = useTranslation();
+	const { rcGroupId: groupIdFromParam } = useParams<{ rcGroupId: string }>();
+	const history = useHistory();
 
-	const { rcGroupId: groupIdFromParam } = useParams();
+	const { activeSession } = useContext(ActiveSessionContext);
 	const abortController = useRef<AbortController>(null);
 
 	const [overlayItem, setOverlayItem] = useState<OverlayItem>(null);
@@ -57,46 +57,53 @@ export const AcceptAssign = ({
 		`${sessionListTab ? `?sessionListTab=${sessionListTab}` : ''}`;
 
 	/* E2EE */
-	const { encrypted, keyID, sessionKeyExportedString, ready } =
-		useE2EE(groupIdFromParam);
-	const { isE2eeEnabled } = useContext(E2EEContext);
-	const [groupKeyID, setGroupKeyID] = useState(null);
-	const [sessionGroupKeyExportedString, setSessionGroupKeyExportedString] =
-		useState(null);
+	const { encryptRoom } = useE2EE(groupIdFromParam);
+	const {
+		visible: e2eeOverlayVisible,
+		setState: setE2EEState,
+		overlay: e2eeOverlay
+	} = useE2EEViewElements();
+
+	const { visible: requestOverlayVisible, overlay: requestOverlay } =
+		useTimeoutOverlay(
+			isRequestInProgress,
+			null,
+			translate('session.assignSelf.inProgress')
+		);
 
 	const enquirySuccessfullyAcceptedOverlayItem: OverlayItem = useMemo(
 		() => ({
 			svg: CheckIcon,
-			headline: translate('session.acceptance.overlayHeadline'),
+			headline: translate('session.acceptance.overlay.headline'),
 			buttonSet: [
 				{
-					label: translate('session.acceptance.buttonLabel'),
+					label: translate('session.acceptance.button.label'),
 					function: OVERLAY_FUNCTIONS.REDIRECT,
 					type: BUTTON_TYPES.PRIMARY
 				}
 			]
 		}),
-		[]
+		[translate]
 	);
 
 	const enquiryTakenByOtherConsultantOverlayItem: OverlayItem = useMemo(
 		() => ({
 			svg: XIcon,
 			headline: translate(
-				'session.anonymous.takenByOtherConsultant.overlayHeadline'
+				'session.anonymous.takenByOtherConsultant.overlay.headline'
 			),
 			illustrationBackground: 'error',
 			buttonSet: [
 				{
 					label: translate(
-						'session.anonymous.takenByOtherConsultant.buttonLabel'
+						'session.anonymous.takenByOtherConsultant.button.label'
 					),
 					function: OVERLAY_FUNCTIONS.CLOSE,
 					type: BUTTON_TYPES.PRIMARY
 				}
 			]
 		}),
-		[]
+		[translate]
 	);
 
 	useEffect(() => {
@@ -104,51 +111,6 @@ export const AcceptAssign = ({
 			assigned ? enquiryTakenByOtherConsultantOverlayItem : null
 		);
 	}, [assigned, enquiryTakenByOtherConsultantOverlayItem]);
-
-	// group Key generation if needed
-	useEffect(() => {
-		if (!isE2eeEnabled || !ready) {
-			return;
-		}
-		if (!activeSession) {
-			return;
-		}
-
-		if (encrypted) {
-			setGroupKeyID(keyID);
-			setSessionGroupKeyExportedString(sessionKeyExportedString);
-		} else {
-			createGroupKey().then(
-				({ keyID, key, sessionKeyExportedString }) => {
-					setGroupKeyID(keyID);
-					setSessionGroupKeyExportedString(sessionKeyExportedString);
-				}
-			);
-		}
-	}, [
-		encrypted,
-		activeSession,
-		keyID,
-		sessionKeyExportedString,
-		isE2eeEnabled,
-		ready
-	]);
-
-	const handleEncryptRoom = useCallback(async () => {
-		return encryptRoom({
-			keyId: groupKeyID,
-			isE2eeEnabled,
-			isRoomAlreadyEncrypted: encrypted,
-			rcGroupId: groupIdFromParam,
-			sessionKeyExportedString: sessionGroupKeyExportedString
-		});
-	}, [
-		encrypted,
-		groupIdFromParam,
-		groupKeyID,
-		sessionGroupKeyExportedString,
-		isE2eeEnabled
-	]);
 
 	/** END E2EE */
 
@@ -199,11 +161,11 @@ export const AcceptAssign = ({
 		setIsRequestInProgress(true);
 
 		apiEnquiryAcceptance(sessionId, isAnonymous)
-			.then(async () => {
-				await handleEncryptRoom();
-				setOverlayItem(enquirySuccessfullyAcceptedOverlayItem);
-			})
+			.then(() => encryptRoom(setE2EEState))
+			.then(() => setIsRequestInProgress(false))
+			.then(() => setOverlayItem(enquirySuccessfullyAcceptedOverlayItem))
 			.catch((error) => {
+				setIsRequestInProgress(false);
 				if (error.message === FETCH_ERRORS.CONFLICT) {
 					setOverlayItem(enquiryTakenByOtherConsultantOverlayItem);
 				} else {
@@ -216,7 +178,6 @@ export const AcceptAssign = ({
 		switch (buttonFunction) {
 			case OVERLAY_FUNCTIONS.REDIRECT:
 				setOverlayItem(null);
-				setIsRequestInProgress(false);
 				if (activeSession.item.id && activeSession.item.groupId) {
 					history.push(
 						`/sessions/consultant/sessionView/${activeSession.item.groupId}/${activeSession.item.id}`
@@ -257,7 +218,19 @@ export const AcceptAssign = ({
 				)}
 			</div>
 
-			{overlayItem && (
+			{e2eeOverlayVisible && (
+				<OverlayWrapper>
+					<Overlay item={e2eeOverlay} />
+				</OverlayWrapper>
+			)}
+
+			{requestOverlayVisible && !e2eeOverlayVisible && (
+				<OverlayWrapper>
+					<Overlay item={requestOverlay} />
+				</OverlayWrapper>
+			)}
+
+			{overlayItem && !requestOverlayVisible && !e2eeOverlayVisible && (
 				<OverlayWrapper>
 					<Overlay
 						item={overlayItem}

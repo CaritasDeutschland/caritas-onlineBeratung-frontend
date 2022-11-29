@@ -118,7 +118,7 @@ $inputSpacing: 32px;
 		margin-top: $grid-base-three;
 
 		.inputField {
-			width: 320px;
+			width: $chat-input-width;
 			margin-bottom: $grid-base-four;
 		}
 	}
@@ -137,6 +137,10 @@ $inputSpacing: 32px;
 	}
 }
 
+.creatChat__name__input {
+	padding-left: $grid-base-three;
+}
+
 //overwrite component spacings
 .createChat__content {
 	.formWrapper {
@@ -148,6 +152,7 @@ $inputSpacing: 32px;
 	.select__wrapper {
 		margin: 0 0 $inputSpacing 0;
 		padding: 0;
+		width: $chat-input-width;
 	}
 	.checkbox__wrapper {
 		margin-bottom: $inputSpacing;

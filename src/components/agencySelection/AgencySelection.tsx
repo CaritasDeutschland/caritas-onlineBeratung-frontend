@@ -2,9 +2,9 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import {
 	AgencyDataInterface,
-	ConsultingTypeBasicInterface
+	ConsultingTypeBasicInterface,
+	useTenant
 } from '../../globalState';
-import { translate } from '../../utils/translate';
 import { apiAgencySelection, FETCH_ERRORS } from '../../api';
 import { InputField, InputFieldItem } from '../inputField/InputField';
 import { VALID_POSTCODE_LENGTH } from './agencySelectionHelpers';
@@ -18,7 +18,6 @@ import { AgencyInfo } from './AgencyInfo';
 import { PreselectedAgency } from './PreselectedAgency';
 import { Headline } from '../headline/Headline';
 import { parsePlaceholderString } from '../../utils/parsePlaceholderString';
-import { config } from '../../resources/scripts/config';
 import { Notice } from '../notice/Notice';
 import { AgencyLanguages } from './AgencyLanguages';
 import {
@@ -26,6 +25,8 @@ import {
 	VALIDITY_INVALID,
 	VALIDITY_VALID
 } from '../registration/registrationHelpers';
+import { useTranslation } from 'react-i18next';
+import { useAppConfig } from '../../hooks/useAppConfig';
 
 export interface AgencySelectionProps {
 	consultingType: ConsultingTypeBasicInterface;
@@ -38,9 +39,14 @@ export interface AgencySelectionProps {
 	agencySelectionNote?: string;
 	initialPostcode?: string;
 	hideExternalAgencies?: boolean;
+	onKeyDown?: Function;
 }
 
 export const AgencySelection = (props: AgencySelectionProps) => {
+	const { t: translate } = useTranslation(['common', 'agencies']);
+	const tenantData = useTenant();
+	const settings = useAppConfig();
+	const [isLoading, setIsLoading] = useState(false);
 	const [postcodeFallbackLink, setPostcodeFallbackLink] = useState('');
 	const [proposedAgencies, setProposedAgencies] = useState<
 		AgencyDataInterface[] | null
@@ -59,6 +65,9 @@ export const AgencySelection = (props: AgencySelectionProps) => {
 
 	const isSelectedAgencyValidated = () =>
 		validPostcode() && typeof selectedAgency?.id === 'number';
+	const topicsAreRequired =
+		tenantData?.settings?.topicsInRegistrationEnabled &&
+		tenantData?.settings?.featureTopicsEnabled;
 
 	useEffect(() => {
 		setSelectedPostcode(props.initialPostcode || '');
@@ -122,15 +131,25 @@ export const AgencySelection = (props: AgencySelectionProps) => {
 		if (!autoSelectAgency && !preselectedAgency) {
 			(async () => {
 				try {
+					setIsLoading(true);
 					setSelectedAgency(null);
 					setPostcodeFallbackLink('');
-					if (validPostcode()) {
+					// When we have the topics in in registration enabled to prevent for us doing the request
+					// we need to ensure that we've the mainTopicId is set
+					const isValidWhenTopicInRegistrationIsActive =
+						(topicsAreRequired && props.mainTopicId) ||
+						!tenantData?.settings?.topicsInRegistrationEnabled;
+
+					if (
+						validPostcode() &&
+						isValidWhenTopicInRegistrationIsActive
+					) {
 						const agencies = (
 							await apiAgencySelection({
 								postcode: selectedPostcode,
 								consultingType: props.consultingType.id,
 								topicId: props?.mainTopicId
-							})
+							}).finally(() => setIsLoading(false))
 						).filter(
 							(agency) =>
 								!props.hideExternalAgencies || !agency.external
@@ -146,12 +165,16 @@ export const AgencySelection = (props: AgencySelectionProps) => {
 						err.message === FETCH_ERRORS.EMPTY &&
 						props.consultingType.id !== null
 					) {
+						setProposedAgencies(null);
 						setPostcodeFallbackLink(
-							parsePlaceholderString(config.postcodeFallbackUrl, {
-								url: props.consultingType.urls
-									.registrationPostcodeFallbackUrl,
-								postcode: selectedPostcode
-							})
+							parsePlaceholderString(
+								settings.postcodeFallbackUrl,
+								{
+									url: props.consultingType.urls
+										.registrationPostcodeFallbackUrl,
+									postcode: selectedPostcode
+								}
+							)
 						);
 					}
 					return;
@@ -237,7 +260,7 @@ export const AgencySelection = (props: AgencySelectionProps) => {
 											'registration.agencySelection.intro.overline'
 									  )
 							}
-							type="infoLargeAlternative"
+							type="infoMedium"
 						/>
 						<div className="agencySelection__intro__content">
 							<Text
@@ -250,7 +273,7 @@ export const AgencySelection = (props: AgencySelectionProps) => {
 												'registration.agencySelection.intro.subline'
 										  )
 								}
-								type="infoLargeAlternative"
+								type="infoMedium"
 							/>
 							<ul>
 								{introItemsTranslations.map(
@@ -260,7 +283,7 @@ export const AgencySelection = (props: AgencySelectionProps) => {
 												text={translate(
 													introItemTranslation
 												)}
-												type="infoLargeAlternative"
+												type="infoMedium"
 											/>
 										</li>
 									)
@@ -271,13 +294,16 @@ export const AgencySelection = (props: AgencySelectionProps) => {
 					<InputField
 						item={postcodeInputItem}
 						inputHandle={(e) => handlePostcodeInput(e)}
+						onKeyDown={(e) =>
+							props.onKeyDown ? props.onKeyDown(e, false) : null
+						}
 					></InputField>
 					{props.agencySelectionNote && (
 						<div data-cy="registration-agency-selection-note">
 							<Text
 								className="agencySelection__note"
 								text={props.agencySelectionNote}
-								type="infoLargeAlternative"
+								type="infoMedium"
 								labelType={LABEL_TYPES.NOTICE}
 							/>
 						</div>
@@ -317,8 +343,15 @@ export const AgencySelection = (props: AgencySelectionProps) => {
 											)}
 										</a>
 									</Notice>
-								) : (
+								) : isLoading ? (
 									<Loading />
+								) : (
+									<Text
+										text={translate(
+											'registration.agencySelection.noAgencies'
+										)}
+										type="infoLargeAlternative"
+									/>
 								)
 							) : (
 								proposedAgencies?.map(
@@ -327,23 +360,33 @@ export const AgencySelection = (props: AgencySelectionProps) => {
 											key={index}
 											className="agencySelection__proposedAgency"
 										>
-											<RadioButton
-												name="agencySelection"
-												handleRadioButton={() =>
-													setSelectedAgency(agency)
-												}
-												type="smaller"
-												value={agency.id.toString()}
-												checked={index === 0}
-												inputId={agency.id.toString()}
-												label={agency.name}
-											/>
-											<AgencyInfo
-												agency={agency}
-												isProfileView={
-													props.isProfileView
-												}
-											/>
+											<div className="agencySelection__proposedAgency__container">
+												<RadioButton
+													name="agencySelection"
+													handleRadioButton={() =>
+														setSelectedAgency(
+															agency
+														)
+													}
+													type="smaller"
+													value={agency.id.toString()}
+													checked={index === 0}
+													inputId={agency.id.toString()}
+													label={translate(
+														[
+															`agency.${agency.id}.name`,
+															agency.name
+														],
+														{ ns: 'agencies' }
+													)}
+												/>
+												<AgencyInfo
+													agency={agency}
+													isProfileView={
+														props.isProfileView
+													}
+												/>
+											</div>
 											<AgencyLanguages
 												agencyId={agency.id}
 											/>

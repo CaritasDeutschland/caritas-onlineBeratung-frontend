@@ -1,10 +1,13 @@
 import * as React from 'react';
+import { useHistory } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button, BUTTON_TYPES } from '../button/Button';
 import { MessageSubmitInfo } from '../messageSubmitInterface/MessageSubmitInfo';
-import { translate } from '../../utils/translate';
-import { history } from '../app/app';
 
 export const RoomNotFound = () => {
+	const { t: translate } = useTranslation();
+	const history = useHistory();
+
 	return (
 		<div>
 			<MessageSubmitInfo
@@ -18,19 +21,19 @@ export const RoomNotFound = () => {
 							<br />
 							{translate('e2ee.roomNotFound.notice.line3')}
 							<br />
-							<Button
-								buttonHandle={() => {
-									history.go(0);
-								}}
-								item={{
-									type: BUTTON_TYPES.LINK_INLINE,
-									label: translate(
-										'e2ee.roomNotFound.notice.link'
-									)
-								}}
-								isLink={true}
-							/>
 						</p>
+						<Button
+							buttonHandle={() => {
+								history.go(0);
+							}}
+							item={{
+								type: BUTTON_TYPES.LINK_INLINE,
+								label: translate(
+									'e2ee.roomNotFound.notice.link'
+								)
+							}}
+							isLink={true}
+						/>
 					</div>
 				}
 			/>

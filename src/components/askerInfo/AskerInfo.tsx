@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { useCallback, useContext, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { translate } from '../../utils/translate';
+import { Link, useParams, useHistory } from 'react-router-dom';
 import { AskerInfoMonitoring } from './AskerInfoMonitoring';
 import {
 	SESSION_LIST_TAB,
@@ -11,9 +10,9 @@ import {
 	AUTHORITIES,
 	hasUserAuthority,
 	SessionTypeContext,
+	TenantContext,
 	UserDataContext
 } from '../../globalState';
-import { history } from '../app/app';
 import { Loading } from '../app/Loading';
 import { AskerInfoData } from './AskerInfoData';
 import { ReactComponent as BackIcon } from '../../resources/img/icons/arrow-left.svg';
@@ -24,9 +23,21 @@ import './askerInfo.styles';
 import { ActiveSessionContext } from '../../globalState/provider/ActiveSessionProvider';
 import { useSearchParam } from '../../hooks/useSearchParams';
 import { useSession } from '../../hooks/useSession';
+import { useResponsive } from '../../hooks/useResponsive';
+import {
+	desktopView,
+	mobileListView,
+	mobileUserProfileView
+} from '../app/navigationHandler';
+import { useTranslation } from 'react-i18next';
+import { AskerInfoTools } from './AskerInfoTools';
+import { Box } from '../box/Box';
 
 export const AskerInfo = () => {
-	const { rcGroupId: groupIdFromParam } = useParams();
+	const { t: translate } = useTranslation();
+	const { tenant } = useContext(TenantContext);
+	const { rcGroupId: groupIdFromParam } = useParams<{ rcGroupId: string }>();
+	const history = useHistory();
 
 	const { userData } = useContext(UserDataContext);
 	const { type, path: listPath } = useContext(SessionTypeContext);
@@ -50,7 +61,18 @@ export const AskerInfo = () => {
 		}
 
 		setIsPeerChat(activeSession.item.isPeerChat);
-	}, [activeSession, listPath, ready, sessionListTab]);
+	}, [activeSession, history, listPath, ready, sessionListTab]);
+
+	const { fromL } = useResponsive();
+	useEffect(() => {
+		if (!fromL) {
+			mobileUserProfileView();
+			return () => {
+				mobileListView();
+			};
+		}
+		desktopView();
+	}, [fromL]);
 
 	const isSessionAssignAvailable = useCallback(
 		() =>
@@ -116,20 +138,27 @@ export const AskerInfo = () => {
 						<h2>{activeSession.user.username}</h2>
 					</div>
 					<div className="profile__content askerInfo__content">
-						<div>
+						<Box>
 							<AskerInfoData />
-						</div>
+						</Box>
+						{tenant?.settings?.featureToolsEnabled && (
+							<Box>
+								<AskerInfoTools />
+							</Box>
+						)}
 						{activeSession.item.monitoring &&
 							(type === SESSION_LIST_TYPES.MY_SESSION ||
 								type === SESSION_LIST_TYPES.TEAMSESSION) && (
-								<div>
+								<Box>
 									<AskerInfoMonitoring />
-								</div>
+								</Box>
 							)}
 						{isSessionAssignAvailable() && (
-							<div className="askerInfo__assign">
-								<AskerInfoAssign />
-							</div>
+							<Box>
+								<div className="askerInfo__assign">
+									<AskerInfoAssign />
+								</div>
+							</Box>
 						)}
 					</div>
 				</div>

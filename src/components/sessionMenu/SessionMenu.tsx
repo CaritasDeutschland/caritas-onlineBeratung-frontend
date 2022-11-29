@@ -6,15 +6,13 @@ import {
 	useEffect,
 	useState
 } from 'react';
-import { translate } from '../../utils/translate';
-import { config } from '../../resources/scripts/config';
-import { generatePath, Link, Redirect, useParams } from 'react-router-dom';
+import { generatePath, Link, Redirect, useHistory } from 'react-router-dom';
 import {
+	AnonymousConversationFinishedContext,
 	AUTHORITIES,
 	ExtendedSessionInterface,
 	hasUserAuthority,
-	LegalLinkInterface,
-	RocketChatContext,
+	SessionItemInterface,
 	SessionTypeContext,
 	STATUS_FINISHED,
 	useConsultingType,
@@ -29,7 +27,6 @@ import { Overlay, OVERLAY_FUNCTIONS, OverlayWrapper } from '../overlay/Overlay';
 import {
 	archiveSessionSuccessOverlayItem,
 	finishAnonymousChatSecurityOverlayItem,
-	finishAnonymousChatSuccessOverlayItem,
 	groupChatErrorOverlayItem,
 	leaveGroupChatSecurityOverlayItem,
 	leaveGroupChatSuccessOverlayItem,
@@ -60,31 +57,39 @@ import './sessionMenu.styles';
 import { Button, BUTTON_TYPES, ButtonItem } from '../button/Button';
 import { ReactComponent as CallOnIcon } from '../../resources/img/icons/call-on.svg';
 import { ReactComponent as CameraOnIcon } from '../../resources/img/icons/camera-on.svg';
-import {
-	getVideoCallUrl,
-	supportsE2EEncryptionVideoCall
-} from '../../utils/videoCallHelpers';
-import { removeAllCookies } from '../sessionCookie/accessSessionCookie';
-import { history } from '../app/app';
+import { ReactComponent as CalendarMonthPlusIcon } from '../../resources/img/icons/calendar-plus.svg';
+import { supportsE2EEncryptionVideoCall } from '../../utils/videoCallHelpers';
 import DeleteSession from '../session/DeleteSession';
 import { ActiveSessionContext } from '../../globalState/provider/ActiveSessionProvider';
 import { Text } from '../text/Text';
-import { apiRocketChatGroupMembers } from '../../api/apiRocketChatGroupMembers';
 import { useSearchParam } from '../../hooks/useSearchParams';
+import { useAppConfig } from '../../hooks/useAppConfig';
+import { useTranslation } from 'react-i18next';
+import { LegalLinksContext } from '../../globalState/provider/LegalLinksProvider';
+
+type TReducedSessionItemInterface = Omit<
+	SessionItemInterface,
+	'attachment' | 'topic' | 'e2eLastMessage' | 'videoCallMessageDTO'
+>;
 
 export interface SessionMenuProps {
 	hasUserInitiatedStopOrLeaveRequest: React.MutableRefObject<boolean>;
 	isAskerInfoAvailable: boolean;
-	legalLinks: Array<LegalLinkInterface>;
 	isJoinGroupChatView?: boolean;
 }
 
 export const SessionMenu = (props: SessionMenuProps) => {
-	const { rcGroupId: groupIdFromParam } = useParams();
+	const { t: translate } = useTranslation();
+	const history = useHistory();
+
+	const legalLinks = useContext(LegalLinksContext);
+	const settings = useAppConfig();
 
 	const { userData } = useContext(UserDataContext);
 	const { type, path: listPath } = useContext(SessionTypeContext);
-	const { close: closeWebsocket } = useContext(RocketChatContext);
+	const { setAnonymousConversationFinished } = useContext(
+		AnonymousConversationFinishedContext
+	);
 
 	const { activeSession, reloadActiveSession } =
 		useContext(ActiveSessionContext);
@@ -121,22 +126,24 @@ export const SessionMenu = (props: SessionMenuProps) => {
 		[flyoutOpen]
 	);
 
+	const [appointmentFeatureEnabled, setAppointmentFeatureEnabled] =
+		useState(false);
+
 	useEffect(() => {
 		document.addEventListener('mousedown', (e) => handleClick(e));
-
+		if (!hasUserAuthority(AUTHORITIES.CONSULTANT_DEFAULT, userData)) {
+			const { appointmentFeatureEnabled } = userData;
+			setAppointmentFeatureEnabled(appointmentFeatureEnabled);
+		}
 		if (!activeSession.item?.active || !activeSession.item?.subscribed) {
 			// do not get group members for a chat that has not been started and user is not subscribed
 			return;
 		}
-		// also make sure that the active session matches the url param
-		if (groupIdFromParam === activeSession?.item?.groupId) {
-			apiRocketChatGroupMembers(groupIdFromParam).then(({ members }) => {
-				members.forEach((member) => {
-					//console.log(member._id, decodeUsername(member.username));
-				});
-			});
-		}
-	}, [groupIdFromParam, handleClick, activeSession]);
+	}, [handleClick, activeSession, userData]);
+
+	const handleBookingButton = () => {
+		history.push('/booking/');
+	};
 
 	const handleStopGroupChat = () => {
 		stopGroupChatSecurityOverlayItem.copy =
@@ -253,9 +260,7 @@ export const SessionMenu = (props: SessionMenuProps) => {
 							userData
 						)
 					) {
-						closeWebsocket();
-						removeAllCookies();
-						setOverlayItem(finishAnonymousChatSuccessOverlayItem);
+						setAnonymousConversationFinished('DONE');
 					} else {
 						setOverlayActive(false);
 						setOverlayItem(null);
@@ -268,7 +273,7 @@ export const SessionMenu = (props: SessionMenuProps) => {
 					setOverlayItem(null);
 				});
 		} else if (buttonFunction === OVERLAY_FUNCTIONS.REDIRECT_TO_URL) {
-			window.location.href = config.urls.finishedAnonymousChatRedirect;
+			window.location.href = settings.urls.finishedAnonymousChatRedirect;
 		} else if (buttonFunction === OVERLAY_FUNCTIONS.ARCHIVE) {
 			apiPutArchive(activeSession.item.id)
 				.then(() => {
@@ -305,20 +310,20 @@ export const SessionMenu = (props: SessionMenuProps) => {
 	const baseUrl = `${listPath}/:groupId/:id/:subRoute?/:extraPath?${getSessionListTab()}`;
 
 	const groupChatInfoLink = generatePath(baseUrl, {
-		...activeSession.item,
+		...(activeSession.item as TReducedSessionItemInterface),
 		subRoute: 'groupChatInfo'
 	});
 	const editGroupChatSettingsLink = generatePath(baseUrl, {
-		...activeSession.item,
+		...(activeSession.item as TReducedSessionItemInterface),
 		subRoute: 'editGroupChat'
 	});
 	const monitoringPath = generatePath(baseUrl, {
-		...activeSession.item,
+		...(activeSession.item as TReducedSessionItemInterface),
 		subRoute: 'userProfile',
 		extraPath: 'monitoring'
 	});
 	const userProfileLink = generatePath(baseUrl, {
-		...activeSession.item,
+		...(activeSession.item as TReducedSessionItemInterface),
 		subRoute: 'userProfile'
 	});
 
@@ -368,13 +373,18 @@ export const SessionMenu = (props: SessionMenuProps) => {
 			userData.displayName ? userData.displayName : userData.userName
 		)
 			.then((response) => {
-				videoCallWindow.location.href = getVideoCallUrl(
-					response.moderatorVideoCallUrl,
-					isVideoActivated,
-					userData.displayName
-						? userData.displayName
-						: userData.userName,
-					userData.e2eEncryptionEnabled ?? false
+				const url = new URL(response.moderatorVideoCallUrl);
+				videoCallWindow.location.href = generatePath(
+					settings.urls.videoCall,
+					{
+						domain: url.host,
+						jwt: url.searchParams.get('jwt'),
+						e2e: userData.e2eEncryptionEnabled ? 1 : 0,
+						video: isVideoActivated ? 1 : 0,
+						username: userData.displayName
+							? userData.displayName
+							: userData.userName
+					}
 				);
 				videoCallWindow.focus();
 			})
@@ -420,7 +430,7 @@ export const SessionMenu = (props: SessionMenuProps) => {
 				activeSession.item.feedbackGroupId && (
 					<Link
 						to={generatePath(baseUrl, {
-							...activeSession.item,
+							...(activeSession.item as TReducedSessionItemInterface),
 							groupId: activeSession.item.feedbackGroupId
 						})}
 						className="sessionInfo__feedbackButton"
@@ -438,6 +448,19 @@ export const SessionMenu = (props: SessionMenuProps) => {
 					handleStopGroupChat={handleStopGroupChat}
 					isJoinGroupChatView={props.isJoinGroupChatView}
 				/>
+			)}
+
+			{activeSession?.consultant && appointmentFeatureEnabled && (
+				<div
+					className="sessionMenu__icon sessionMenu__icon--booking"
+					onClick={handleBookingButton}
+				>
+					<CalendarMonthPlusIcon />
+					<Text
+						type="standard"
+						text={translate('booking.mobile.calendar.label')}
+					/>
+				</div>
 			)}
 
 			<span
@@ -493,7 +516,7 @@ export const SessionMenu = (props: SessionMenuProps) => {
 						<Link
 							className="sessionMenu__item sessionMenu__item--mobile"
 							to={generatePath(baseUrl, {
-								...activeSession.item,
+								...(activeSession.item as TReducedSessionItemInterface),
 								groupId: activeSession.item.feedbackGroupId
 							})}
 						>
@@ -570,7 +593,7 @@ export const SessionMenu = (props: SessionMenuProps) => {
 				)}
 
 				<div className="legalInformationLinks--menu">
-					{props.legalLinks.map((legalLink) => (
+					{legalLinks.map((legalLink) => (
 						<a
 							href={legalLink.url}
 							key={legalLink.url}
@@ -579,7 +602,7 @@ export const SessionMenu = (props: SessionMenuProps) => {
 						>
 							<Text
 								type="infoLargeAlternative"
-								text={legalLink.label}
+								text={translate(legalLink.label)}
 							/>
 						</a>
 					))}
@@ -613,6 +636,7 @@ const SessionMenuGroup = ({
 	isJoinGroupChatView?: boolean;
 }) => {
 	const { userData } = useContext(UserDataContext);
+	const { t: translate } = useTranslation();
 
 	return (
 		<>
@@ -684,6 +708,7 @@ const SessionMenuFlyoutGroup = ({
 	handleStopGroupChat: MouseEventHandler;
 	handleLeaveGroupChat: MouseEventHandler;
 }) => {
+	const { t: translate } = useTranslation();
 	const { userData } = useContext(UserDataContext);
 
 	return (

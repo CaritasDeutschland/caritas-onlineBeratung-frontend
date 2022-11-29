@@ -1,16 +1,20 @@
 $agencyInfoWidth: 266px;
-$infoIconSize: 16px;
+$infoIconSize: 24px;
 $breakpointFlyoutPosition: 1140px;
 
 .agencyInfo {
 	&__wrapper {
 		position: relative;
-		height: 16px;
+		height: 24px;
 
 		> svg {
 			width: $infoIconSize;
 			height: $infoIconSize;
 			cursor: pointer;
+
+			&:focus {
+				outline: none;
+			}
 		}
 
 		.agencyInfo .text {
@@ -94,8 +98,8 @@ $breakpointFlyoutPosition: 1140px;
 
 		svg {
 			margin-right: $grid-base;
-			width: $infoIconSize;
-			height: $infoIconSize;
+			width: 16px;
+			height: 16px;
 
 			&* {
 				fill: $tertiary;

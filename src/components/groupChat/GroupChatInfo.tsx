@@ -1,10 +1,12 @@
 import * as React from 'react';
 import { useEffect, useContext, useState, useCallback } from 'react';
-import { Link, Redirect, useParams } from 'react-router-dom';
-import { SessionTypeContext, UserDataContext } from '../../globalState';
-import { history } from '../app/app';
+import { Link, Redirect, useParams, useHistory } from 'react-router-dom';
+import {
+	SessionTypeContext,
+	UserDataContext,
+	useTenant
+} from '../../globalState';
 import { isUserModerator, SESSION_LIST_TAB } from '../session/sessionHelpers';
-import { translate } from '../../utils/translate';
 import { Button, ButtonItem, BUTTON_TYPES } from '../button/Button';
 import {
 	OVERLAY_FUNCTIONS,
@@ -44,15 +46,22 @@ import { useResponsive } from '../../hooks/useResponsive';
 import { Tag } from '../tag/Tag';
 import { useSession } from '../../hooks/useSession';
 import { useSearchParam } from '../../hooks/useSearchParams';
-
-const stopChatButtonSet: ButtonItem = {
-	label: translate('groupChat.stopChat.securityOverlay.button1Label'),
-	function: OVERLAY_FUNCTIONS.CLOSE,
-	type: BUTTON_TYPES.PRIMARY
-};
+import { GroupChatCopyLinks } from './GroupChatCopyLinks';
+import { useTranslation } from 'react-i18next';
 
 export const GroupChatInfo = () => {
-	const { rcGroupId: groupIdFromParam } = useParams();
+	const { t: translate } = useTranslation();
+	const history = useHistory();
+	const tenantData = useTenant();
+	const { rcGroupId: groupIdFromParam } = useParams<{ rcGroupId: string }>();
+	const featureGroupChatV2Enabled =
+		tenantData?.settings?.featureGroupChatV2Enabled;
+
+	const stopChatButtonSet: ButtonItem = {
+		label: translate('groupChat.stopChat.securityOverlay.button1Label'),
+		function: OVERLAY_FUNCTIONS.CLOSE,
+		type: BUTTON_TYPES.PRIMARY
+	};
 
 	const { userData } = useContext(UserDataContext);
 	const { path: listPath } = useContext(SessionTypeContext);
@@ -63,6 +72,7 @@ export const GroupChatInfo = () => {
 	const [redirectToSessionsList, setRedirectToSessionsList] = useState(false);
 	const [isRequestInProgress, setIsRequestInProgress] = useState(false);
 	const [bannedUsers, setBannedUsers] = useState<string[]>([]);
+	const [isV2GroupChat, setIsV2GroupChat] = useState<boolean>(false);
 
 	const { session: activeSession, ready } = useSession(groupIdFromParam);
 	const sessionListTab = useSearchParam<SESSION_LIST_TAB>('sessionListTab');
@@ -119,7 +129,11 @@ export const GroupChatInfo = () => {
 				}
 			});
 		}
-	}, [activeSession, listPath, ready, sessionListTab]);
+
+		if (activeSession.isGroup && !activeSession.item.consultingType) {
+			setIsV2GroupChat(true);
+		}
+	}, [activeSession, history, listPath, ready, sessionListTab]);
 
 	const handleStopGroupChatButton = () => {
 		setOverlayItem(stopGroupChatSecurityOverlayItem);
@@ -155,10 +169,16 @@ export const GroupChatInfo = () => {
 
 	const getDurationTranslation = useCallback(
 		() =>
-			durationSelectOptionsSet.filter(
-				(item) => parseInt(item.value) === activeSession.item.duration
-			)[0].label,
-		[activeSession?.item.duration]
+			durationSelectOptionsSet
+				.map((option) => ({
+					...option,
+					label: translate(option.label)
+				}))
+				.filter(
+					(item) =>
+						parseInt(item.value) === activeSession.item.duration
+				)[0].label,
+		[activeSession?.item.duration, translate]
 	);
 
 	if (!activeSession) return null;
@@ -170,18 +190,29 @@ export const GroupChatInfo = () => {
 		},
 		{
 			label: translate('groupChat.info.settings.startDate'),
-			value: getGroupChatDate(activeSession.item, false, true)
+			value: getGroupChatDate(
+				activeSession.item,
+				translate('sessionList.time.label.postfix'),
+				false,
+				true
+			)
 		},
 		{
 			label: translate('groupChat.info.settings.startTime'),
-			value: getGroupChatDate(activeSession.item, false, false, true)
+			value: getGroupChatDate(
+				activeSession.item,
+				translate('sessionList.time.label.postfix'),
+				false,
+				false,
+				true
+			)
 		},
 		{
 			label: translate('groupChat.info.settings.duration'),
 			value: getDurationTranslation()
 		},
 		{
-			label: translate('groupChat.info.settings.repetition'),
+			label: translate('groupChat.info.settings.repetition.label'),
 			value: activeSession.item.repetitive
 				? translate('groupChat.info.settings.repetition.weekly')
 				: translate('groupChat.info.settings.repetition.single')
@@ -245,6 +276,15 @@ export const GroupChatInfo = () => {
 							)}
 							type="divider"
 						/>
+
+						{featureGroupChatV2Enabled && isV2GroupChat && (
+							<div className="profile__groupChatContainer">
+								<GroupChatCopyLinks
+									id={activeSession.item.id}
+									groupChatId={activeSession.item.id.toString()}
+								/>
+							</div>
+						)}
 						{subscriberList ? (
 							subscriberList.map((subscriber, index) => (
 								<div

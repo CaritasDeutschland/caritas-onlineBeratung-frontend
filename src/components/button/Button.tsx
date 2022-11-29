@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { OVERLAY_RESET_TIME } from '../overlay/Overlay';
 import { ReactComponent as ReloadIcon } from '../../resources/img/icons/reload.svg';
 import './button.styles';
+import { useTranslation } from 'react-i18next';
 
 export const BUTTON_TYPES = {
 	PRIMARY: 'PRIMARY',
@@ -41,11 +42,14 @@ export interface ButtonProps {
 	item: ButtonItem;
 	testingAttribute?: string;
 	className?: string;
+	customIcon?: JSX.Element;
+	tabIndex?: number;
 }
 
 export const Button = (props: ButtonProps) => {
 	const item = props.item;
 	let timeoutID: number;
+	const { t: translate } = useTranslation();
 
 	useEffect(() => {
 		handleButtonTimer();
@@ -136,12 +140,18 @@ export const Button = (props: ButtonProps) => {
 					${props.disabled || props.item.disabled ? ' button__item--disabled' : ''}
 				`}
 				data-cy={props.testingAttribute}
+				tabIndex={props.tabIndex}
 			>
+				{props.customIcon && (
+					<div className="button__custom-icon">
+						{props.customIcon}
+					</div>
+				)}
 				{item.id === 'reloadButton' && (
 					<ReloadIcon className="button__icon" />
 				)}
 				{item.icon && item.icon}
-				{item.label && item.label}
+				{item.label && translate(item.label)}
 			</button>
 		</div>
 	);
