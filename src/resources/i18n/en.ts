@@ -190,7 +190,7 @@ export const en = {
 			},
 			size: {
 				headline: 'Your selected file is too big.',
-				message: 'You can upload max. 5MB.'
+				message: 'You can upload max. {{attachment_filesize}}MB.'
 			},
 			quota: {
 				headline: 'You have reached the limit for uploading.',
@@ -422,6 +422,16 @@ export const en = {
 		}
 	},
 	e2ee: {
+		attachment: {
+			encrypted: 'Decrypt file for download',
+			is_decrypting: 'File is being decrypted',
+			decryption_error: 'Error while decrypting',
+			save: 'Download file',
+			error: {
+				title: 'Unfortunately, we could not decrypt and download the file.',
+				text: 'Ask the sender to resend the file. Then download the new file.'
+			}
+		},
 		message: {
 			'encryption.text': 'Message encrypted',
 			'encryption.error': 'Message encrypted - error during decryption'
@@ -607,6 +617,15 @@ export const en = {
 			overlay: {
 				headline: 'An error has occurred. Please try again.',
 				buttonLabel: 'Close'
+			}
+		},
+		'copy': {
+			link: {
+				text: 'Copy invitation link',
+				notification: {
+					title: 'Link copied',
+					text: 'Link copied to clipboard!'
+				}
 			}
 		},
 		'edit.title': 'Chat settings',
@@ -963,7 +982,9 @@ export const en = {
 				'app.otp.missing':
 					'Please enter the code from your app for two-factor authentication.',
 				'email.otp.missing':
-					'Please enter the code from your email for two-factor authentication.'
+					'Please enter the code from your email for two-factor authentication.',
+				'deletedAccount':
+					'Your account was marked for deletion. Your data will be deleted within the next 24 hours.'
 			}
 		},
 		'resend.otp.email.label': 'Send code once again',
@@ -1028,7 +1049,21 @@ export const en = {
 					change: 'Date change'
 				}
 			}
-		}
+		},
+		'delete': {
+			delete: 'Delete',
+			deleted: {
+				own: 'You have deleted this message.',
+				other: 'This message was deleted.'
+			},
+			overlay: {
+				headline: 'Delete message',
+				copy: 'Do you really want to delete the message?',
+				cancel: 'Cancel',
+				confirm: 'Delete'
+			}
+		},
+		'note.title': 'Note'
 	},
 	monitoring: {
 		title: 'Monitoring',
@@ -1242,8 +1277,8 @@ export const en = {
 	},
 	overview: {
 		title: 'Welcome back!',
-		myMessagesTitle: '%count% unread messages',
-		initialInquiriesTitle: '%count% enquiries',
+		myMessagesTitle: '{{countStr}} unread messages',
+		initialInquiriesTitle: '{{countStr}} enquiries',
 		upcomingAppointments: 'Your next {{countStr}} appointments',
 		upcomingAppointment: 'Your next appointment',
 		emptyMessages: 'You have everything in view, all messages are read!',
@@ -1752,7 +1787,7 @@ export const en = {
 				outsideDropArea: 'Drag the file into the field to upload it.'
 			},
 			restrictions:
-				'.jpg, .png, .pdf, .docx, .xlsx up to a maximum of 5MB'
+				'.jpg, .png, .pdf, .docx, .xlsx up to a maximum of {{attachment_filesize}}MB'
 		},
 		'reassign': {
 			system: {

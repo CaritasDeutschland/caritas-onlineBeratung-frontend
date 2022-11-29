@@ -200,7 +200,7 @@ export const de = {
 			},
 			size: {
 				headline: 'Ihre gewählte Datei ist zu groß.',
-				message: 'Sie können max. 5MB hochladen.'
+				message: 'Sie können max. {{attachment_filesize}}MB hochladen.'
 			}
 		},
 		'list': {
@@ -232,7 +232,7 @@ export const de = {
 	booking: {
 		'availability': {
 			description:
-				'Geben Sie hier Ihre allegemeine Verfügbarkeit an, damit Ratsuchende Termine bei Ihnen buchen können.',
+				'Geben Sie hier Ihre allgemeine Verfügbarkeit an, damit Ratsuchende Termine bei Ihnen buchen können.',
 			title: 'Ihre Verfügbarkeit'
 		},
 		'calender': {
@@ -424,6 +424,16 @@ export const de = {
 				'Nachricht verschlüsselt - Fehler beim Entschlüsseln',
 			'encryption.text': 'Nachricht verschlüsselt'
 		},
+		attachment: {
+			encrypted: 'Datei für Download entschlüsseln',
+			is_decrypting: 'Datei wird entschlüsselt',
+			decryption_error: 'Fehler beim entschlüsseln',
+			save: 'Datei downloaden',
+			error: {
+				title: 'Leider, konnten wir die Datei nicht entschlüsseln und downloaden.',
+				text: 'Bitten Sie den Sender oder die Senderin die Datei erneut zu schicken. Downloaden Sie dann die neue Datei.'
+			}
+		},
 		inProgress: {
 			headline: 'Einen Moment bitte.',
 			copy: 'Ihre Sicherheit ist uns wichtig! Wir verschlüsseln gerade Ihren Chat. Dies kann einen Moment dauern.',
@@ -609,6 +619,15 @@ export const de = {
 			overlay: {
 				buttonLabel: 'Schließen',
 				headline: 'Sie haben erfolgreich einen Chat angelegt.'
+			}
+		},
+		'copy': {
+			link: {
+				text: 'Einladungs-Link kopieren',
+				notification: {
+					text: 'Link in Zwischenablage kopiert!',
+					title: 'Link kopiert'
+				}
 			}
 		},
 		'edit.title': 'Chat-Einstellungen',
@@ -991,7 +1010,9 @@ export const de = {
 				'unauthorized': {
 					otp: 'Ihre Zugangsdaten sind nicht korrekt. Bitte versuchen Sie es erneut.',
 					text: 'Benutzername oder Passwort sind nicht korrekt. Bitte versuchen Sie es erneut.'
-				}
+				},
+				'deletedAccount':
+					'Ihr Account wurde zur Löschung vorgemerkt. Ihre Daten werden in den nächsten 24 Stunden gelöscht.'
 			}
 		}
 	},
@@ -1031,7 +1052,21 @@ export const de = {
 		'today': 'Heute',
 		'tomorrow': 'Morgen',
 		'write.peer.checkbox.label': 'Feedback anfordern',
-		'yesterday': 'Gestern'
+		'yesterday': 'Gestern',
+		'delete': {
+			delete: 'Löschen',
+			deleted: {
+				own: 'Sie haben diese Nachricht gelöscht.',
+				other: 'Diese Nachricht wurde gelöscht.'
+			},
+			overlay: {
+				headline: 'Nachricht löschen',
+				copy: 'Möchten Sie die Nachricht wirklich löschen?',
+				cancel: 'Abbrechen',
+				confirm: 'Löschen'
+			}
+		},
+		'note.title': 'Notiz'
 	},
 	monitoring: {
 		title: 'Monitoring',
@@ -1204,7 +1239,7 @@ export const de = {
 		}
 	},
 	navigation: {
-		'appointments': 'Video-Termine',
+		'appointments': 'Video - Termine',
 		'asker': {
 			sessions: {
 				large: 'Meine Beratungen',
@@ -1245,8 +1280,8 @@ export const de = {
 	},
 	overview: {
 		title: 'Willkommen zurück!',
-		myMessagesTitle: '%count% ungelesene Nachrichten',
-		initialInquiriesTitle: '%count% Erstanfragen',
+		myMessagesTitle: '{{countStr}} ungelesene Nachrichten',
+		initialInquiriesTitle: '{{countStr}} Erstanfragen',
 		upcomingAppointments: 'Ihre nächsten {{countStr}} Termine',
 		upcomingAppointment: 'Ihr nächster Termin',
 		emptyMessages: 'Du hast alles im Blick, alle Nachrichten sind gelesen!',
@@ -1765,7 +1800,8 @@ export const de = {
 				outsideDropArea:
 					'Ziehen Sie die Datei in das Feld, um sie hochzuladen.'
 			},
-			restrictions: '.jpg, .png, .pdf, .docx, .xlsx bis maximal 5MB'
+			restrictions:
+				'.jpg, .png, .pdf, .docx, .xlsx bis maximal {{attachment_filesize}}'
 		},
 		'reassign': {
 			system: {

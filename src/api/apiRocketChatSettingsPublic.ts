@@ -4,6 +4,8 @@ import { FETCH_METHODS } from './fetchData';
 
 export const SETTING_E2E_ENABLE = 'E2E_Enable';
 export const SETTING_MESSAGE_MAXALLOWEDSIZE = 'Message_MaxAllowedSize';
+export const SETTING_FILEUPLOAD_MAXFILESIZE = 'FileUpload_MaxFileSize';
+export const SETTING_MESSAGE_ALLOWDELETING = 'Message_AllowDeleting';
 export const SETTING_HIDE_SYSTEM_MESSAGES = 'Hide_System_Messages';
 
 export type TSetting =
@@ -19,13 +21,15 @@ export interface IStringSetting {
 }
 
 export interface INumberSetting {
-	_id: typeof SETTING_MESSAGE_MAXALLOWEDSIZE;
+	_id:
+		| typeof SETTING_MESSAGE_MAXALLOWEDSIZE
+		| typeof SETTING_FILEUPLOAD_MAXFILESIZE;
 	enterprise: boolean;
 	value: number;
 }
 
 export interface IBooleanSetting {
-	_id: typeof SETTING_E2E_ENABLE;
+	_id: typeof SETTING_E2E_ENABLE | typeof SETTING_MESSAGE_ALLOWDELETING;
 	enterprise: boolean;
 	value: boolean;
 }
