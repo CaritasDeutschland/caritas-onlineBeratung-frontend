@@ -7,20 +7,20 @@ import {
 	ConsultingTypeInterface,
 	ConsultantDataInterface,
 	AgencyDataInterface,
-	useTenant
+	useTenant,
+	LegalLinkInterface
 } from '../../globalState';
 import { FormAccordionItem } from '../formAccordion/FormAccordionItem';
 import { AgencySelection } from '../agencySelection/AgencySelection';
 import { ReactComponent as PinIcon } from '../../resources/img/icons/pin.svg';
-import { translate } from '../../utils/translate';
 import { RegistrationUsername } from '../registration/RegistrationUsername';
 import { RegistrationAge } from '../registration/RegistrationAge';
 import { RegistrationState } from '../registration/RegistrationState';
 import { RegistrationPassword } from '../registration/RegistrationPassword';
 import {
 	AccordionItemValidity,
-	stateData,
 	VALIDITY_INITIAL,
+	VALIDITY_INVALID,
 	VALIDITY_VALID
 } from '../registration/registrationHelpers';
 import {
@@ -28,6 +28,11 @@ import {
 	useConsultingTypeAgencySelection
 } from '../consultingTypeSelection/ConsultingTypeAgencySelection';
 import { MainTopicSelection } from '../mainTopicSelection/MainTopicSelection';
+import { useTranslation } from 'react-i18next';
+import { PreselectedAgency } from '../agencySelection/PreselectedAgency';
+import { Text } from '../text/Text';
+import { Checkbox, CheckboxItem } from '../checkbox/Checkbox';
+import { Button, BUTTON_TYPES, ButtonItem } from '../button/Button';
 
 interface FormAccordionProps {
 	consultingType?: ConsultingTypeInterface;
@@ -40,6 +45,12 @@ interface FormAccordionProps {
 	registrationNotes?: RegistrationNotesInterface;
 	initialPostcode?: string;
 	mainTopicId?: number;
+	preselectedTopic?: number;
+	legalLinks: Array<LegalLinkInterface>;
+	handleSubmitButtonClick: Function;
+	isSubmitButtonDisabled: boolean;
+	setIsDataProtectionSelected: Function;
+	isDataProtectionSelected: boolean;
 }
 
 export const FormAccordion = ({
@@ -47,16 +58,31 @@ export const FormAccordion = ({
 	consultant,
 	isUsernameAlreadyInUse,
 	preselectedAgencyData,
+	preselectedTopic,
 	onChange,
 	onValidation,
 	additionalStepsData,
 	registrationNotes,
 	initialPostcode,
-	mainTopicId
+	mainTopicId,
+	legalLinks,
+	handleSubmitButtonClick,
+	isSubmitButtonDisabled,
+	setIsDataProtectionSelected,
+	isDataProtectionSelected
 }: FormAccordionProps) => {
+	const { t: translate } = useTranslation(['common', 'consultingTypes']);
 	const [activeItem, setActiveItem] = useState<number>(1);
 	const [agency, setAgency] = useState<AgencyDataInterface>();
 	const tenantData = useTenant();
+	const topicsAreRequired =
+		tenantData?.settings?.topicsInRegistrationEnabled &&
+		tenantData?.settings?.featureTopicsEnabled;
+
+	const buttonItemSubmit: ButtonItem = {
+		label: translate('registration.submitButton.label'),
+		type: BUTTON_TYPES.PRIMARY
+	};
 
 	const [validity, setValidity] = useState({
 		username: VALIDITY_INITIAL,
@@ -67,10 +93,9 @@ export const FormAccordion = ({
 		age: additionalStepsData?.age?.isEnabled
 			? VALIDITY_INITIAL
 			: VALIDITY_VALID,
-		mainTopic: tenantData?.settings?.topicsInRegistrationEnabled
-			? VALIDITY_INITIAL
-			: VALIDITY_VALID,
-		agency: VALIDITY_INITIAL
+		mainTopic: topicsAreRequired ? VALIDITY_INITIAL : VALIDITY_VALID,
+		agency: VALIDITY_INITIAL,
+		dataProtection: VALIDITY_INITIAL
 	});
 
 	useEffect(() => {
@@ -99,21 +124,43 @@ export const FormAccordion = ({
 		);
 	}, [validity]); // eslint-disable-line react-hooks/exhaustive-deps
 
-	const handleValidity = useCallback(
-		(key, value) => {
-			setValidity({
-				...validity,
-				[key]: value
-			});
-		},
-		[validity]
-	);
+	const handleValidity = useCallback((key, value) => {
+		setValidity((prevState) => ({
+			...prevState,
+			[key]: value
+		}));
+	}, []);
 
 	useEffect(() => {
 		if (isUsernameAlreadyInUse) {
 			setActiveItem(1);
 		}
 	}, [isUsernameAlreadyInUse]);
+
+	useEffect(() => {
+		handleValidity(
+			'dataProtection',
+			isDataProtectionSelected ? VALIDITY_VALID : VALIDITY_INITIAL
+		);
+	}, [isDataProtectionSelected]); // eslint-disable-line react-hooks/exhaustive-deps
+
+	const handleKeyDown = (e, isLastInput = true, isFirstInput = true) => {
+		if (
+			e.key === 'Tab' &&
+			!e.shiftKey &&
+			isLastInput &&
+			activeItem !== accordionItemData.length
+		) {
+			setActiveItem(activeItem + 1);
+		} else if (
+			e.key === 'Tab' &&
+			e.shiftKey &&
+			isFirstInput &&
+			activeItem !== 1
+		) {
+			setActiveItem(activeItem - 1);
+		}
+	};
 
 	const accordionItemData = [
 		{
@@ -125,6 +172,7 @@ export const FormAccordion = ({
 					onValidityChange={(validity) =>
 						handleValidity('username', validity)
 					}
+					onKeyDown={handleKeyDown}
 				/>
 			),
 			isValid: validity.username
@@ -138,18 +186,47 @@ export const FormAccordion = ({
 						handleValidity('password', validity)
 					}
 					passwordNote={registrationNotes?.password}
+					onKeyDown={handleKeyDown}
 				/>
 			),
 			isValid: validity.password
 		}
 	];
 
-	if (tenantData?.settings?.topicsInRegistrationEnabled) {
+	const checkboxItemDataProtection: CheckboxItem = {
+		inputId: 'dataProtectionCheckbox',
+		name: 'dataProtectionCheckbox',
+		labelId: 'dataProtectionLabel',
+		checked: isDataProtectionSelected,
+		label: [
+			translate('registration.dataProtection.label.prefix'),
+			legalLinks
+				.filter((legalLink) => legalLink.registration)
+				.map(
+					(legalLink, index, { length }) =>
+						(index > 0
+							? index < length - 1
+								? ', '
+								: translate(
+										'registration.dataProtection.label.and'
+								  )
+							: '') +
+						`<span><button type="button" class="button-as-link" onclick="window.open('${
+							legalLink.url
+						}')">${translate(legalLink.label)}</button></span>`
+				)
+				.join(''),
+			translate('registration.dataProtection.label.suffix')
+		].join(' ')
+	};
+
+	if (topicsAreRequired) {
 		accordionItemData.push({
 			title: translate('registration.mainTopic.headline'),
 			nestedComponent: (
 				<MainTopicSelection
 					name="mainTopic"
+					preselectedTopic={preselectedTopic}
 					onChange={(mainTopicId) => onChange({ mainTopicId })}
 					onValidityChange={handleValidity}
 				/>
@@ -200,6 +277,7 @@ export const FormAccordion = ({
 						onValidityChange={(validity) =>
 							handleValidity('agency', validity)
 						}
+						onKeyDown={handleKeyDown}
 					/>
 				),
 				isValid: validity.agency
@@ -221,11 +299,20 @@ export const FormAccordion = ({
 					preselectedAgency={preselectedAgencyData}
 					onAgencyChange={(agency) => setAgency(agency)}
 					hideExternalAgencies
-					onValidityChange={(validity) =>
-						handleValidity('agency', validity)
-					}
+					onValidityChange={(validity) => {
+						if (
+							topicsAreRequired &&
+							!mainTopicId &&
+							preselectedTopic < 0 &&
+							validity !== VALIDITY_INITIAL
+						) {
+							handleValidity('mainTopic', VALIDITY_INVALID);
+						}
+						handleValidity('agency', validity);
+					}}
 					agencySelectionNote={registrationNotes?.agencySelection}
 					mainTopicId={mainTopicId}
+					onKeyDown={handleKeyDown}
 				/>
 			),
 			isValid: validity.agency
@@ -239,12 +326,24 @@ export const FormAccordion = ({
 				<RegistrationAge
 					dropdownSelectData={{
 						label: translate('registration.age.dropdown'),
-						options: additionalStepsData.age.options
+						options: additionalStepsData.age.options.map(
+							(option) => ({
+								...option,
+								label: translate(
+									[
+										`consultingType.${consultingType.id}.requiredComponents.age.${option.value}`,
+										option.label
+									],
+									{ ns: 'consultingTypes' }
+								)
+							})
+						)
 					}}
 					onAgeChange={(age) => onChange({ age })}
 					onValidityChange={(validity) =>
 						handleValidity('age', validity)
 					}
+					onKeyDown={handleKeyDown}
 				/>
 			),
 			isValid: validity.age
@@ -252,23 +351,109 @@ export const FormAccordion = ({
 	}
 
 	if (additionalStepsData?.state?.isEnabled) {
+		// we want an array from 1 to 16 and the 0 at the end
+		let countiesArray = Array.from(Array(17).keys());
+		countiesArray.push(countiesArray.shift());
+
 		accordionItemData.push({
 			title: translate('registration.state.headline'),
 			nestedComponent: (
 				<RegistrationState
 					dropdownSelectData={{
 						label: translate('registration.state.dropdown'),
-						options: stateData
+						options: countiesArray.map((value) => ({
+							value: `${value}`,
+							label: translate(
+								`registration.state.options.${value}`
+							)
+						}))
 					}}
 					onStateChange={(state) => onChange({ state })}
 					onValidityChange={(validity) =>
 						handleValidity('state', validity)
 					}
+					onKeyDown={handleKeyDown}
 				/>
 			),
 			isValid: validity.state
 		});
 	}
+
+	if (
+		preselectedAgencyData &&
+		consultingType?.registration.autoSelectPostcode
+	) {
+		accordionItemData.push({
+			title: translate('registration.agency.headline'),
+			nestedComponent: (
+				<PreselectedAgency
+					prefix={translate('registration.agency.preselected.prefix')}
+					agencyData={preselectedAgencyData}
+					onKeyDown={handleKeyDown}
+				/>
+			),
+			isValid: validity.agency
+		});
+	}
+
+	if (
+		consultingType?.registration.autoSelectPostcode &&
+		!preselectedAgencyData
+	) {
+		accordionItemData.push({
+			title: translate('registration.agency.headline'),
+			nestedComponent: (
+				<div
+					className="registrationForm__no-agency-found"
+					onKeyDown={handleKeyDown}
+				>
+					<Text
+						text={translate(
+							'registration.agencySelection.noAgencies'
+						)}
+						type="infoMedium"
+					/>
+				</div>
+			),
+			isValid: VALIDITY_VALID
+		});
+	}
+
+	accordionItemData.push({
+		title: translate('registration.form.title'),
+		nestedComponent: (
+			<div>
+				<div
+					className="registrationForm__dataProtection"
+					onKeyDown={handleKeyDown}
+				>
+					<Checkbox
+						item={checkboxItemDataProtection}
+						checkboxHandle={() =>
+							setIsDataProtectionSelected(
+								!isDataProtectionSelected
+							)
+						}
+						onKeyPress={(event) => {
+							if (event.key === 'Enter') {
+								setIsDataProtectionSelected(
+									!isDataProtectionSelected
+								);
+							}
+						}}
+					/>
+				</div>
+
+				<Button
+					className="registrationForm__submit"
+					item={buttonItemSubmit}
+					buttonHandle={handleSubmitButtonClick}
+					disabled={isSubmitButtonDisabled}
+				/>
+			</div>
+		),
+		isValid: validity.dataProtection
+	});
 
 	const handleItemHeaderClick = (indexOfItem) => {
 		setActiveItem(indexOfItem);

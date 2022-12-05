@@ -8,10 +8,13 @@ import {
 	useMemo,
 	useState
 } from 'react';
-import { generatePath } from 'react-router-dom';
-import { translate } from '../../utils/translate';
-import { InputField, InputFieldItem } from '../inputField/InputField';
-import { config } from '../../resources/scripts/config';
+import { generatePath, useHistory } from 'react-router-dom';
+import {
+	InputField,
+	InputFieldItem,
+	InputFieldLabelState
+} from '../inputField/InputField';
+import { endpoints } from '../../resources/scripts/endpoints';
 import { Button, BUTTON_TYPES, ButtonItem } from '../button/Button';
 import { autoLogin, redirectToApp } from '../registration/autoLogin';
 import { Text } from '../text/Text';
@@ -30,7 +33,8 @@ import clsx from 'clsx';
 import {
 	AUTHORITIES,
 	hasUserAuthority,
-	LegalLinkInterface,
+	LocaleContext,
+	RocketChatGlobalSettingsContext,
 	TenantContext,
 	UserDataInterface
 } from '../../globalState';
@@ -52,26 +56,38 @@ import {
 import { ReactComponent as WelcomeIcon } from '../../resources/img/illustrations/welcome.svg';
 import {
 	VALIDITY_INITIAL,
+	VALIDITY_INVALID,
 	VALIDITY_VALID
 } from '../registration/registrationHelpers';
-import { history } from '../app/app';
 import { TwoFactorAuthResendMail } from '../twoFactorAuth/TwoFactorAuthResendMail';
-import { RocketChatGlobalSettingsContext } from '../../globalState';
-import { SETTING_E2E_ENABLE } from '../../api/apiRocketChatSettingsPublic';
-
-const loginButton: ButtonItem = {
-	label: translate('login.button.label'),
-	type: BUTTON_TYPES.PRIMARY
-};
+import {
+	IBooleanSetting,
+	SETTING_E2E_ENABLE
+} from '../../api/apiRocketChatSettingsPublic';
+import { useTranslation } from 'react-i18next';
+import { useAppConfig } from '../../hooks/useAppConfig';
+import { setValueInCookie } from '../sessionCookie/accessSessionCookie';
+import { apiPatchUserData } from '../../api/apiPatchUserData';
+import { useSearchParam } from '../../hooks/useSearchParams';
+import { getTenantSettings } from '../../utils/tenantSettingsHelper';
+import { budibaseLogout } from '../budibase/budibaseLogout';
 
 interface LoginProps {
-	legalLinks: Array<LegalLinkInterface>;
 	stageComponent: ComponentType<StageProps>;
 }
 
-export const Login = ({ legalLinks, stageComponent: Stage }: LoginProps) => {
+export const Login = ({ stageComponent: Stage }: LoginProps) => {
+	const settings = useAppConfig();
+	const { t: translate } = useTranslation();
+	const history = useHistory();
+	const { locale, initLocale } = useContext(LocaleContext);
 	const { tenant } = useContext(TenantContext);
 	const { getSetting } = useContext(RocketChatGlobalSettingsContext);
+
+	const loginButton: ButtonItem = {
+		label: translate('login.button.label'),
+		type: BUTTON_TYPES.PRIMARY
+	};
 
 	const hasTenant = tenant != null;
 
@@ -83,6 +99,7 @@ export const Login = ({ legalLinks, stageComponent: Stage }: LoginProps) => {
 		loaded: isReady
 	} = useUrlParamsLoader();
 
+	const [labelState, setLabelState] = useState<InputFieldLabelState>(null);
 	const [username, setUsername] = useState<string>('');
 	const [password, setPassword] = useState<string>('');
 	const [isButtonDisabled, setIsButtonDisabled] = useState<boolean>(
@@ -93,9 +110,11 @@ export const Login = ({ legalLinks, stageComponent: Stage }: LoginProps) => {
 	const [showLoginError, setShowLoginError] = useState<string>('');
 	const [isRequestInProgress, setIsRequestInProgress] =
 		useState<boolean>(false);
+	const { featureToolsEnabled } = getTenantSettings();
 
 	useEffect(() => {
 		setShowLoginError('');
+		setLabelState(null);
 		if (
 			(!isOtpRequired && username && password) ||
 			(isOtpRequired && username && password && otp)
@@ -111,6 +130,10 @@ export const Login = ({ legalLinks, stageComponent: Stage }: LoginProps) => {
 		setIsOtpRequired(false);
 	}, [username]);
 
+	useEffect(() => {
+		featureToolsEnabled && budibaseLogout();
+	}, [featureToolsEnabled]);
+
 	const [agency, setAgency] = useState(null);
 	const [validity, setValidity] = useState(VALIDITY_INITIAL);
 	const [registerOverlayActive, setRegisterOverlayActive] = useState(false);
@@ -118,6 +141,7 @@ export const Login = ({ legalLinks, stageComponent: Stage }: LoginProps) => {
 
 	const [twoFactorType, setTwoFactorType] = useState(TWO_FACTOR_TYPES.NONE);
 	const isFirstVisit = useIsFirstVisit();
+	const gcid = useSearchParam<string>('gcid');
 
 	const inputItemUsername: InputFieldItem = {
 		name: 'username',
@@ -126,7 +150,8 @@ export const Login = ({ legalLinks, stageComponent: Stage }: LoginProps) => {
 		type: 'text',
 		label: translate('login.user.label'),
 		content: username,
-		icon: <PersonIcon />
+		icon: <PersonIcon />,
+		...(labelState && { labelState })
 	};
 
 	const inputItemPassword: InputFieldItem = {
@@ -135,7 +160,8 @@ export const Login = ({ legalLinks, stageComponent: Stage }: LoginProps) => {
 		type: 'password',
 		label: translate('login.password.label'),
 		content: password,
-		icon: <LockIcon />
+		icon: <LockIcon />,
+		...(labelState && { labelState })
 	};
 
 	const otpInputItem: InputFieldItem = {
@@ -145,11 +171,12 @@ export const Login = ({ legalLinks, stageComponent: Stage }: LoginProps) => {
 			twoFactorType === TWO_FACTOR_TYPES.APP
 				? translate(`login.warning.failed.app.otp.missing`)
 				: '',
-		label: translate('twoFactorAuth.activate.otp.input.label'),
+		label: translate('twoFactorAuth.activate.otp.input.label.text'),
 		name: 'otp',
 		type: 'text',
 		icon: <VerifiedIcon />,
-		maxLength: OTP_LENGTH
+		maxLength: OTP_LENGTH,
+		tabIndex: isOtpRequired ? 0 : -1
 	};
 
 	const handleUsernameChange = (event) => {
@@ -201,7 +228,14 @@ export const Login = ({ legalLinks, stageComponent: Stage }: LoginProps) => {
 				}
 			]
 		}),
-		[agency, consultant, consultingType, preselectedAgency, validity]
+		[
+			agency,
+			consultant,
+			consultingType,
+			preselectedAgency,
+			validity,
+			translate
+		]
 	);
 
 	const handleRegistration = useCallback(
@@ -220,20 +254,20 @@ export const Login = ({ legalLinks, stageComponent: Stage }: LoginProps) => {
 						}
 
 						if (!response.rcGroupId || !response.sessionId) {
-							history.push(config.endpoints.userSessionsListView);
+							history.push(endpoints.userSessionsListView);
 							return;
 						}
 
 						history.push(
 							generatePath(
-								`${config.endpoints.userSessionsListView}/:rcGroupId/:sessionId`,
+								`${endpoints.userSessionsListView}/:rcGroupId/:sessionId`,
 								response
 							)
 						);
 					});
 			}
 		},
-		[consultantId, validity]
+		[consultantId, history, validity]
 	);
 
 	const handleOverlayAction = useCallback(
@@ -247,17 +281,28 @@ export const Login = ({ legalLinks, stageComponent: Stage }: LoginProps) => {
 		[agency, handleRegistration]
 	);
 
-	const handlePwOverlayReset = useCallback((buttonFunction: string) => {
-		if (buttonFunction === OVERLAY_FUNCTIONS.REDIRECT) {
-			window.open(
-				config.endpoints.loginResetPasswordLink,
-				'_blank',
-				'noreferrer'
-			);
-		} else if (buttonFunction === OVERLAY_FUNCTIONS.CLOSE) {
-			setPwResetOverlayActive(false);
-		}
-	}, []);
+	const handlePwOverlayReset = useCallback(
+		(buttonFunction: string) => {
+			if (buttonFunction === OVERLAY_FUNCTIONS.REDIRECT) {
+				setValueInCookie(
+					'KEYCLOAK_LOCALE',
+					locale,
+					endpoints.loginResetPasswordLink
+						.split('/')
+						.slice(0, -1)
+						.join('/')
+				);
+				window.open(
+					endpoints.loginResetPasswordLink,
+					'_blank',
+					'noreferrer'
+				);
+			} else if (buttonFunction === OVERLAY_FUNCTIONS.CLOSE) {
+				setPwResetOverlayActive(false);
+			}
+		},
+		[locale]
+	);
 
 	useEffect(() => {
 		if (
@@ -272,11 +317,24 @@ export const Login = ({ legalLinks, stageComponent: Stage }: LoginProps) => {
 	const postLogin = useCallback(
 		(data) => {
 			if (!consultant) {
-				return redirectToApp();
+				return redirectToApp(gcid);
 			}
 
 			return apiGetUserData().then((userData: UserDataInterface) => {
-				if (!hasUserAuthority(AUTHORITIES.ASKER_DEFAULT, userData)) {
+				// If user has changed language from default but the profile has different language in profile override it
+				if (
+					userData.preferredLanguage !== locale &&
+					locale !== initLocale
+				) {
+					return apiPatchUserData({
+						preferredLanguage: locale
+					});
+				}
+
+				if (
+					!consultant ||
+					!hasUserAuthority(AUTHORITIES.ASKER_DEFAULT, userData)
+				) {
 					return redirectToApp();
 				}
 
@@ -291,10 +349,13 @@ export const Login = ({ legalLinks, stageComponent: Stage }: LoginProps) => {
 			});
 		},
 		[
+			locale,
+			initLocale,
 			consultant,
 			possibleAgencies,
-			possibleConsultingTypes,
-			handleRegistration
+			possibleConsultingTypes.length,
+			handleRegistration,
+			gcid
 		]
 	);
 
@@ -303,14 +364,17 @@ export const Login = ({ legalLinks, stageComponent: Stage }: LoginProps) => {
 		autoLogin({
 			username: username,
 			password: password,
-			redirect: !consultant
+			redirect: !consultant,
+			gcid,
+			tenantData: tenant
 		})
 			.then(postLogin)
 			.catch((error) => {
 				if (error.message === FETCH_ERRORS.UNAUTHORIZED) {
 					setShowLoginError(
-						translate('login.warning.failed.unauthorized')
+						translate('login.warning.failed.unauthorized.text')
 					);
+					setLabelState(VALIDITY_INVALID);
 				} else if (error.message === FETCH_ERRORS.BAD_REQUEST) {
 					if (error.options.data.otpType)
 						setTwoFactorType(error.options.data.otpType);
@@ -337,7 +401,9 @@ export const Login = ({ legalLinks, stageComponent: Stage }: LoginProps) => {
 				username,
 				password,
 				redirect: !consultant,
-				otp
+				otp,
+				gcid,
+				tenantData: tenant
 			})
 				.then(postLogin)
 				.catch((error) => {
@@ -345,6 +411,7 @@ export const Login = ({ legalLinks, stageComponent: Stage }: LoginProps) => {
 						setShowLoginError(
 							translate('login.warning.failed.unauthorized.otp')
 						);
+						setLabelState(VALIDITY_INVALID);
 					}
 				})
 				.finally(() => {
@@ -380,111 +447,125 @@ export const Login = ({ legalLinks, stageComponent: Stage }: LoginProps) => {
 				}
 			]
 		}),
-		[]
+		[translate]
 	);
 
 	const onPasswordResetClick = (e) => {
-		if (getSetting(SETTING_E2E_ENABLE)?.value) {
+		if (getSetting<IBooleanSetting>(SETTING_E2E_ENABLE)?.value) {
 			e.preventDefault();
 			setPwResetOverlayActive(true);
+			return;
 		}
+		setValueInCookie(
+			'KEYCLOAK_LOCALE',
+			locale,
+			endpoints.loginResetPasswordLink.split('/').slice(0, -1).join('/')
+		);
+		window.open(endpoints.loginResetPasswordLink, '_blank', 'noreferrer');
 	};
 
 	return (
 		<>
 			<StageLayout
-				legalLinks={legalLinks}
 				stage={<Stage hasAnimation={isFirstVisit} isReady={isReady} />}
 				showLegalLinks
 			>
 				<div className="loginForm">
-					<div className="loginForm__headline">
-						<h1>{translate('login.headline')}</h1>
-					</div>
-					<InputField
-						item={inputItemUsername}
-						inputHandle={handleUsernameChange}
-						keyUpHandle={handleKeyUp}
-					/>
-					<InputField
-						item={inputItemPassword}
-						inputHandle={handlePasswordChange}
-						keyUpHandle={handleKeyUp}
-					/>
-					<div
-						className={clsx('loginForm__otp', {
-							'loginForm__otp--active': isOtpRequired
-						})}
-					>
-						{twoFactorType === TWO_FACTOR_TYPES.EMAIL && (
-							<Text
-								className="loginForm__emailHint"
-								text={translate(
-									'twoFactorAuth.activate.email.resend.hint'
-								)}
-								type="infoLargeAlternative"
-							/>
-						)}
+					<div>
+						<div className="loginForm__headline">
+							<h2>{translate('login.headline')}</h2>
+						</div>
 						<InputField
-							item={otpInputItem}
-							inputHandle={handleOtpChange}
+							item={inputItemUsername}
+							inputHandle={handleUsernameChange}
 							keyUpHandle={handleKeyUp}
 						/>
-						{twoFactorType === TWO_FACTOR_TYPES.EMAIL && (
-							<TwoFactorAuthResendMail
-								resendHandler={(callback) => {
-									tryLoginWithoutOtp();
-									callback();
-								}}
+						<InputField
+							item={inputItemPassword}
+							inputHandle={handlePasswordChange}
+							keyUpHandle={handleKeyUp}
+						/>
+						<div
+							className={clsx('loginForm__otp', {
+								'loginForm__otp--active': isOtpRequired
+							})}
+						>
+							{twoFactorType === TWO_FACTOR_TYPES.EMAIL && (
+								<Text
+									className="loginForm__emailHint"
+									text={translate(
+										'twoFactorAuth.activate.email.resend.hint'
+									)}
+									type="infoLargeAlternative"
+								/>
+							)}
+							<InputField
+								item={otpInputItem}
+								inputHandle={handleOtpChange}
+								keyUpHandle={handleKeyUp}
+							/>
+							{twoFactorType === TWO_FACTOR_TYPES.EMAIL && (
+								<TwoFactorAuthResendMail
+									resendHandler={(callback) => {
+										tryLoginWithoutOtp();
+										callback();
+									}}
+								/>
+							)}
+						</div>
+
+						{showLoginError && (
+							<Text
+								text={showLoginError}
+								type="infoSmall"
+								className="loginForm__error"
 							/>
 						)}
-					</div>
 
-					{showLoginError && (
-						<Text
-							text={showLoginError}
-							type="infoSmall"
-							className="loginForm__error"
+						<Button
+							item={loginButton}
+							buttonHandle={handleLogin}
+							disabled={isButtonDisabled || isRequestInProgress}
 						/>
-					)}
 
-					{!(twoFactorType === TWO_FACTOR_TYPES.EMAIL) && (
-						<a
-							href={config.endpoints.loginResetPasswordLink}
-							target="_blank"
-							rel="noreferrer"
-							onClick={onPasswordResetClick}
-						>
-							{translate('login.resetPasswort.label')}
-						</a>
-					)}
-
-					<Button
-						item={loginButton}
-						buttonHandle={handleLogin}
-						disabled={isButtonDisabled || isRequestInProgress}
-					/>
-					{!hasTenant && (
-						<div className="loginForm__register">
-							<Text
-								text={translate(
-									'login.register.infoText.title'
-								)}
-								type={'infoSmall'}
-							/>
-							<Text
-								text={translate('login.register.infoText.copy')}
-								type={'infoSmall'}
-							/>
-							<a
-								className="loginForm__register__link"
-								href={config.urls.toRegistration}
-								target="_self"
+						{!(twoFactorType === TWO_FACTOR_TYPES.EMAIL) && (
+							<button
+								onClick={onPasswordResetClick}
+								className="button-as-link"
+								type="button"
 							>
-								{translate('login.register.linkLabel')}
-							</a>
-						</div>
-					)}
+								{translate('login.resetPasswort.label')}
+							</button>
+						)}
+
+						{!hasTenant && (
+							<div className="loginForm__register">
+								<div className="loginForm__register__separator">
+									<span>{translate('login.seperator')}</span>
+								</div>
+								<div className="loginForm__register__content">
+									<Text
+										text={translate(
+											'login.register.infoText.title'
+										)}
+										type={'infoMedium'}
+									/>
+									<button
+										onClick={() =>
+											window.open(
+												settings.urls.toRegistration,
+												'_self'
+											)
+										}
+										className="button-as-link consulting-topics"
+										type="button"
+									>
+										{translate('login.register.linkLabel')}
+									</button>
+								</div>
+							</div>
+						)}
+					</div>
 				</div>
 				{registerOverlayActive && (
 					<OverlayWrapper>
@@ -495,27 +576,6 @@ export const Login = ({ legalLinks, stageComponent: Stage }: LoginProps) => {
 					</OverlayWrapper>
 				)}
 			</StageLayout>
-			{hasTenant && (
-				<div className="login__tenantRegistration">
-					<Text
-						text={translate('login.register.infoText.title')}
-						type={'infoSmall'}
-					/>
-					<a
-						className="login__tenantRegistrationLink"
-						href={config.urls.toRegistration}
-						target="_self"
-					>
-						<Button
-							item={{
-								label: translate('login.register.linkLabel'),
-								type: 'TERTIARY'
-							}}
-							isLink
-						/>
-					</a>
-				</div>
-			)}
 			{pwResetOverlayActive && (
 				<OverlayWrapper>
 					<Overlay

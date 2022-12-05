@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { useContext, useEffect, useState } from 'react';
 import { UserDataContext } from '../../globalState';
-import { translate } from '../../utils/translate';
 import { Button, ButtonItem, BUTTON_TYPES } from '../button/Button';
 import { Headline } from '../headline/Headline';
 import { Text } from '../text/Text';
@@ -15,13 +14,13 @@ import {
 } from '../../api';
 import { TWO_FACTOR_TYPES } from '../twoFactorAuth/TwoFactorAuth';
 import { Overlay, OverlayWrapper, OVERLAY_FUNCTIONS } from '../overlay/Overlay';
-
-const cancelEditButton: ButtonItem = {
-	label: translate('profile.data.edit.button.cancel'),
-	type: BUTTON_TYPES.LINK
-};
+import { useTranslation } from 'react-i18next';
+import { useAppConfig } from '../../hooks/useAppConfig';
+import { useHistory } from 'react-router-dom';
 
 export const ConsultantPrivateData = () => {
+	const history = useHistory();
+	const { t: translate } = useTranslation();
 	const { userData, setUserData } = useContext(UserDataContext);
 	const [isEditDisabled, setIsEditDisabled] = useState<boolean>(true);
 	const [isSaveDisabled, setIsSaveDisabled] = useState<boolean>(true);
@@ -37,12 +36,22 @@ export const ConsultantPrivateData = () => {
 	const [lastName, setLastName] = useState<string>();
 	const [overlayActive, setOverlayActive] = useState(false);
 
+	const cancelEditButton: ButtonItem = {
+		label: translate('profile.data.edit.button.cancel'),
+		type: BUTTON_TYPES.LINK
+	};
+
 	const isEmail2faActive =
 		userData.twoFactorAuth?.isActive &&
 		userData.twoFactorAuth?.type === TWO_FACTOR_TYPES.EMAIL;
 
 	const isEmailEditedAndEmail2faActive =
 		userData.email !== email && isEmail2faActive;
+
+	const settings = useAppConfig();
+	const todaysDate = new Date();
+	const isTwoFactorBinding =
+		todaysDate >= settings.twofactor.dateTwoFactorObligatory;
 
 	useEffect(() => {
 		if (email && firstName && lastName) {
@@ -111,15 +120,27 @@ export const ConsultantPrivateData = () => {
 				/>
 
 				<Text
-					text={translate(
-						'twoFactorAuth.email.change.confirmOverlay.copy.1'
-					)}
+					text={
+						isTwoFactorBinding
+							? translate(
+									'twoFactorAuth.email.change.confirmOverlay.binding.copy.1'
+							  )
+							: translate(
+									'twoFactorAuth.email.change.confirmOverlay.copy.1'
+							  )
+					}
 					type="infoLargeStandard"
 				/>
 				<Text
-					text={translate(
-						'twoFactorAuth.email.change.confirmOverlay.copy.2'
-					)}
+					text={
+						isTwoFactorBinding
+							? translate(
+									'twoFactorAuth.email.change.confirmOverlay.binding.copy.2'
+							  )
+							: translate(
+									'twoFactorAuth.email.change.confirmOverlay.copy.2'
+							  )
+					}
 					type="infoLargeStandard"
 				/>
 			</div>
@@ -133,9 +154,19 @@ export const ConsultantPrivateData = () => {
 				setIsEditDisabled(true);
 				break;
 			case OVERLAY_FUNCTIONS.CONFIRM_EDIT:
-				apiDeleteTwoFactorAuth().then(() => {
-					setOverlayActive(false);
-				});
+				if (isTwoFactorBinding) {
+					history.push({
+						pathname: '/profile/einstellungen/sicherheit',
+						state: {
+							openTwoFactor: true,
+							isEditMode: true
+						}
+					});
+				} else {
+					apiDeleteTwoFactorAuth().then(() => {
+						setOverlayActive(false);
+					});
+				}
 				break;
 		}
 	};
@@ -236,9 +267,13 @@ export const ConsultantPrivateData = () => {
 										type: BUTTON_TYPES.PRIMARY,
 										function:
 											OVERLAY_FUNCTIONS.CONFIRM_EDIT,
-										label: translate(
-											'twoFactorAuth.email.change.confirmOverlay.button.confirm'
-										)
+										label: isTwoFactorBinding
+											? translate(
+													'twoFactorAuth.email.change.confirmOverlay.button.edit'
+											  )
+											: translate(
+													'twoFactorAuth.email.change.confirmOverlay.button.confirm'
+											  )
 									}
 								],
 								handleOverlay: handleOverlayAction

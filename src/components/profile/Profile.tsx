@@ -1,12 +1,12 @@
 import * as React from 'react';
-import { useState, useRef, useContext, useEffect } from 'react';
+import { useState, useRef, useContext, useEffect, Fragment } from 'react';
 import { logout } from '../logout/logout';
 import {
 	AUTHORITIES,
 	hasUserAuthority,
+	LocaleContext,
 	useConsultingTypes,
-	UserDataContext,
-	LegalLinkInterface
+	UserDataContext
 } from '../../globalState';
 import {
 	setProfileWrapperActive,
@@ -17,19 +17,15 @@ import { ReactComponent as LogoutIcon } from '../../resources/img/icons/out.svg'
 import { ReactComponent as BackIcon } from '../../resources/img/icons/arrow-left.svg';
 import { Text } from '../text/Text';
 import './profile.styles';
-import profileRoutes, {
-	COLUMN_LEFT,
-	SingleComponentType,
-	TabGroups,
-	TabType
-} from './profile.routes';
+import profileRoutes from './profile.routes';
 import {
 	Link,
 	NavLink,
 	Redirect,
 	Route,
 	Switch,
-	useLocation
+	useLocation,
+	generatePath
 } from 'react-router-dom';
 import { Box } from '../box/Box';
 import { useResponsive } from '../../hooks/useResponsive';
@@ -42,45 +38,27 @@ import {
 	LinkMenuGroupType,
 	LinkMenuItemType
 } from '../mobile/linkMenu/LinkMenu';
+import {
+	solveTabConditions,
+	isTabGroup,
+	solveCondition,
+	solveGroupConditions,
+	COLUMN_LEFT,
+	SingleComponentType,
+	TabGroups
+} from '../../utils/tabsHelper';
+import { useTranslation } from 'react-i18next';
+import { LegalLinksContext } from '../../globalState/provider/LegalLinksProvider';
+import { useAppConfig } from '../../hooks/useAppConfig';
 
-interface ProfileProps {
-	legalLinks: Array<LegalLinkInterface>;
-	spokenLanguages: string[];
-}
-
-export const isTabGroup = (
-	item: TabGroups | SingleComponentType
-): item is TabGroups => {
-	return item.hasOwnProperty('elements');
-};
-
-const solveCondition = (condition, ...params) => {
-	return !condition || condition(...params);
-};
-
-const solveTabConditions = (tab: TabType, ...params) => {
-	return (
-		solveCondition(tab.condition, ...params) &&
-		tab.elements.some((element) => solveGroupConditions(element, ...params))
-	);
-};
-
-const solveGroupConditions = (
-	element: TabGroups | SingleComponentType,
-	...params
-) => {
-	return solveCondition(element.condition, ...params) && isTabGroup(element)
-		? element.elements.some((element) =>
-				solveCondition(element.condition, ...params)
-		  )
-		: true;
-};
-
-export const Profile = (props: ProfileProps) => {
+export const Profile = () => {
+	const settings = useAppConfig();
+	const { t: translate } = useTranslation();
 	const location = useLocation();
 	const consultingTypes = useConsultingTypes();
 	const { fromL } = useResponsive();
 
+	const legalLinks = useContext(LegalLinksContext);
 	const { userData } = useContext(UserDataContext);
 
 	const [mobileMenu, setMobileMenu] = useState<
@@ -88,6 +66,8 @@ export const Profile = (props: ProfileProps) => {
 	>([]);
 
 	const scrollContainer = useRef<HTMLDivElement>();
+
+	const { selectableLocales } = useContext(LocaleContext);
 
 	useEffect(() => {
 		setProfileWrapperActive();
@@ -103,13 +83,13 @@ export const Profile = (props: ProfileProps) => {
 
 	useEffect(() => {
 		setMobileMenu(
-			profileRoutes
+			profileRoutes(settings, selectableLocales)
 				.filter((tab) =>
 					solveTabConditions(tab, userData, consultingTypes)
 				)
 				.map(
 					(tab): LinkMenuGroupType => ({
-						title: tab.title,
+						title: translate(tab.title),
 						items: tab.elements
 							.filter((element) =>
 								isTabGroup(element)
@@ -127,23 +107,17 @@ export const Profile = (props: ProfileProps) => {
 							.map((element) =>
 								isTabGroup(element)
 									? {
-											title: element.title,
+											title: translate(element.title),
 											url: `/profile${tab.url}${element.url}`
 									  }
 									: {
-											component: (
-												<element.component
-													spokenLanguages={
-														props.spokenLanguages
-													}
-												/>
-											)
+											component: <element.component />
 									  }
 							)
 					})
 				)
 		);
-	}, [consultingTypes, props.spokenLanguages, userData]);
+	}, [consultingTypes, translate, settings, userData, selectableLocales]);
 
 	const [subpage, setSubpage] = useState(undefined);
 	useEffect(() => {
@@ -211,7 +185,7 @@ export const Profile = (props: ProfileProps) => {
 					</div>
 					<div className="profile__nav flex flex__col--grow flex__col--shrink flex--jc-c flex--ai-s flex__col--50p">
 						{fromL ? (
-							profileRoutes
+							profileRoutes(settings, selectableLocales)
 								.filter((tab) =>
 									solveTabConditions(
 										tab,
@@ -225,10 +199,12 @@ export const Profile = (props: ProfileProps) => {
 										className="text--nowrap flex__col--no-grow"
 									>
 										<NavLink
-											to={`/profile${tab.url}`}
+											to={generatePath(
+												`/profile${tab.url}`
+											)}
 											activeClassName="active"
 										>
-											{tab.title}
+											{translate(tab.title)}
 										</NavLink>
 									</div>
 								))
@@ -255,7 +231,7 @@ export const Profile = (props: ProfileProps) => {
 					<Switch>
 						{fromL ? (
 							// Render tabs for desktop
-							profileRoutes
+							profileRoutes(settings, selectableLocales)
 								.filter((tab) =>
 									solveTabConditions(
 										tab,
@@ -299,9 +275,6 @@ export const Profile = (props: ProfileProps) => {
 														key={i}
 														element={element}
 														index={i}
-														spokenLanguages={
-															props.spokenLanguages
-														}
 													/>
 												))}
 										</div>
@@ -310,7 +283,7 @@ export const Profile = (props: ProfileProps) => {
 						) : (
 							// Render submenu for mobile
 							<Route
-								path={profileRoutes
+								path={profileRoutes(settings, selectableLocales)
 									.filter((tab) =>
 										solveTabConditions(
 											tab,
@@ -329,7 +302,7 @@ export const Profile = (props: ProfileProps) => {
 
 						{!fromL &&
 							// Render groups as routes for mobile
-							profileRoutes
+							profileRoutes(settings, selectableLocales)
 								.filter((tab) =>
 									solveTabConditions(
 										tab,
@@ -356,9 +329,6 @@ export const Profile = (props: ProfileProps) => {
 														<ProfileGroup
 															group={element}
 															key={`/profile${tab.url}${element.url}`}
-															spokenLanguages={
-																props.spokenLanguages
-															}
 														/>
 													</div>
 												</Route>
@@ -367,23 +337,24 @@ export const Profile = (props: ProfileProps) => {
 													path={`/profile${tab.url}`}
 													key={`/profile${tab.url}`}
 												>
-													<element.component
-														spokenLanguages={
-															props.spokenLanguages
-														}
-													/>
+													<element.component />
 												</Route>
 											)
 										);
 								})}
 
-						<Redirect to={`/profile${profileRoutes[0].url}`} />
+						<Redirect
+							to={`/profile${
+								profileRoutes(settings, selectableLocales)[0]
+									.url
+							}`}
+						/>
 					</Switch>
 				</div>
 
 				<div className="profile__footer">
-					{props.legalLinks.map((legalLink, index) => (
-						<React.Fragment key={legalLink.url}>
+					{legalLinks.map((legalLink, index) => (
+						<Fragment key={legalLink.url}>
 							{index > 0 && (
 								<Text
 									type="infoSmall"
@@ -400,10 +371,10 @@ export const Profile = (props: ProfileProps) => {
 								<Text
 									className="profile__footer__item"
 									type="infoSmall"
-									text={legalLink.label}
+									text={translate(legalLink.label)}
 								/>
 							</a>
-						</React.Fragment>
+						</Fragment>
 					))}
 				</div>
 			</div>
@@ -412,12 +383,9 @@ export const Profile = (props: ProfileProps) => {
 };
 
 const ProfileItem = ({
-	element,
-	spokenLanguages,
-	index
+	element
 }: {
 	element: SingleComponentType;
-	spokenLanguages: string[];
 	index: number;
 }) => (
 	<div
@@ -430,22 +398,16 @@ const ProfileItem = ({
 		}`}
 	>
 		{element.boxed === false ? (
-			<element.component spokenLanguages={spokenLanguages} />
+			<element.component />
 		) : (
 			<Box>
-				<element.component spokenLanguages={spokenLanguages} />
+				<element.component />
 			</Box>
 		)}
 	</div>
 );
 
-const ProfileGroup = ({
-	group,
-	spokenLanguages
-}: {
-	group: TabGroups;
-	spokenLanguages: string[];
-}) => {
+const ProfileGroup = ({ group }: { group: TabGroups }) => {
 	const { userData } = useContext(UserDataContext);
 	const consultingTypes = useConsultingTypes();
 
@@ -457,12 +419,7 @@ const ProfileGroup = ({
 				)
 				.sort((a, b) => (a?.order || 99) - (b?.order || 99))
 				.map((element, i) => (
-					<ProfileItem
-						key={i}
-						element={element}
-						spokenLanguages={spokenLanguages}
-						index={i}
-					/>
+					<ProfileItem key={i} element={element} index={i} />
 				))}
 		</>
 	);

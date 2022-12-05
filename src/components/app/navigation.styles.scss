@@ -52,6 +52,16 @@ $unreadBubbleAnimation: count 500ms ease 500ms forwards;
 		text-align: center;
 		text-decoration: none;
 
+		&:focus {
+			outline: $focus-outline;
+			outline-offset: 4px;
+			border-radius: 4px;
+		}
+
+		&:focus:not(:focus-visible) {
+			outline: none;
+		}
+
 		@include breakpoint($fromLarge) {
 			display: block;
 			width: auto;
@@ -59,11 +69,18 @@ $unreadBubbleAnimation: count 500ms ease 500ms forwards;
 			margin: $grid-base-two $grid-base;
 		}
 
-		&__logout {
+		&__bottom {
 			cursor: pointer;
+			width: max-content;
+			align-self: center;
+			transition: all 0.6s ease;
+
+			&:focus {
+				outline-offset: 12px;
+			}
 
 			@include breakpoint($fromLarge) {
-				margin: auto 0 0 !important;
+				margin: auto $grid-base-two 0 !important;
 			}
 
 			&--consultant {
@@ -72,6 +89,14 @@ $unreadBubbleAnimation: count 500ms ease 500ms forwards;
 				@include breakpoint($fromLarge) {
 					display: block;
 				}
+			}
+		}
+
+		&__language {
+			padding-bottom: $grid-base-two;
+			display: none;
+			@include breakpoint($fromLarge) {
+				display: block;
 			}
 		}
 

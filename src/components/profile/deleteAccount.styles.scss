@@ -44,5 +44,13 @@
 				width: 272px;
 			}
 		}
+
+		.inputField__input {
+			padding: 12px $grid-base-five 0 $grid-base-three;
+		}
+	}
+
+	&__warning {
+		color: $form-error;
 	}
 }

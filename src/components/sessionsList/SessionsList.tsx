@@ -4,10 +4,11 @@ import {
 	useCallback,
 	useContext,
 	useEffect,
+	useMemo,
 	useRef,
 	useState
 } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useHistory } from 'react-router-dom';
 import {
 	getSessionType,
 	SESSION_LIST_TAB,
@@ -17,12 +18,12 @@ import {
 	SESSION_TYPE_ARCHIVED,
 	SESSION_TYPES
 } from '../session/sessionHelpers';
-import { history } from '../app/app';
-import { translate } from '../../utils/translate';
 import {
+	AnonymousConversationFinishedContext,
 	AnonymousConversationStartedContext,
 	AUTHORITIES,
 	buildExtendedSession,
+	ConsultingTypesContext,
 	getExtendedSession,
 	hasUserAuthority,
 	isAnonymousSession,
@@ -36,7 +37,7 @@ import {
 	UPDATE_SESSIONS,
 	UserDataContext
 } from '../../globalState';
-import { SelectDropdown, SelectDropdownItem } from '../select/SelectDropdown';
+import { SelectDropdownItem, SelectDropdown } from '../select/SelectDropdown';
 import { SessionListItemComponent } from '../sessionsListItem/SessionListItemComponent';
 import { SessionsListSkeleton } from '../sessionsListItem/SessionsListItemSkeleton';
 import {
@@ -69,6 +70,7 @@ import { apiGetSessionRoomsByGroupIds } from '../../api/apiGetSessionRooms';
 import { useWatcher } from '../../hooks/useWatcher';
 import { useSearchParam } from '../../hooks/useSearchParams';
 import { apiGetChatRoomById } from '../../api/apiGetChatRoomById';
+import { useTranslation } from 'react-i18next';
 
 interface SessionsListProps {
 	defaultLanguage: string;
@@ -79,8 +81,16 @@ export const SessionsList = ({
 	defaultLanguage,
 	sessionTypes
 }: SessionsListProps) => {
+	const { t: translate } = useTranslation();
+	const { consultingTypes } = useContext(ConsultingTypesContext);
+	const { anonymousConversationFinished } = useContext(
+		AnonymousConversationFinishedContext
+	);
+
 	const { rcGroupId: groupIdFromParam, sessionId: sessionIdFromParam } =
-		useParams();
+		useParams<{ rcGroupId: string; sessionId: string }>();
+	const history = useHistory();
+
 	const initialId = useUpdatingRef(groupIdFromParam || sessionIdFromParam);
 
 	const rcUid = useRef(getValueFromCookie('rc_uid'));
@@ -232,7 +242,7 @@ export const SessionsList = ({
 						sessions.length === 1 &&
 						sessions[0]?.session?.status === STATUS_EMPTY
 					) {
-						history.push(`/sessions/user/view/write`);
+						history.push(`/sessions/user/view/write/`);
 					} else if (
 						sessions.length === 1 &&
 						isAnonymousSession(sessions[0]?.session) &&
@@ -242,7 +252,7 @@ export const SessionsList = ({
 						)
 					) {
 						history.push(
-							`/sessions/user/view/${sessions[0].groupId}/${sessions[0].id}`
+							`/sessions/user/view/${sessions[0]?.chat?.groupId}/${sessions[0]?.chat?.id}`
 						);
 					}
 				})
@@ -293,6 +303,7 @@ export const SessionsList = ({
 				ready: false
 			});
 		};
+		/* eslint-disable */
 	}, [
 		dispatch,
 		getConsultantSessionList,
@@ -302,7 +313,7 @@ export const SessionsList = ({
 		anonymousConversationStarted,
 		setAnonymousConversationStarted
 	]);
-
+	/* eslint-enable */
 	// Refresh myself
 	const subscribed = useRef(false);
 
@@ -478,6 +489,10 @@ export const SessionsList = ({
 	// Subscribe to all my messages
 	useEffect(() => {
 		const userId = rcUid.current;
+		if (anonymousConversationFinished) {
+			return;
+		}
+
 		if (socketReady && !subscribed.current) {
 			subscribed.current = true;
 			subscribe(
@@ -523,6 +538,7 @@ export const SessionsList = ({
 			}
 		};
 	}, [
+		anonymousConversationFinished,
 		onDebounceRoomsChanged,
 		onDebounceSubscriptionsChanged,
 		socketReady,
@@ -638,10 +654,20 @@ export const SessionsList = ({
 		defaultValue: preSelectedOption
 	};
 
-	const showEnquiryTabs =
-		hasUserAuthority(AUTHORITIES.CONSULTANT_DEFAULT, userData) &&
-		userData.hasAnonymousConversations &&
-		type === SESSION_LIST_TYPES.ENQUIRY;
+	const showEnquiryTabs = useMemo(() => {
+		return (
+			hasUserAuthority(AUTHORITIES.CONSULTANT_DEFAULT, userData) &&
+			userData.hasAnonymousConversations &&
+			type === SESSION_LIST_TYPES.ENQUIRY &&
+			userData.agencies.some(
+				(agency) =>
+					(consultingTypes ?? []).find(
+						(consultingType) =>
+							consultingType.id === agency.consultingType
+					)?.isAnonymousConversationAllowed
+			)
+		);
+	}, [consultingTypes, type, userData]);
 
 	const showSessionListTabs =
 		userData.hasArchive &&
@@ -678,6 +704,29 @@ export const SessionsList = ({
 		[type]
 	);
 
+	const filterSessions = useCallback(
+		(session) => {
+			// do not filter chats
+			if (session?.chat) {
+				return true;
+			}
+			switch (type) {
+				// filter my sessions only with my user id as consultant
+				case SESSION_LIST_TYPES.MY_SESSION:
+					return session?.consultant?.id === userData.userId;
+				// filter teamsessions only without my user id as consultant
+				case SESSION_LIST_TYPES.TEAMSESSION:
+					return session?.consultant?.id !== userData.userId;
+				// only show sessions without an assigned consultant in sessionPreview
+				case SESSION_LIST_TYPES.ENQUIRY:
+					return !session?.consultant;
+				default:
+					return true;
+			}
+		},
+		[type, userData]
+	);
+
 	return (
 		<div className="sessionsList__innerWrapper">
 			{(showFilter || showEnquiryTabs || showSessionListTabs) && (
@@ -698,6 +747,7 @@ export const SessionsList = ({
 									type="standard"
 								/>
 							</Link>
+
 							<Link
 								className={clsx({
 									'sessionsList__tabs--active':
@@ -707,6 +757,7 @@ export const SessionsList = ({
 								to={`/sessions/consultant/sessionPreview?sessionListTab=${SESSION_LIST_TAB_ANONYMOUS}`}
 							>
 								<Text
+									className={clsx('walkthrough_step_2')}
 									text={translate(
 										'sessionList.preview.anonymous.tab'
 									)}
@@ -748,6 +799,7 @@ export const SessionsList = ({
 								}?sessionListTab=${SESSION_LIST_TAB_ARCHIVE}`}
 							>
 								<Text
+									className={clsx('walkthrough_step_4')}
 									text={translate(
 										'sessionList.view.archive.tab'
 									)}
@@ -797,8 +849,9 @@ export const SessionsList = ({
 
 					{(!isLoading || sessions.length > 0) &&
 						sessions
+							.filter(filterSessions)
 							.sort(sortSessions)
-							.map((item: ListItemInterface, index) => (
+							.map((item: ListItemInterface) => (
 								<SessionListItemComponent
 									key={
 										buildExtendedSession(
@@ -823,7 +876,7 @@ export const SessionsList = ({
 								text={
 									sessionListTab !==
 									SESSION_LIST_TAB_ANONYMOUS
-										? translate('sessionList.empty')
+										? translate('sessionList.empty.known')
 										: translate(
 												'sessionList.empty.anonymous'
 										  )
@@ -922,6 +975,7 @@ Watch for inactive groups because there is no api endpoint
  */
 const useGroupWatcher = (isLoading: boolean) => {
 	const { sessions, dispatch } = useContext(SessionsDataContext);
+	const history = useHistory();
 
 	const hasSessionChanged = useCallback(
 		(newSession) => {
@@ -942,57 +996,64 @@ const useGroupWatcher = (isLoading: boolean) => {
 			(s) => !!s.chat && !s.chat.subscribed
 		);
 
+		if ((history?.location?.state as any)?.isEditMode) return;
+
 		if (inactiveGroupSessions.length <= 0) {
 			return;
 		}
 
 		return apiGetSessionRoomsByGroupIds(
 			inactiveGroupSessions.map((s) => s.chat.groupId)
-		).then(({ sessions }) => {
-			// Update sessions which still exists in rocket.chat
-			dispatch({
-				type: UPDATE_SESSIONS,
-				sessions: sessions.filter(hasSessionChanged)
-			});
-
-			// Remove sessions which not exists in rocket.chat anymore and not repetitive chats
-			const removedGroupSessions = inactiveGroupSessions.filter(
-				(inactiveGroupSession) =>
-					!sessions.find(
-						(s) =>
-							s.chat.groupId === inactiveGroupSession.chat.groupId
-					)
-			);
-			if (removedGroupSessions.length > 0) {
+		)
+			.then(({ sessions }) => {
+				// Update sessions which still exists in rocket.chat
 				dispatch({
-					type: REMOVE_SESSIONS,
-					ids: removedGroupSessions
-						.filter((s) => !s.chat.repetitive)
-						.map((s) => s.chat.groupId)
+					type: UPDATE_SESSIONS,
+					sessions: sessions.filter(hasSessionChanged)
 				});
-			}
 
-			// Update repetitive chats by id because groupId has changed
-			const repetitiveGroupSessions = removedGroupSessions.filter(
-				(s) => s.chat.repetitive
-			);
-			if (repetitiveGroupSessions.length > 0) {
-				Promise.all(
-					repetitiveGroupSessions.map((s) =>
-						apiGetChatRoomById(s.chat.id)
-					)
-				).then((sessions) => {
-					dispatch({
-						type: UPDATE_SESSIONS,
-						sessions: sessions.reduce<ListItemInterface[]>(
-							(acc, { sessions }) => acc.concat(sessions),
-							[]
+				// Remove sessions which not exists in rocket.chat anymore and not repetitive chats
+				const removedGroupSessions = inactiveGroupSessions.filter(
+					(inactiveGroupSession) =>
+						!sessions.find(
+							(s) =>
+								s.chat.groupId ===
+								inactiveGroupSession.chat.groupId
 						)
+				);
+				if (removedGroupSessions.length > 0) {
+					dispatch({
+						type: REMOVE_SESSIONS,
+						ids: removedGroupSessions
+							.filter((s) => !s.chat.repetitive)
+							.map((s) => s.chat.groupId)
 					});
-				});
-			}
-		});
-	}, [dispatch, hasSessionChanged, sessions]);
+				}
+
+				// Update repetitive chats by id because groupId has changed
+				const repetitiveGroupSessions = removedGroupSessions.filter(
+					(s) => s.chat.repetitive
+				);
+				if (repetitiveGroupSessions.length > 0) {
+					Promise.all(
+						repetitiveGroupSessions.map((s) =>
+							apiGetChatRoomById(s.chat.id)
+						)
+					).then((sessions) => {
+						dispatch({
+							type: UPDATE_SESSIONS,
+							sessions: sessions.reduce<ListItemInterface[]>(
+								(acc, { sessions }) => acc.concat(sessions),
+								[]
+							)
+						});
+					});
+				}
+			})
+			.catch((e) => {
+				console.log(e);
+			});
+	}, [dispatch, hasSessionChanged, history?.location?.state, sessions]);
 
 	const [startWatcher, stopWatcher, isWatcherRunning] = useWatcher(
 		refreshInactiveGroupSessions,

@@ -4,7 +4,7 @@ import {
 	generateMessagesReply,
 	sessionsReply
 } from '../sessions';
-import { config } from '../../../src/resources/scripts/config';
+import { endpoints } from '../../../src/resources/scripts/endpoints';
 import {
 	getAskerSessions,
 	setAskerSessions,
@@ -21,6 +21,10 @@ import { decodeUsername } from '../../../src/utils/encryptionHelpers';
 import { getMessages, setMessages } from './messages';
 import apiAppointments from './api/appointments';
 import apiVideocalls from './api/videocalls';
+import {
+	SETTING_E2E_ENABLE,
+	SETTING_MESSAGE_MAXALLOWEDSIZE
+} from '../../../src/api/apiRocketChatSettingsPublic';
 
 let overrides = {};
 
@@ -42,7 +46,8 @@ const defaultReturns = {
 			sessions: []
 		}
 	},
-	agencyConsultants: []
+	agencyConsultants: [],
+	agencyConsultantsLanguages: ['de']
 };
 
 Cypress.Commands.add('willReturn', (name: string, data: any) => {
@@ -89,7 +94,7 @@ Cypress.Commands.add('mockApi', () => {
 	});
 
 	cy.fixture('api.v1.login').then((data) => {
-		cy.intercept('POST', config.endpoints.rc.accessToken, (req) => {
+		cy.intercept('POST', endpoints.rc.accessToken, (req) => {
 			username = decodeUsername(req.body.username);
 			req.reply(
 				deepMerge(data, {
@@ -120,7 +125,7 @@ Cypress.Commands.add('mockApi', () => {
 		defaultReturns['userData'][USER_ASKER] = userData;
 	});
 
-	cy.intercept('GET', `${config.endpoints.consultantSessions}*`, (req) => {
+	cy.intercept('GET', `${endpoints.consultantSessions}*`, (req) => {
 		if (overrides['consultantSessions']) {
 			return req.reply(overrides['consultantSessions']);
 		}
@@ -139,7 +144,7 @@ Cypress.Commands.add('mockApi', () => {
 		);
 	}).as('consultantSessions');
 
-	cy.intercept('GET', config.endpoints.askerSessions, (req) => {
+	cy.intercept('GET', endpoints.askerSessions, (req) => {
 		if (overrides['askerSessions']) {
 			return req.reply(overrides['askerSessions']);
 		}
@@ -149,7 +154,7 @@ Cypress.Commands.add('mockApi', () => {
 		});
 	}).as('askerSessions');
 
-	cy.intercept('GET', config.endpoints.messages, (req) => {
+	cy.intercept('GET', endpoints.messages, (req) => {
 		if (overrides['messages']) {
 			return req.reply(overrides['messages']);
 		}
@@ -166,7 +171,7 @@ Cypress.Commands.add('mockApi', () => {
 		);
 	}).as('messages');
 
-	cy.intercept('POST', config.endpoints.rc.subscriptions.read, (req) => {
+	cy.intercept('POST', endpoints.rc.subscriptions.read, (req) => {
 		getAskerSessions().forEach((session, index) => {
 			if (session.session.groupId === req.body.rid) {
 				updateAskerSession({ session: { messagesRead: true } }, index);
@@ -185,53 +190,90 @@ Cypress.Commands.add('mockApi', () => {
 		req.reply('{}');
 	}).as('sessionRead');
 
-	cy.intercept('GET', `${config.endpoints.consultantEnquiriesBase}*`, {}).as(
+	cy.intercept('GET', `${endpoints.consultantEnquiriesBase}*`, {}).as(
 		'consultantEnquiriesBase'
 	);
 
-	cy.intercept('POST', config.endpoints.keycloakLogout, {}).as('authLogout');
+	cy.intercept('POST', endpoints.keycloakLogout, {}).as('authLogout');
 
-	cy.intercept('POST', config.endpoints.rc.logout, {}).as('apiLogout');
+	cy.intercept(
+		'GET',
+		`${endpoints.rc.settings.public}*`,
+		JSON.stringify({
+			settings: [
+				{ _id: SETTING_E2E_ENABLE, value: true, enterprise: false },
+				{
+					_id: SETTING_MESSAGE_MAXALLOWEDSIZE,
+					value: 999999,
+					enterprise: false
+				}
+			],
+			count: 1,
+			offset: 0,
+			total: 1,
+			success: true
+		})
+	).as('rcSettingsPublic');
 
-	cy.intercept(`${config.endpoints.liveservice}/**/*`, {
-		entropy: -1197552011,
-		origins: ['*:*'],
-		cookie_needed: false,
-		websocket: true
-	});
+	cy.intercept('POST', endpoints.keycloakLogout, {
+		statusCode: 204
+	}).as('authLogout');
 
-	cy.intercept('GET', config.endpoints.draftMessages, {}).as('draftMessages');
+	cy.intercept('POST', endpoints.rc.logout, JSON.stringify({})).as(
+		'apiLogout'
+	);
 
-	cy.intercept('POST', config.endpoints.startVideoCall, {
+	cy.intercept(
+		`${endpoints.liveservice}/**/*`,
+		JSON.stringify({
+			entropy: '-1197552011',
+			origins: ['*:*'],
+			cookie_needed: false,
+			websocket: true
+		})
+	).as('liveService');
+
+	cy.intercept('GET', endpoints.draftMessages, {}).as('draftMessages');
+
+	cy.intercept('POST', endpoints.startVideoCall, {
 		fixture: 'service.videocalls.new'
 	}).as('startVideoCall');
 
-	cy.intercept('POST', config.endpoints.rejectVideoCall, {}).as(
-		'rejectVideoCall'
-	);
+	cy.intercept('POST', endpoints.rejectVideoCall, {}).as('rejectVideoCall');
 
-	cy.intercept('POST', config.endpoints.attachmentUpload, (req) =>
+	cy.intercept('POST', endpoints.attachmentUpload, (req) =>
 		req.reply({
 			...defaultReturns['attachmentUpload'],
 			...(overrides['attachmentUpload'] || {})
 		})
 	).as('attachmentUpload');
 
-	cy.intercept('POST', config.endpoints.keycloakAccessToken, (req) => {
+	cy.intercept('POST', endpoints.keycloakAccessToken, (req) => {
 		req.reply({
 			...defaultReturns['auth'],
 			...(overrides['auth'] || {})
 		});
 	}).as('authToken');
 
-	cy.intercept('GET', config.endpoints.userData, (req) => {
+	cy.intercept('PATCH', endpoints.userData, (req) => {
+		req.reply({});
+	}).as('patchUsersData');
+
+	cy.intercept('GET', endpoints.userData, (req) => {
 		req.reply({
 			...defaultReturns['userData'][username],
 			...(overrides['userData'] || {})
 		});
 	}).as('usersData');
 
-	cy.intercept('GET', config.endpoints.agencyConsultants, (req) => {
+	cy.intercept('GET', endpoints.consultantsLanguages, (req) => {
+		req.reply([
+			...defaultReturns['agencyConsultantsLanguages'],
+			...(overrides['agencyConsultantsLanguages'] || [])
+		]);
+	}).as('agencyConsultants');
+
+	cy.intercept('GET', endpoints.agencyConsultants, (req) => {
 		req.reply(
 			...defaultReturns['agencyConsultants'],
 			...(overrides['agencyConsultants'] || [])
@@ -239,7 +281,7 @@ Cypress.Commands.add('mockApi', () => {
 	}).as('agencyConsultants');
 
 	cy.intercept(
-		`${config.endpoints.consultingTypeServiceBase}/byslug/*/full`,
+		`${endpoints.consultingTypeServiceBase}/byslug/*/full`,
 		(req) => {
 			const slug = new URL(req.url).pathname.split('/')[4];
 
@@ -252,29 +294,23 @@ Cypress.Commands.add('mockApi', () => {
 		}
 	).as('consultingTypeServiceBySlugFull');
 
-	cy.intercept(
-		`${config.endpoints.consultingTypeServiceBase}/*/full`,
-		(req) => {
-			const id = parseInt(new URL(req.url).pathname.split('/')[3]);
+	cy.intercept(`${endpoints.consultingTypeServiceBase}/*/full`, (req) => {
+		const id = parseInt(new URL(req.url).pathname.split('/')[3]);
 
-			req.reply({
-				...(defaultReturns['consultingTypes'].find(
-					(consultingType) => consultingType.id === id
-				) || {}),
-				...(overrides['consultingType'] || {})
-			});
-		}
-	).as('consultingTypeServiceBaseFull');
+		req.reply({
+			...(defaultReturns['consultingTypes'].find(
+				(consultingType) => consultingType.id === id
+			) || {}),
+			...(overrides['consultingType'] || {})
+		});
+	}).as('consultingTypeServiceBaseFull');
 
-	cy.intercept(
-		`${config.endpoints.consultingTypeServiceBase}/basic`,
-		(req) => {
-			req.reply([
-				...defaultReturns['consultingTypes'],
-				...(overrides['consultingTypes'] || [])
-			]);
-		}
-	).as('consultingTypeServiceBaseBasic');
+	cy.intercept(`${endpoints.consultingTypeServiceBase}/basic`, (req) => {
+		req.reply([
+			...defaultReturns['consultingTypes'],
+			...(overrides['consultingTypes'] || [])
+		]);
+	}).as('consultingTypeServiceBaseBasic');
 
 	cy.intercept('GET', '/releases/*.json', (req) => {
 		req.reply({
@@ -293,7 +329,9 @@ Cypress.Commands.add('mockApi', () => {
 	apiAppointments(cy);
 	apiVideocalls(cy);
 
-	cy.intercept('GET', '/api/v1/e2e.fetchMyKeys', (req) => {
+	cy.intercept('PUT', endpoints.setAbsence, {});
+
+	cy.intercept('GET', endpoints.rc.e2ee.fetchMyKeys, (req) => {
 		// keys from dev user pregnancy
 		req.reply({
 			public_key:
@@ -304,30 +342,46 @@ Cypress.Commands.add('mockApi', () => {
 		});
 	}).as('fetchMyKeys');
 
-	cy.intercept('POST', '/api/v1/e2e.setUserPublicAndPrivateKeys', (req) => {
-		req.reply({
-			success: true
-		});
-	}).as('setUserPublicAndPrivateKeys');
+	cy.intercept(
+		'POST',
+		endpoints.rc.e2ee.setUserPublicAndPrivateKeys,
+		(req) => {
+			req.reply({
+				success: true
+			});
+		}
+	).as('setUserPublicAndPrivateKeys');
 
-	cy.intercept('POST', '/api/v1/users.resetE2EKey', (req) => {
+	cy.intercept('POST', endpoints.rc.users.resetE2EKey, (req) => {
 		req.reply({
 			success: true
 		});
 	}).as('resetE2EKey');
 
-	cy.intercept('PUT', '/service/users/chat/e2e', {
+	cy.intercept('PUT', endpoints.userUpdateE2EKey, {
 		statusCode: 200
 	});
 
-	cy.intercept('GET', config.endpoints.sessionRooms, (req) => {
+	cy.intercept('GET', `${endpoints.sessionRooms}*`, (req) => {
 		const data = { ...defaultReturns['sessionRooms'] };
+		const rcGroupId = new URL(req.url).searchParams.get('rcGroupIds');
+		let foundSession = null;
+		getAskerSessions().forEach((session, index) => {
+			if (session.session.groupId === rcGroupId) {
+				foundSession = session;
+			}
+		});
+
+		getConsultantSessions().forEach((session, index) => {
+			if (session.session.groupId === rcGroupId) {
+				foundSession = session;
+			}
+		});
+
 		data.body.sessions[0].session = {
-			...data.body.sessions[0].session,
+			...foundSession,
 			...overrides['sessionRooms']
 		};
-
-		console.log(overrides['sessionRooms']);
 
 		req.reply(data);
 	}).as('sessionRooms');

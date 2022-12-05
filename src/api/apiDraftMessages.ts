@@ -1,4 +1,4 @@
-import { config } from '../resources/scripts/config';
+import { endpoints } from '../resources/scripts/endpoints';
 import { fetchData, FETCH_ERRORS, FETCH_METHODS } from './fetchData';
 
 export const apiPostDraftMessage = async (
@@ -7,7 +7,7 @@ export const apiPostDraftMessage = async (
 	encryptType: string,
 	org: string
 ): Promise<void> => {
-	const url = config.endpoints.draftMessages;
+	const url = endpoints.draftMessages;
 	const message = JSON.stringify({
 		message: messageData,
 		t: encryptType,
@@ -17,24 +17,27 @@ export const apiPostDraftMessage = async (
 		url: url,
 		method: FETCH_METHODS.POST,
 		headersData: { rcGroupId: rcGroupIdOrSessionId },
-		bodyData: message
+		bodyData: message,
+		responseHandling: [FETCH_ERRORS.CATCH_ALL]
 	});
 };
 
-interface draftMessage {
+export interface IDraftMessage {
 	message: string;
 	t: string;
 	org: string;
 }
 
 export const apiGetDraftMessage = async (
-	rcGroupIdOrSessionId: string | number
-): Promise<draftMessage> => {
-	const url = config.endpoints.draftMessages;
+	rcGroupIdOrSessionId: string | number,
+	signal?: AbortSignal
+): Promise<IDraftMessage> => {
+	const url = endpoints.draftMessages;
 	return fetchData({
 		url: url,
 		method: FETCH_METHODS.GET,
 		headersData: { rcGroupId: rcGroupIdOrSessionId },
-		responseHandling: [FETCH_ERRORS.EMPTY]
+		responseHandling: [FETCH_ERRORS.EMPTY],
+		...(signal && { signal: signal })
 	});
 };

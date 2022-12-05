@@ -1,16 +1,13 @@
 import * as React from 'react';
-import { useState, useEffect, useCallback } from 'react';
-import { translate } from '../../utils/translate';
-import { Button, BUTTON_TYPES } from '../button/Button';
-import { CheckboxItem, Checkbox } from '../checkbox/Checkbox';
-import { buttonItemSubmit } from './registrationHelpers';
+import { useState, useEffect, useCallback, useContext } from 'react';
+import { BUTTON_TYPES } from '../button/Button';
 import {
 	apiPostRegistration,
 	FETCH_ERRORS,
 	apiAgencySelection,
 	X_REASON
 } from '../../api';
-import { config } from '../../resources/scripts/config';
+import { endpoints } from '../../resources/scripts/endpoints';
 import { DEFAULT_POSTCODE } from './prefillPostcode';
 import {
 	OverlayWrapper,
@@ -19,12 +16,13 @@ import {
 	OverlayItem
 } from '../overlay/Overlay';
 import { redirectToApp } from './autoLogin';
-import { PreselectedAgency } from '../agencySelection/PreselectedAgency';
 import {
 	AgencyDataInterface,
+	LocaleContext,
 	ConsultantDataInterface,
 	ConsultingTypeInterface,
-	LegalLinkInterface
+	TenantContext,
+	useTenant
 } from '../../globalState';
 import { FormAccordion } from '../formAccordion/FormAccordion';
 import { ReactComponent as WelcomeIcon } from '../../resources/img/illustrations/welcome.svg';
@@ -34,12 +32,18 @@ import {
 	getErrorCaseForStatus,
 	redirectToErrorPage
 } from '../error/errorHandling';
+import { useTranslation } from 'react-i18next';
+import { TopicsDataInterface } from '../../globalState/interfaces/TopicsDataInterface';
+import { LegalLinksContext } from '../../globalState/provider/LegalLinksProvider';
+import { useAppConfig } from '../../hooks/useAppConfig';
+import { getTenantSettings } from '../../utils/tenantSettingsHelper';
+import { budibaseLogout } from '../budibase/budibaseLogout';
 
 interface RegistrationFormProps {
 	consultingType?: ConsultingTypeInterface;
 	agency?: AgencyDataInterface;
 	consultant?: ConsultantDataInterface;
-	legalLinks: Array<LegalLinkInterface>;
+	topic?: TopicsDataInterface;
 }
 
 interface FormAccordionData {
@@ -57,9 +61,14 @@ interface FormAccordionData {
 export const RegistrationForm = ({
 	consultingType,
 	agency,
-	legalLinks,
+	topic,
 	consultant
 }: RegistrationFormProps) => {
+	const { t: translate } = useTranslation(['common', 'consultingTypes']);
+	const tenantData = useTenant();
+	const legalLinks = useContext(LegalLinksContext);
+	const { locale } = useContext(LocaleContext);
+	const settings = useAppConfig();
 	const [formAccordionData, setFormAccordionData] =
 		useState<FormAccordionData>({});
 	const [formAccordionValid, setFormAccordionValid] = useState(false);
@@ -73,6 +82,16 @@ export const RegistrationForm = ({
 	const [overlayActive, setOverlayActive] = useState(false);
 
 	const [initialPostcode, setInitialPostcode] = useState('');
+	const topicsAreRequired =
+		tenantData?.settings?.topicsInRegistrationEnabled &&
+		tenantData?.settings?.featureTopicsEnabled;
+	const { tenant } = useContext(TenantContext);
+	const { featureToolsEnabled } = getTenantSettings();
+
+	// Logout from budibase
+	useEffect(() => {
+		featureToolsEnabled && budibaseLogout();
+	}, [featureToolsEnabled]);
 
 	useEffect(() => {
 		const postcodeParameter = getUrlParameter('postcode');
@@ -87,7 +106,10 @@ export const RegistrationForm = ({
 			});
 		}
 
-		if (consultingType?.registration.autoSelectAgency) {
+		if (
+			consultingType?.registration.autoSelectAgency &&
+			!topicsAreRequired
+		) {
 			apiAgencySelection({
 				postcode: postcodeParameter || DEFAULT_POSTCODE,
 				consultingType: consultingType.id
@@ -110,30 +132,32 @@ export const RegistrationForm = ({
 		}
 	}, [formAccordionValid, isDataProtectionSelected]);
 
-	const checkboxItemDataProtection: CheckboxItem = {
-		inputId: 'dataProtectionCheckbox',
-		name: 'dataProtectionCheckbox',
-		labelId: 'dataProtectionLabel',
-		checked: isDataProtectionSelected,
-		label: [
-			translate('registration.dataProtection.label.prefix'),
-			legalLinks
-				.filter((legalLink) => legalLink.registration)
-				.map(
-					(legalLink, index, { length }) =>
-						(index > 0
-							? index < length - 1
-								? ', '
-								: translate(
-										'registration.dataProtection.label.and'
-								  )
-							: '') +
-						`<a target="_blank" href="${legalLink.url}">${legalLink.label}</a>`
-				)
-				.join(''),
-			translate('registration.dataProtection.label.suffix')
-		].join(' ')
-	};
+	useEffect(() => {
+		// When we require the topic to be selected and the autoSelectPostCode is enabled,
+		// we need to request the api to get the preselected agency
+		const shouldRequestAgencyWhenAutoSelectIsEnabled =
+			consultingType?.registration.autoSelectPostcode &&
+			!!topicsAreRequired;
+
+		if (shouldRequestAgencyWhenAutoSelectIsEnabled) {
+			apiAgencySelection({
+				postcode: formAccordionData.postcode || DEFAULT_POSTCODE,
+				consultingType: consultingType.id,
+				topicId: formAccordionData.mainTopicId
+			})
+				.then((response) => {
+					const agencyData = response[0];
+					setPreselectedAgencyData(agencyData);
+				})
+				.catch(() => setPreselectedAgencyData(null));
+		}
+	}, [
+		consultingType,
+		formAccordionData.mainTopicId,
+		formAccordionData.postcode,
+		tenantData,
+		topicsAreRequired
+	]);
 
 	const overlayItemRegistrationSuccess: OverlayItem = {
 		svg: WelcomeIcon,
@@ -166,12 +190,18 @@ export const RegistrationForm = ({
 			postcode: formAccordionData.postcode,
 			consultingType: formAccordionData.consultingTypeId?.toString(),
 			termsAccepted: isDataProtectionSelected.toString(),
+			preferredLanguage: locale,
 			...(formAccordionData.state && { state: formAccordionData.state }),
 			...(formAccordionData.age && { age: formAccordionData.age }),
 			...(consultant && { consultantId: consultant.consultantId })
 		};
 
-		apiPostRegistration(config.endpoints.registerAsker, registrationData)
+		apiPostRegistration(
+			endpoints.registerAsker,
+			registrationData,
+			settings.multitenancyWithSingleDomainEnabled,
+			tenant
+		)
 			.then((res) => {
 				return setOverlayActive(true);
 			})
@@ -211,7 +241,13 @@ export const RegistrationForm = ({
 			>
 				<h3 className="registrationForm__overline">
 					{consultingType
-						? consultingType.titles.long
+						? translate(
+								[
+									`consultingType.${consultingType.id}.titles.long`,
+									consultingType.titles.long
+								],
+								{ ns: 'consultingTypes' }
+						  )
 						: translate('registration.overline')}
 				</h3>
 				<h2 className="registrationForm__headline">
@@ -233,36 +269,16 @@ export const RegistrationForm = ({
 						consultant={consultant}
 						onValidation={setFormAccordionValid}
 						mainTopicId={formAccordionData.mainTopicId}
+						preselectedTopic={topic?.id}
+						legalLinks={legalLinks}
+						handleSubmitButtonClick={handleSubmitButtonClick}
+						isSubmitButtonDisabled={isSubmitButtonDisabled}
+						setIsDataProtectionSelected={
+							setIsDataProtectionSelected
+						}
+						isDataProtectionSelected={isDataProtectionSelected}
 					/>
 				)}
-
-				{preselectedAgencyData &&
-					consultingType?.registration.autoSelectPostcode && (
-						<PreselectedAgency
-							prefix={translate(
-								'registration.agency.preselected.prefix'
-							)}
-							agencyData={preselectedAgencyData}
-						/>
-					)}
-
-				<div className="registrationForm__dataProtection">
-					<Checkbox
-						item={checkboxItemDataProtection}
-						checkboxHandle={() =>
-							setIsDataProtectionSelected(
-								!isDataProtectionSelected
-							)
-						}
-					/>
-				</div>
-
-				<Button
-					className="registrationForm__submit"
-					item={buttonItemSubmit}
-					buttonHandle={handleSubmitButtonClick}
-					disabled={isSubmitButtonDisabled}
-				/>
 			</form>
 
 			{overlayActive && (

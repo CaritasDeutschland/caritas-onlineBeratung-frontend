@@ -1,11 +1,10 @@
 import * as React from 'react';
-import { useEffect, useContext, useState, useCallback } from 'react';
+import { useEffect, useContext, useState, useCallback, useMemo } from 'react';
 import {
 	UserDataContext,
 	hasUserAuthority,
 	AUTHORITIES,
 	useConsultingType,
-	LegalLinkInterface,
 	E2EEContext,
 	SessionTypeContext
 } from '../../globalState';
@@ -24,14 +23,7 @@ import {
 	OVERLAY_FUNCTIONS,
 	OverlayItem
 } from '../overlay/Overlay';
-import { translate } from '../../utils/translate';
-import {
-	startButtonItem,
-	joinButtonItem,
-	startJoinGroupChatErrorOverlay,
-	joinGroupChatClosedErrorOverlay
-} from './joinGroupChatHelpers';
-import { Button } from '../button/Button';
+import { Button, ButtonItem, BUTTON_TYPES } from '../button/Button';
 import { logout } from '../logout/logout';
 import { Redirect } from 'react-router-dom';
 import { ReactComponent as WarningIcon } from '../../resources/img/icons/i.svg';
@@ -39,12 +31,9 @@ import './joinChat.styles';
 import { Headline } from '../headline/Headline';
 import { Text } from '../text/Text';
 import { ActiveSessionContext } from '../../globalState/provider/ActiveSessionProvider';
-import { bannedUserOverlay } from '../banUser/banUserHelper';
+import { ReactComponent as XIcon } from '../../resources/img/illustrations/x.svg';
 import { useE2EE } from '../../hooks/useE2EE';
-import {
-	createGroupKey,
-	encryptForParticipant
-} from '../../utils/encryptionHelpers';
+import { encryptForParticipant } from '../../utils/encryptionHelpers';
 import { apiRocketChatUpdateGroupKey } from '../../api/apiRocketChatUpdateGroupKey';
 import { apiRocketChatSetRoomKeyID } from '../../api/apiRocketChatSetRoomKeyID';
 import { getValueFromCookie } from '../sessionCookie/accessSessionCookie';
@@ -54,18 +43,22 @@ import {
 } from '../../api/apiSendAliasMessage';
 import { useWatcher } from '../../hooks/useWatcher';
 import { useSearchParam } from '../../hooks/useSearchParams';
+import { useTranslation } from 'react-i18next';
+import { useTimeoutOverlay } from '../../hooks/useTimeoutOverlay';
 
 interface JoinGroupChatViewProps {
 	forceBannedOverlay?: boolean;
 	bannedUsers?: string[];
-	legalLinks: Array<LegalLinkInterface>;
 }
 
 export const JoinGroupChatView = ({
-	legalLinks,
 	forceBannedOverlay = false,
 	bannedUsers = []
 }: JoinGroupChatViewProps) => {
+	const { t: translate, i18n } = useTranslation([
+		'common',
+		'consultingTypes'
+	]);
 	const { activeSession, reloadActiveSession } =
 		useContext(ActiveSessionContext);
 	const { userData } = useContext(UserDataContext);
@@ -74,11 +67,7 @@ export const JoinGroupChatView = ({
 	const [redirectToSessionsList, setRedirectToSessionsList] = useState(false);
 	const consultingType = useConsultingType(activeSession.item.consultingType);
 
-	const [buttonItem, setButtonItem] = useState(joinButtonItem);
 	const [isButtonDisabled, setIsButtonDisabled] = useState(false);
-	const [groupKeyID, setGroupKeyID] = useState(null);
-	const [sessionGroupKeyExportedString, setSessionGroupKeyExportedString] =
-		useState(null);
 	const [isRequestInProgress, setIsRequestInProgress] = useState(false);
 	const sessionListTab = useSearchParam<SESSION_LIST_TAB>('sessionListTab');
 	const getSessionListTab = () =>
@@ -86,24 +75,85 @@ export const JoinGroupChatView = ({
 
 	const { isE2eeEnabled } = useContext(E2EEContext);
 	const { path: listPath } = useContext(SessionTypeContext);
-	const { encrypted } = useE2EE(activeSession.rid);
+	const { keyID, sessionKeyExportedString, encrypted, ready } = useE2EE(
+		activeSession.rid
+	);
 
-	// create the groupkeys once, if e2ee feature is enabled
-	useEffect(() => {
-		if (!isE2eeEnabled || encrypted || activeSession?.item?.active) {
-			return;
-		}
-
-		createGroupKey().then(
-			({
-				keyID: groupKeyID,
-				sessionKeyExportedString: sessionGroupKeyExportedString
-			}) => {
-				setGroupKeyID(groupKeyID);
-				setSessionGroupKeyExportedString(sessionGroupKeyExportedString);
-			}
+	const { visible: requestOverlayVisible, overlay: requestOverlay } =
+		useTimeoutOverlay(
+			// Disable the request overlay if upload is in progess because upload progress is shown in the ui already
+			isRequestInProgress,
+			null,
+			null,
+			null,
+			2500
 		);
-	}, [encrypted, activeSession, isE2eeEnabled]);
+
+	const joinButtonItem: ButtonItem = useMemo(
+		() => ({
+			label: translate('groupChat.join.button.label.join'),
+			type: BUTTON_TYPES.PRIMARY
+		}),
+		[translate]
+	);
+
+	const startButtonItem: ButtonItem = useMemo(
+		() => ({
+			label: translate('groupChat.join.button.label.start'),
+			type: BUTTON_TYPES.PRIMARY
+		}),
+		[translate]
+	);
+
+	const [buttonItem, setButtonItem] = useState(joinButtonItem);
+
+	const startJoinGroupChatErrorOverlay: OverlayItem = {
+		svg: XIcon,
+		illustrationBackground: 'error',
+		headline: translate('groupChat.joinError.overlay.headline'),
+		buttonSet: [
+			{
+				label: translate('groupChat.joinError.overlay.buttonLabel'),
+				function: OVERLAY_FUNCTIONS.CLOSE,
+				type: BUTTON_TYPES.PRIMARY
+			}
+		]
+	};
+
+	const joinGroupChatClosedErrorOverlay: OverlayItem = useMemo(
+		() => ({
+			svg: XIcon,
+			illustrationBackground: 'error',
+			headline: translate('groupChat.join.chatClosedOverlay.headline'),
+			buttonSet: [
+				{
+					label: translate(
+						'groupChat.join.chatClosedOverlay.button1Label'
+					),
+					function: OVERLAY_FUNCTIONS.REDIRECT,
+					type: BUTTON_TYPES.PRIMARY
+				},
+				{
+					label: translate(
+						'groupChat.join.chatClosedOverlay.button2Label'
+					),
+					function: OVERLAY_FUNCTIONS.LOGOUT,
+					type: BUTTON_TYPES.SECONDARY
+				}
+			]
+		}),
+		[translate]
+	);
+
+	const bannedUserOverlay: OverlayItem = useMemo(
+		() => ({
+			svg: XIcon,
+			illustrationBackground: 'large',
+			headline: translate('banUser.banned.headline'),
+			copy: translate('banUser.banned.info')
+		}),
+		[translate]
+	);
 
 	const handleEncryptRoom = useCallback(async () => {
 		if (!isE2eeEnabled || encrypted || activeSession?.item?.active) {
@@ -114,8 +164,8 @@ export const JoinGroupChatView = ({
 
 		const userKey = await encryptForParticipant(
 			sessionStorage.getItem('public_key'),
-			groupKeyID,
-			sessionGroupKeyExportedString
+			keyID,
+			sessionKeyExportedString
 		);
 
 		await apiRocketChatUpdateGroupKey(rcUserId, activeSession.rid, userKey);
@@ -123,7 +173,7 @@ export const JoinGroupChatView = ({
 		// Set Room Key ID at the very end because if something failed before it will still be repairable
 		// After room key is set the room is encrypted and the room key could not be set again.
 		try {
-			await apiRocketChatSetRoomKeyID(activeSession.rid, groupKeyID);
+			await apiRocketChatSetRoomKeyID(activeSession.rid, keyID);
 			await apiSendAliasMessage({
 				rcGroupId: activeSession.rid,
 				type: ALIAS_MESSAGE_TYPES.E2EE_ACTIVATED
@@ -137,8 +187,8 @@ export const JoinGroupChatView = ({
 		encrypted,
 		activeSession?.item?.active,
 		activeSession.rid,
-		groupKeyID,
-		sessionGroupKeyExportedString
+		keyID,
+		sessionKeyExportedString
 	]);
 	/* E2EE END */
 
@@ -155,7 +205,12 @@ export const JoinGroupChatView = ({
 					setOverlayActive(true);
 				}
 			});
-	}, [activeSession.item.active, activeSession.item.id, reloadActiveSession]);
+	}, [
+		activeSession.item.active,
+		activeSession.item.id,
+		reloadActiveSession,
+		joinGroupChatClosedErrorOverlay
+	]);
 
 	const [startWatcher, stopWatcher, isWatcherRunning] = useWatcher(
 		updateGroupChatInfo,
@@ -173,7 +228,7 @@ export const JoinGroupChatView = ({
 			}
 		};
 	}, [
-		consultingType.groupChat.isGroupChat,
+		consultingType?.groupChat.isGroupChat,
 		isWatcherRunning,
 		startWatcher,
 		stopWatcher
@@ -188,16 +243,17 @@ export const JoinGroupChatView = ({
 		} else {
 			setButtonItem(joinButtonItem);
 		}
-	}, [activeSession.item.active, userData]);
+	}, [activeSession.item.active, userData, startButtonItem, joinButtonItem]);
 
 	useEffect(() => {
 		if (hasUserAuthority(AUTHORITIES.ASKER_DEFAULT, userData)) {
 			setIsButtonDisabled(
 				!activeSession.item.active ||
-					bannedUsers.includes(userData.username)
+					bannedUsers.includes(userData.userName) ||
+					!ready
 			);
 		}
-	}, [activeSession.item.active, bannedUsers, userData]);
+	}, [activeSession.item.active, bannedUsers, ready, userData]);
 
 	const handleOverlayClose = () => {
 		setOverlayActive(false);
@@ -228,6 +284,9 @@ export const JoinGroupChatView = ({
 			.catch(() => {
 				setOverlayItem(startJoinGroupChatErrorOverlay);
 				setOverlayActive(true);
+			})
+			.finally(() => {
+				setIsRequestInProgress(false);
 			});
 	};
 
@@ -248,17 +307,42 @@ export const JoinGroupChatView = ({
 			setOverlayItem(bannedUserOverlay);
 			setOverlayActive(true);
 		}
-	}, [forceBannedOverlay]);
+	}, [forceBannedOverlay, bannedUserOverlay]);
 
 	if (redirectToSessionsList) {
 		mobileListView();
 		return <Redirect to={listPath + getSessionListTab()} />;
 	}
 
+	let groupChatRules: [string?] = [];
+	const hasGroupChatRulesTranslations = i18n.exists(
+		`consultingType.${consultingType?.id}.groupChatRules.0`,
+		{ ns: 'consultingTypes' }
+	);
+
+	if (hasGroupChatRulesTranslations) {
+		for (let i = 0; i < 10; i++) {
+			if (
+				i18n.exists(
+					`consultingType.${consultingType?.id}.groupChatRules.${i}`,
+					{ ns: 'consultingTypes' }
+				)
+			) {
+				groupChatRules.push(
+					translate(
+						`consultingType.${consultingType?.id}.groupChatRules.${i}`,
+						{ ns: 'consultingTypes' }
+					)
+				);
+			}
+		}
+	} else {
+		groupChatRules = consultingType?.groupChat?.groupChatRules ?? [];
+	}
+
 	return (
 		<div className="session joinChat">
 			<SessionHeaderComponent
-				legalLinks={legalLinks}
 				isJoinGroupChatView={true}
 				bannedUsers={bannedUsers}
 			/>
@@ -267,15 +351,9 @@ export const JoinGroupChatView = ({
 					text={translate('groupChat.join.content.headline')}
 					semanticLevel="4"
 				/>
-				{consultingType.groupChat?.groupChatRules?.map(
-					(groupChatRuleText, i) => (
-						<Text
-							text={groupChatRuleText}
-							type="standard"
-							key={i}
-						/>
-					)
-				)}
+				{groupChatRules.map((groupChatRuleText, i) => (
+					<Text text={groupChatRuleText} type="standard" key={i} />
+				))}
 			</div>
 			<div className="joinChat__button-container">
 				{!hasUserAuthority(AUTHORITIES.CONSULTANT_DEFAULT, userData) &&
@@ -291,7 +369,14 @@ export const JoinGroupChatView = ({
 					disabled={isButtonDisabled}
 				/>
 			</div>
-			{overlayActive && (
+
+			{requestOverlayVisible && (
+				<OverlayWrapper>
+					<Overlay item={requestOverlay} />
+				</OverlayWrapper>
+			)}
+
+			{overlayActive && !requestOverlayVisible && (
 				<OverlayWrapper>
 					<Overlay
 						item={overlayItem}

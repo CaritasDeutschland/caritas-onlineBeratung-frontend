@@ -1,9 +1,10 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { apiAgencyLanguages } from '../../api/apiAgencyLanguages';
-import { translate } from '../../utils/translate';
 import { isUniqueLanguage } from '../profile/profileHelpers';
 import './agencyLanguages.styles';
-import { FixedLanguagesContext } from '../../globalState/provider/FixedLanguagesProvider';
+import { LanguagesContext } from '../../globalState/provider/LanguagesProvider';
+import { useTranslation } from 'react-i18next';
+import { useAppConfig } from '../../hooks/useAppConfig';
 
 interface AgencyLanguagesProps {
 	agencyId: number;
@@ -12,14 +13,20 @@ interface AgencyLanguagesProps {
 export const AgencyLanguages: React.FC<AgencyLanguagesProps> = ({
 	agencyId
 }) => {
-	const fixedLanguages = useContext(FixedLanguagesContext);
+	const { t: translate } = useTranslation();
+
+	const { fixed: fixedLanguages } = useContext(LanguagesContext);
+	const settings = useAppConfig();
 	const [isAllShown, setIsAllShown] = useState(false);
 	const [languages, setLanguages] = useState<string[]>([...fixedLanguages]);
 
 	useEffect(() => {
 		// async wrapper
 		const getLanguagesFromApi = async () => {
-			const response = await apiAgencyLanguages(agencyId).catch(() => {
+			const response = await apiAgencyLanguages(
+				agencyId,
+				settings?.multitenancyWithSingleDomainEnabled
+			).catch(() => {
 				/* intentional, falls back to fixed languages */
 			});
 
@@ -33,7 +40,11 @@ export const AgencyLanguages: React.FC<AgencyLanguagesProps> = ({
 		};
 
 		getLanguagesFromApi();
-	}, [agencyId, fixedLanguages]);
+	}, [
+		agencyId,
+		fixedLanguages,
+		settings?.multitenancyWithSingleDomainEnabled
+	]);
 
 	const languagesSelection = languages.slice(0, 2);
 	const difference = languages.length - languagesSelection.length;
@@ -59,6 +70,12 @@ export const AgencyLanguages: React.FC<AgencyLanguagesProps> = ({
 							className="agencyLanguages__more"
 							onClick={() => {
 								setIsAllShown(true);
+							}}
+							tabIndex={0}
+							onKeyDown={(event) => {
+								if (event.key === 'Enter') {
+									setIsAllShown(true);
+								}
 							}}
 						>
 							{`+${difference} ${translate(

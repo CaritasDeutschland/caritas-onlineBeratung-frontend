@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { useState, useEffect, useContext } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { translate } from '../../utils/translate';
+import { useParams, Link, useHistory } from 'react-router-dom';
 import { SESSION_LIST_TAB } from '../session/sessionHelpers';
 import { Checkbox } from '../checkbox/Checkbox';
 import { Button } from '../button/Button';
@@ -12,14 +11,22 @@ import { ReactComponent as CheckmarkIcon } from '../../resources/img/icons/check
 import { ReactComponent as BackIcon } from '../../resources/img/icons/arrow-left.svg';
 import './monitoring.styles';
 import '../profile/profile.styles';
-import { history } from '../app/app';
 import { Loading } from '../app/Loading';
 import { useSession } from '../../hooks/useSession';
 import { useSearchParam } from '../../hooks/useSearchParams';
 import { SessionTypeContext } from '../../globalState';
+import { useResponsive } from '../../hooks/useResponsive';
+import {
+	desktopView,
+	mobileListView,
+	mobileUserProfileView
+} from '../app/navigationHandler';
+import { useTranslation } from 'react-i18next';
 
 export const Monitoring = () => {
-	const { rcGroupId: groupIdFromParam } = useParams();
+	const { t: translate } = useTranslation();
+	const { rcGroupId: groupIdFromParam } = useParams<{ rcGroupId: string }>();
+	const history = useHistory();
 
 	const { session: activeSession, ready } = useSession(groupIdFromParam);
 
@@ -28,8 +35,6 @@ export const Monitoring = () => {
 	const [monitoringData, setMonitoringData] = useState({});
 	const { path: listPath } = useContext(SessionTypeContext);
 	const sessionListTab = useSearchParam<SESSION_LIST_TAB>('sessionListTab');
-
-	let backLinkRef: React.RefObject<Link> = React.createRef();
 
 	useEffect(() => {
 		if (!ready) {
@@ -55,7 +60,18 @@ export const Monitoring = () => {
 			.catch((error) => {
 				console.log(error);
 			});
-	}, [activeSession, listPath, ready, sessionListTab]);
+	}, [activeSession, history, listPath, ready, sessionListTab]);
+
+	const { fromL } = useResponsive();
+	useEffect(() => {
+		if (!fromL) {
+			mobileUserProfileView();
+			return () => {
+				mobileListView();
+			};
+		}
+		desktopView();
+	}, [fromL]);
 
 	const handleChange = (key, parentKey) => {
 		const checkObj = (obj, k, prevk) => {
@@ -109,8 +125,16 @@ export const Monitoring = () => {
 
 	const handleSubmit = () => {
 		apiUpdateMonitoring(activeSession.item.id, monitoringData)
-			.then((response) => {
-				backLinkRef.current.click();
+			.then(() => {
+				history.push(
+					`${listPath}/${activeSession.item.groupId}/${
+						activeSession.item.id
+					}/userProfile${
+						sessionListTab
+							? `?sessionListTab=${sessionListTab}`
+							: ''
+					}`
+				);
 			})
 			.catch((error) => {
 				console.log(error);
@@ -228,7 +252,6 @@ export const Monitoring = () => {
 			<div className="profile__header">
 				<div className="profile__header__wrapper">
 					<Link
-						ref={backLinkRef}
 						to={`${listPath}/${activeSession.item.groupId}/${
 							activeSession.item.id
 						}/userProfile${

@@ -7,19 +7,22 @@ import { Headline } from '../headline/Headline';
 import { ReactComponent as newIllustration } from '../../resources/img/illustrations/new.svg';
 import { Checkbox, CheckboxItem } from '../checkbox/Checkbox';
 import { Text } from '../text/Text';
-import { translate } from '../../utils/translate';
-import { config } from '../../resources/scripts/config';
 import { convertFromRaw } from 'draft-js';
 import sanitizeHtml from 'sanitize-html';
 import { sanitizeHtmlExtendedOptions } from '../messageSubmitInterface/richtextHelpers';
 import { stateToHTML } from 'draft-js-export-html';
-
 import './releaseNote.styles.scss';
+import { useTranslation } from 'react-i18next';
+import { useAppConfig } from '../../hooks/useAppConfig';
+import {
+	STORAGE_KEY_RELEASE_NOTES,
+	useDevToolbar
+} from '../devToolbar/DevToolbar';
 
 interface ReleaseNoteProps {}
 
-const MAX_CONCURRENT_RELEASE_NOTES = 3;
-const STORAGE_KEY = 'releaseNote';
+const MAX_CONCURRENT_RELEASE_NOTES = 1;
+const STORAGE_KEY_RELEASE_NOTE = 'releaseNote';
 
 type TReleases = {
 	title?: string;
@@ -27,23 +30,28 @@ type TReleases = {
 }[];
 
 export const ReleaseNote: React.FC<ReleaseNoteProps> = () => {
+	const settings = useAppConfig();
+	const { t: translate } = useTranslation();
+	const { getDevToolbarOption } = useDevToolbar();
 	const [showReleaseNote, setShowRelaseNote] = useState(false);
 	const [checkboxChecked, setCheckboxChecked] = useState(false);
 	const [releaseNoteText, setReleaseNoteText] = useState('');
 	const [latestReleaseNote, setLatestReleaseNote] = useState('');
 
 	const readReleaseNote = useMemo(
-		() => localStorage.getItem(STORAGE_KEY) ?? '0',
+		() => localStorage.getItem(STORAGE_KEY_RELEASE_NOTE) ?? '0',
 		[]
 	);
 
 	useEffect(() => {
-		fetch(`${config.urls.releases}/releases.json`)
+		fetch(`${settings.urls.releases}/releases.json`)
 			.then((res) => res.json())
 			.then((releases: TReleases) =>
 				Object.entries(releases)
-					.reverse()
-					.slice(MAX_CONCURRENT_RELEASE_NOTES * -3)
+					.sort(([keyA], [keyB]) =>
+						parseInt(keyA) > parseInt(keyB) ? -1 : 1
+					)
+					.slice(0, MAX_CONCURRENT_RELEASE_NOTES)
 					.filter(
 						([key]) => parseInt(key) > parseInt(readReleaseNote)
 					)
@@ -55,7 +63,7 @@ export const ReleaseNote: React.FC<ReleaseNoteProps> = () => {
 			.then((releases) =>
 				Promise.all(
 					releases.map((release) =>
-						fetch(`${config.urls.releases}/${release.file}`)
+						fetch(`${settings.urls.releases}/${release.file}`)
 							.then((res) => res.text())
 							.then((markdown) => ({
 								...release,
@@ -94,18 +102,20 @@ export const ReleaseNote: React.FC<ReleaseNoteProps> = () => {
 
 				setLatestReleaseNote(markdowns[markdowns.length - 1].key);
 				setReleaseNoteText(sanitizedText);
-				setShowRelaseNote(true);
+				setShowRelaseNote(
+					getDevToolbarOption(STORAGE_KEY_RELEASE_NOTES) === '1'
+				);
 			})
 			.catch(() => {
 				setShowRelaseNote(false);
 			});
-	}, [readReleaseNote]);
+	}, [getDevToolbarOption, readReleaseNote, settings.urls.releases]);
 
-	const changeHasSeenReleaseNote = (event) => {
-		setCheckboxChecked(event.target.checked);
+	const changeHasSeenReleaseNote = () => {
+		setCheckboxChecked(!checkboxChecked);
 		localStorage.setItem(
-			STORAGE_KEY,
-			`${event.target.checked ? latestReleaseNote : readReleaseNote}`
+			STORAGE_KEY_RELEASE_NOTE,
+			`${!checkboxChecked ? latestReleaseNote : readReleaseNote}`
 		);
 	};
 
@@ -158,6 +168,11 @@ export const ReleaseNote: React.FC<ReleaseNoteProps> = () => {
 								<Checkbox
 									checkboxHandle={changeHasSeenReleaseNote}
 									item={checkboxItem}
+									onKeyPress={(event) => {
+										if (event.key === 'Enter') {
+											changeHasSeenReleaseNote();
+										}
+									}}
 								/>
 							</div>
 						</>

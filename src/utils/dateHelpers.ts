@@ -1,5 +1,3 @@
-import { translate } from './translate';
-
 export const MILLISECONDS_PER_SECOND = 1000;
 export const MILLISECONDS_PER_MINUTE = 60 * MILLISECONDS_PER_SECOND;
 export const MILLISECONDS_PER_HOUR = 60 * MILLISECONDS_PER_MINUTE;
@@ -17,11 +15,16 @@ export const formatToDDMMYYYY = (
 	});
 };
 
+export interface PrettyDate {
+	str: string;
+	date: string | null;
+}
+
 const printPrettyDate = (
 	messageDate: number,
 	showDayOfTheWeek: boolean = false,
 	twoDigits: boolean = false
-) => {
+): PrettyDate => {
 	const date = formatToDDMMYYYY(messageDate, twoDigits);
 
 	const currentDate = new Date();
@@ -58,18 +61,21 @@ const printPrettyDate = (
 	});
 
 	if (date === currentDateStr) {
-		return translate('message.today');
+		return { str: 'message.today', date: null };
 	} else if (date === yesterdayStr) {
-		return translate('message.yesterday');
+		return { str: 'message.yesterday', date: null };
 	} else if (date === dayBeforeYesterdayStr) {
-		return translate('message.dayBeforeYesterday');
+		return { str: 'message.dayBeforeYesterday', date: null };
 	} else if (date === tomorrowStr) {
-		return translate('message.tomorrow');
+		return { str: 'message.tomorrow', date: null };
 	} else if (showDayOfTheWeek) {
 		const dayDate = new Date(messageDate);
-		return translate(`date.day.${dayDate.getDay()}`) + ', ' + date;
+		return {
+			str: `date.day.${dayDate.getDay()}`,
+			date
+		};
 	} else {
-		return date;
+		return { str: null, date };
 	}
 };
 
@@ -93,17 +99,27 @@ export const formatToHHMM = (timestamp: string) => {
 };
 
 // Expects milliseconds since epoch
-export const prettyPrintTimeDifference = (t1: number, t2: number): string => {
+export const prettyPrintTimeDifference = (
+	t1: number,
+	t2: number,
+	includeIn = false
+): string => {
 	const deltaT = t2 - t1;
 	const hours = Math.trunc(deltaT / MILLISECONDS_PER_HOUR);
 	const minutes = Math.trunc(
 		(deltaT % MILLISECONDS_PER_HOUR) / MILLISECONDS_PER_MINUTE
 	);
 
+	const prefix = includeIn
+		? hours < 0 || minutes < 0
+			? 'vor'
+			: 'in'
+		: 'vor';
+
 	// TODO: Revise hard-coded locale once internationalization is implemented
 	return hours === 0 && minutes === 0
 		? 'jetzt'
-		: `vor ${hours ? `${hours} h ` : ''}${minutes} min`;
+		: `${prefix} ${hours ? `${hours} h ` : ''}${minutes} min`;
 };
 
 export const convertISO8601ToMSSinceEpoch = (iso8601Date) => {
@@ -118,4 +134,12 @@ export const dateToLocalISO = (date: Date) => {
 	)
 		.toString()
 		.substring(1)}:${(date.getMinutes() + 100).toString().substring(1)}`;
+};
+
+export const addMissingZero = (value: number) => {
+	if (value < 10) {
+		return '0' + value;
+	} else {
+		return value;
+	}
 };

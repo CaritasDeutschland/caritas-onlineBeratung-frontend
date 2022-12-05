@@ -24,12 +24,14 @@ export interface InputFieldItem {
 	warningLabel?: string;
 	warningActive?: boolean;
 	labelState?: InputFieldLabelState;
+	tabIndex?: number;
 }
 
 export interface InputFieldProps {
 	item: InputFieldItem;
 	inputHandle: Function;
 	keyUpHandle?: Function;
+	onKeyDown?: Function;
 }
 
 export interface GeneratedInputs {
@@ -88,6 +90,8 @@ export const InputField = (props: InputFieldProps) => {
 				disabled={inputItem.disabled}
 				autoComplete="off"
 				onKeyUp={handleKeyUp}
+				onKeyDown={(e) => (props.onKeyDown ? props.onKeyDown(e) : null)}
+				tabIndex={inputItem.tabIndex}
 			/>
 			<label className="inputField__label" htmlFor={inputItem.id}>
 				{inputItem.label}
@@ -97,7 +101,11 @@ export const InputField = (props: InputFieldProps) => {
 					onClick={() => setShowPassword(!showPassword)}
 					className="inputField__passwordToggle"
 				>
-					{showPassword ? <HidePasswordIcon /> : <ShowPasswordIcon />}
+					{showPassword ? (
+						<HidePasswordIcon color={'rgba(0, 0, 0, 0.65)'} />
+					) : (
+						<ShowPasswordIcon color={'rgba(0, 0, 0, 0.65)'} />
+					)}
 				</span>
 			)}
 			{inputItem.infoText && (
