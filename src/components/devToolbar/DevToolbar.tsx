@@ -8,8 +8,15 @@ import React, {
 import * as ReactDOM from 'react-dom';
 import './devToolbar.styles.scss';
 import i18n from '../../i18n';
+import {
+	getValueFromCookie,
+	setValueInCookie
+} from '../sessionCookie/accessSessionCookie';
+import { AppConfigInterface } from '../../globalState';
+import { useAppConfig } from '../../hooks/useAppConfig';
 
 export const STORAGE_KEY_LOCALE = 'locale';
+export const STORAGE_KEY_API = 'devProxy';
 export const STORAGE_KEY_DEV_TOOLBAR = 'showDevTools';
 export const STORAGE_KEY_POSITION = 'positionDevTools';
 export const STORAGE_KEY_HIDDEN = 'hiddenDevTools';
@@ -20,6 +27,7 @@ export const STORAGE_KEY_RELEASE_NOTES = 'release_notes';
 export const STORAGE_KEY_ERROR_BOUNDARY = 'error_boundary';
 export const STORAGE_KEY_E2EE_DISABLED = 'e2ee_disabled';
 export const STORAGE_KEY_ENABLE_TRANSLATION_CHECK = 'enable_translation_check';
+export const STORAGE_KEY_ATTACHMENT_ENCRYPTION = 'attachement_encryption';
 
 const DEVTOOLBAR_EVENT = 'devToolbar';
 
@@ -27,7 +35,7 @@ type TLocalStorageSwitch = {
 	label: string;
 	key: string;
 	persistent?: boolean;
-	value: string;
+	value: string | ((settings: AppConfigInterface) => string);
 	className?: string;
 	description?: string;
 	postScript?: (value: string) => void;
@@ -51,7 +59,9 @@ const SELECT = 'select';
 type TSelect = typeof SELECT;
 type TLocalStorageSwitchSelect = TLocalStorageSwitch & {
 	type: TSelect;
-	choices: { [key: string]: ReactNode };
+	choices:
+		| { [key: string]: ReactNode }
+		| (() => Promise<{ [key: string]: ReactNode }>);
 };
 
 const RADIO = 'radio';
@@ -75,7 +85,7 @@ type TLocalStorageSwitches =
 	| TLocalStorageSwitchRadio
 	| TLocalStorageSwitchToggle;
 
-const LOCAL_STORAGE_SWITCHES: TLocalStorageSwitches[] = [
+const LOCAL_STORAGE_SWITCHES: (TLocalStorageSwitches | null)[] = [
 	{
 		label: 'Dev Toolbar',
 		key: STORAGE_KEY_HIDDEN,
@@ -139,6 +149,15 @@ const LOCAL_STORAGE_SWITCHES: TLocalStorageSwitches[] = [
 		description: 'Disable end-to-end encryption. DEV only'
 	},
 	{
+		label: 'DEV ATTACHMENT ENCRYPTION',
+		key: STORAGE_KEY_ATTACHMENT_ENCRYPTION,
+		type: TOGGLE,
+		choices: { '0': 'Disabled', '1': 'Enabled' },
+		value: (appConfig) => (appConfig.attachmentEncryption ? '1' : '0'),
+		description:
+			'Disable attachment encryption. Enable only when e2ee is also enabled. DEV only'
+	},
+	{
 		label: 'DEV Error Boundary',
 		key: STORAGE_KEY_ERROR_BOUNDARY,
 		type: TOGGLE,
@@ -179,11 +198,40 @@ const LOCAL_STORAGE_SWITCHES: TLocalStorageSwitches[] = [
 					: localStorage.getItem(STORAGE_KEY_LOCALE) ?? 'de'
 			);
 		}
+	},
+	process.env.REACT_APP_DOCKER && {
+		label: 'DEV API',
+		key: STORAGE_KEY_API,
+		persistent: false,
+		type: SELECT,
+		choices: () =>
+			fetch('/switch/proxies.json')
+				.then((res) => res.json())
+				.then((proxiesConfig) => {
+					const proxies = {};
+					Object.keys(proxiesConfig.proxies).forEach((proxy) => {
+						proxies[proxy] =
+							proxy.charAt(0).toUpperCase() +
+							proxy
+								.substring(1)
+								.replace(
+									/_(.?)/,
+									(res, letter) => ` ${letter.toUpperCase()}`
+								);
+					});
+					return proxies;
+				}),
+		value: getValueFromCookie(STORAGE_KEY_API) ?? '',
+		description: 'Switch API',
+		postScript: (value) => {
+			setValueInCookie(STORAGE_KEY_API, value);
+		}
 	}
 ];
 
 export const useDevToolbar = () => {
 	const [lastChange, setLastChange] = useState(null);
+	const appConfig = useAppConfig();
 
 	const onChange = useCallback(() => {
 		setLastChange(new Date().getTime());
@@ -198,11 +246,14 @@ export const useDevToolbar = () => {
 	}, [onChange]);
 
 	const getDevToolbarOption = useCallback(
-		(key) =>
-			localStorage.getItem(key) ??
-			LOCAL_STORAGE_SWITCHES.find(
-				(localStorageSwitch) => localStorageSwitch.key === key
-			)?.value,
+		(key) => {
+			const value =
+				localStorage.getItem(key) ??
+				LOCAL_STORAGE_SWITCHES.filter(Boolean).find(
+					(localStorageSwitch) => localStorageSwitch.key === key
+				)?.value;
+			return typeof value === 'function' ? value(appConfig) : value;
+		},
 		[lastChange] // eslint-disable-line react-hooks/exhaustive-deps
 	);
 
@@ -260,12 +311,14 @@ export const DevToolbar = () => {
 
 	const initLcSwitches = useCallback(() => {
 		setLcSwitches(
-			LOCAL_STORAGE_SWITCHES.map((localStorageSwitch) => ({
-				...localStorageSwitch,
-				value:
-					localStorage.getItem(localStorageSwitch.key) ??
-					localStorageSwitch.value
-			}))
+			LOCAL_STORAGE_SWITCHES.filter(Boolean).map(
+				(localStorageSwitch) => ({
+					...localStorageSwitch,
+					value:
+						localStorage.getItem(localStorageSwitch.key) ??
+						localStorageSwitch.value
+				})
+			)
 		);
 	}, []);
 
@@ -321,7 +374,7 @@ export const DevToolbar = () => {
 	);
 
 	const reset = useCallback(() => {
-		LOCAL_STORAGE_SWITCHES.forEach((localStorageSwitch) => {
+		LOCAL_STORAGE_SWITCHES.filter(Boolean).forEach((localStorageSwitch) => {
 			if (localStorageSwitch.key === STORAGE_KEY_DEV_TOOLBAR) {
 				return;
 			}
@@ -381,6 +434,13 @@ const LocalStorageSwitch = ({
 	localStorageSwitch: TLocalStorageSwitches;
 	onChange: (value: string) => void;
 }) => {
+	const appConfig = useAppConfig();
+
+	const localStorageSwitchValue =
+		typeof localStorageSwitch.value === 'function'
+			? localStorageSwitch.value(appConfig)
+			: localStorageSwitch.value;
+
 	switch (localStorageSwitch.type) {
 		case BUTTON:
 			return (
@@ -403,7 +463,7 @@ const LocalStorageSwitch = ({
 						onClick={() =>
 							onChange(
 								localStorageSwitch.choices.find(
-									(v) => v !== localStorageSwitch.value
+									(v) => v !== localStorageSwitchValue
 								)
 							)
 						}
@@ -419,7 +479,7 @@ const LocalStorageSwitch = ({
 						onClick={() =>
 							onChange(
 								localStorageSwitch.choices.find(
-									(v) => v !== localStorageSwitch.value
+									(v) => v !== localStorageSwitchValue
 								)
 							)
 						}
@@ -449,7 +509,7 @@ const LocalStorageSwitch = ({
 								<button
 									key={`${localStorageSwitch.key}-${value}`}
 									className={
-										localStorageSwitch.value === value
+										localStorageSwitchValue === value
 											? 'active'
 											: ''
 									}
@@ -466,35 +526,11 @@ const LocalStorageSwitch = ({
 			);
 		case SELECT:
 			return (
-				<div className={localStorageSwitch.className}>
-					<div className="devToolbar__switches__headline">
-						<h5>{localStorageSwitch.label}</h5>
-						{localStorageSwitch.description && (
-							<div
-								className="devToolbar__switches__description"
-								title={localStorageSwitch.description}
-							>
-								i
-							</div>
-						)}
-					</div>
-					<hr />
-					<select
-						onChange={({ target: { value } }) => onChange(value)}
-						tabIndex={-1}
-					>
-						{Object.keys(localStorageSwitch.choices).map(
-							(value) => (
-								<option
-									key={`${localStorageSwitch.key}-${value}`}
-									value={value}
-								>
-									{localStorageSwitch.choices[value]}
-								</option>
-							)
-						)}
-					</select>
-				</div>
+				<LocalStorageSwitchSelect
+					localStorageSwitch={localStorageSwitch}
+					value={localStorageSwitchValue}
+					onChange={onChange}
+				/>
 			);
 		case RADIO:
 			return (
@@ -521,7 +557,7 @@ const LocalStorageSwitch = ({
 										name={localStorageSwitch.key}
 										value={value.toString()}
 										checked={
-											localStorageSwitch.value ===
+											localStorageSwitchValue ===
 											value.toString()
 										}
 										onChange={() =>
@@ -535,7 +571,59 @@ const LocalStorageSwitch = ({
 					</div>
 				</div>
 			);
+		default:
+			return null;
 	}
+};
 
-	return null;
+const LocalStorageSwitchSelect = ({
+	localStorageSwitch,
+	value,
+	onChange
+}: {
+	localStorageSwitch: TLocalStorageSwitchSelect;
+	value: string;
+	onChange: (value: string) => void;
+}) => {
+	const [choices, setChoices] = useState({});
+
+	useEffect(() => {
+		if (typeof localStorageSwitch.choices !== 'function') {
+			setChoices(localStorageSwitch.choices);
+			return;
+		}
+
+		localStorageSwitch.choices().then(setChoices);
+	}, [localStorageSwitch]);
+
+	return (
+		<div className={localStorageSwitch.className}>
+			<div className="devToolbar__switches__headline">
+				<h5>{localStorageSwitch.label}</h5>
+				{localStorageSwitch.description && (
+					<div
+						className="devToolbar__switches__description"
+						title={localStorageSwitch.description}
+					>
+						i
+					</div>
+				)}
+			</div>
+			<hr />
+			<select
+				onChange={({ target: { value } }) => onChange(value)}
+				value={value}
+				tabIndex={-1}
+			>
+				{Object.keys(choices).map((value) => (
+					<option
+						key={`${localStorageSwitch.key}-${value}`}
+						value={value}
+					>
+						{choices[value]}
+					</option>
+				))}
+			</select>
+		</div>
+	);
 };

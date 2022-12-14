@@ -2,12 +2,7 @@ import * as React from 'react';
 import { useCallback, useContext, useEffect, useState } from 'react';
 import { apiSetAbsence } from '../../api';
 import { BUTTON_TYPES } from '../button/Button';
-import {
-	OverlayItem,
-	OVERLAY_FUNCTIONS,
-	OverlayWrapper,
-	Overlay
-} from '../overlay/Overlay';
+import { OverlayItem, OVERLAY_FUNCTIONS, Overlay } from '../overlay/Overlay';
 import { UserDataContext } from '../../globalState';
 import { ReactComponent as CheckIcon } from '../../resources/img/illustrations/check.svg';
 import './absenceFormular.styles';
@@ -124,7 +119,7 @@ export const AbsenceFormular = () => {
 						checkedIcon={false}
 						width={48}
 						height={26}
-						onColor="#0dcd21"
+						onColor="#0A882F"
 						offColor="#8C878C"
 						boxShadow="0px 1px 4px rgba(0, 0, 0, 0.6)"
 						handleDiameter={27}
@@ -136,14 +131,12 @@ export const AbsenceFormular = () => {
 					/>
 				</div>
 			</div>
-			{overlayActive ? (
-				<OverlayWrapper>
-					<Overlay
-						item={absenceOverlayItem}
-						handleOverlay={handleOverlayAction}
-					/>
-				</OverlayWrapper>
-			) : null}
+			{overlayActive && (
+				<Overlay
+					item={absenceOverlayItem}
+					handleOverlay={handleOverlayAction}
+				/>
+			)}
 		</div>
 	);
 };

@@ -78,7 +78,10 @@ export const autoLogin = (autoLoginProps: AutoLoginProps): Promise<any> =>
 					response.refresh_expires_in
 				);
 
-				if (appConfig.useTenantService) {
+				if (
+					appConfig.useTenantService &&
+					!appConfig.multitenancyWithSingleDomainEnabled
+				) {
 					const { tenantId } = parseJwt(response.access_token);
 					if (tenantId !== autoLoginProps.tenantData.id) {
 						return reject(new Error(FETCH_ERRORS.UNAUTHORIZED));
@@ -156,9 +159,10 @@ export const redirectToApp = (gcid?: string) => {
 export const handleE2EESetup = (
 	password: string,
 	rcUserId: string,
-	autoLoginProps?: AutoLoginProps
+	autoLoginProps?: AutoLoginProps,
+	skipUpdateSubscriptions?: boolean
 ): Promise<any> => {
-	return new Promise(async (resolve, reject) => {
+	return new Promise(async (resolve) => {
 		let masterKey = await deriveMasterKeyFromPassword(rcUserId, password);
 
 		let privateKey;
@@ -240,14 +244,16 @@ export const handleE2EESetup = (
 		}
 
 		// update all existing subscriptions via backend logic
-		try {
-			// BE call
-			const keyString = JSON.parse(publicKey).n;
-			await apiUpdateUserE2EKeys(keyString);
-		} catch (e) {
-			console.log('Update E2E Keys in BE failed, trying FE');
-			// FE Fallback
-			await updateUserE2EKeysFallback(rcUserId);
+		if (!skipUpdateSubscriptions) {
+			try {
+				// BE call
+				const keyString = JSON.parse(publicKey).n;
+				await apiUpdateUserE2EKeys(keyString);
+			} catch (e) {
+				console.log('Update E2E Keys in BE failed, trying FE');
+				// FE Fallback
+				await updateUserE2EKeysFallback(rcUserId);
+			}
 		}
 
 		resolve(undefined);

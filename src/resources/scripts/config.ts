@@ -1,3 +1,5 @@
+import { deConsultingTypes } from '../i18n/de.consultingTypes';
+import { deAgency } from '../i18n/de.agency';
 import { AppConfigInterface } from '../../globalState/interfaces/AppConfig/AppConfigInterface';
 
 export const uiUrl = window.location.origin;
@@ -9,12 +11,14 @@ export const config: AppConfigInterface = {
 	budibaseSSO: false, // Feature flag to enable SSO on budibase
 	calcomUrl: '',
 	calendarAppUrl: '',
-	enableWalkThrough: false, // Feature flag to enable walkthrough (false by default here & true in the theme repo)
+	enableWalkthrough: false, // Feature flag to enable walkthrough (false by default here & true in the theme repo)
 	disableVideoAppointments: false, // Feature flag to enable Video-Termine page
 	multitenancyWithSingleDomainEnabled: false, // Feature flag to enable the multi tenancy with a single domain ex: lands
 	useTenantService: false,
 	useApiClusterSettings: false, // Feature flag to enable the cluster use the cluster settings instead of the config file
 	mainTenantSubdomainForSingleDomainMultitenancy: 'app',
+	attachmentEncryption: true, // Feature flag for attachment end to end encryption - e2e must also be enabled in rocket.chat
+
 	urls: {
 		consultantVideoConference:
 			'/consultant/videoberatung/:type/:appointmentId',
@@ -273,7 +277,18 @@ export const config: AppConfigInterface = {
 		'zh',
 		'zu'
 	],
-	i18n: {}
+	i18n: {
+		resources: {
+			de: {
+				consultingTypes: {
+					...deConsultingTypes
+				},
+				agencies: {
+					...deAgency
+				}
+			}
+		}
+	}
 };
 
 export const ALIAS_LAST_MESSAGES = {
@@ -281,5 +296,8 @@ export const ALIAS_LAST_MESSAGES = {
 	FURTHER_STEPS: 'aliases.lastMessage.further_steps',
 	REASSIGN_CONSULTANT: 'aliases.lastMessage.reassign_consultant',
 	REASSIGN_CONSULTANT_RESET_LAST_MESSAGE:
-		'aliases.lastMessage.reassign_consultant_reset_last_message'
+		'aliases.lastMessage.reassign_consultant_reset_last_message',
+	APPOINTMENT_SET: 'message.appointment.component.header.confirmation',
+	APPOINTMENT_CANCELLED: 'message.appointment.component.header.cancellation',
+	APPOINTMENT_RESCHEDULED: 'message.appointment.component.header.change'
 };

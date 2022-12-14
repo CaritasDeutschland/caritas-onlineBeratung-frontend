@@ -26,7 +26,7 @@ $link-hover-text-decoration: $link-text-decoration !default;
 		border: none;
 		background: none;
 		color: $primary;
-		text-decoration: underline;
+		text-decoration: $link-text-decoration;
 		padding-left: 0px;
 		margin-top: $grid-base-four;
 
@@ -48,6 +48,7 @@ $link-hover-text-decoration: $link-text-decoration !default;
 
 	.consulting-topics {
 		margin: 0;
+		padding: 0;
 	}
 
 	.inputField {
@@ -86,9 +87,13 @@ $link-hover-text-decoration: $link-text-decoration !default;
 	}
 
 	&__error {
+		display: flex;
 		color: $form-error;
-		max-width: 320px;
+		width: 280px;
 		margin-bottom: $grid-base-four;
+		@include breakpoint($fromLarge) {
+			width: 320px;
+		}
 	}
 
 	.button__item {
@@ -102,6 +107,7 @@ $link-hover-text-decoration: $link-text-decoration !default;
 		transform: $login-icon-transform;
 		text-decoration: $link-text-decoration;
 		font-weight: $link-font-weight;
+		padding: 0;
 
 		&:hover {
 			text-decoration: $link-hover-text-decoration;
@@ -126,7 +132,7 @@ $link-hover-text-decoration: $link-text-decoration !default;
 				background: white;
 				display: inline-block;
 				margin-top: 10px;
-				color: $black-65-opacity;
+				color: $text-low-emphasis;
 				text-transform: uppercase;
 				letter-spacing: 1.5px;
 				font-weight: 500;
@@ -137,6 +143,7 @@ $link-hover-text-decoration: $link-text-decoration !default;
 			.text {
 				font-weight: 600;
 				text-align: center;
+				color: $text-high-emphasis;
 			}
 			margin-top: $grid-base-six;
 		}

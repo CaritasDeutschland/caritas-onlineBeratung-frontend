@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 2.9.32 (2022-12-14)
+
+### 2.9.31 (2022-12-14)
+
+
+### Bug Fixes
+
+* removed npm publish ([cb43658](https://github.com/onlineberatung/onlineberatung-frontend/commit/cb43658fb02ecc31f2bfbe15dc20f772bb756b63))
+
 ### 2.9.30 (2022-10-11)
 
 ### 2.9.29 (2022-09-08)

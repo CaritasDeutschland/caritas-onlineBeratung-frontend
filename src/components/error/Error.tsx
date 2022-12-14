@@ -66,15 +66,14 @@ export const ErrorContent = () => {
 	return (
 		<div className={clsx('errorPage', `errorPage--${type}`)}>
 			<header className="errorPage__header">
-				<div className="errorPage__headerMobile">
-					<h2>{translate('app.title')}</h2>
-				</div>
-				<p className="errorPage__claim">{translate('app.claim')}</p>
 				<LocaleSwitch />
 			</header>
 			<div className="errorPage__main">
 				<span className="errorPage__illustrationWrapper">
-					<Icon className="errorPage__illustration" />
+					<Icon
+						className="errorPage__illustration"
+						aria-hidden="true"
+					/>
 				</span>
 				<div className="errorPage__content">
 					<h1 className="errorPage__headline">

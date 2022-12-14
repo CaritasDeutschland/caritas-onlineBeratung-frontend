@@ -8,10 +8,6 @@
 	</head>
 	<body>
 		<div class="errorPage errorPage--error" data-errortype="construction">
-			<header class="errorPage__header">
-				<h2 class="errorPage__title">Beratung & Hilfe</h2>
-				<p class="errorPage__claim">Online. Anonym. Sicher.</p>
-			</header>
 			<div class="errorPage__main">
 				<span class="errorPage__illustrationWrapper">
 					<svg
@@ -167,7 +163,6 @@
 					<p class="errorPage__infoText">
 						Wir arbeiten gerade an unserer Online-Beratung.
 						<br />
-						<br />
 						Leider können Sie währenddessen die Anwendung nicht
 						nutzen.
 						<br />
@@ -197,22 +192,6 @@
 
 	.errorPage {
 		min-height: 100vh;
-	}
-
-	.errorPage--error {
-		background-color: rgba(255, 159, 0, 0.08);
-	}
-
-	.errorPage__header {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 24px;
-		background-color: white;
-	}
-
-	.errorPage__title {
-		margin: 0;
 	}
 
 	.errorPage__claim {
@@ -255,14 +234,16 @@
 	}
 
 	.errorPage__headline {
-		font-size: 40px;
+		font-size: 32px;
 		font-weight: 700;
-		margin-bottom: 20px;
+		line-height: 50px;
+		margin-bottom: 12px;
 	}
 
 	.errorPage__infoText {
-		font-size: 16px;
-		line-height: 21px;
+		font-size: 20px;
+		line-height: 28px;
+		margin: 0;
 	}
 
 	.errorPage__button {
@@ -273,7 +254,6 @@
 		appearance: none;
 		border: none;
 		text-decoration: none;
-		text-transform: uppercase;
 		cursor: pointer;
 		min-width: 200px;
 		max-width: 400px;
@@ -282,9 +262,8 @@
 		border-radius: 24px;
 		color: #fff;
 		background-color: #cc1e1c;
-		box-shadow: 0 6px 0 0 rgb(0 0 0 / 10%);
 		transition: background-color 0.6s ease;
-		margin: 48px 0;
+		margin: 25px 0;
 	}
 
 	.errorPage__button:hover {
@@ -297,6 +276,9 @@
 			width: 40vw;
 			height: 40vw;
 		}
+		.errorPage__headline {
+			font-size: 40px;
+		}
 	}
 
 	@media (min-width: 900px) {
@@ -308,12 +290,6 @@
 			display: flex;
 			justify-content: space-between;
 			padding: 32px 24px;
-		}
-
-		.errorPage__title {
-			font-size: 30px;
-			font-weight: 700;
-			line-height: 38px;
 		}
 
 		.errorPage__claim {

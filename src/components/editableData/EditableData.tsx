@@ -3,7 +3,7 @@ import './editableData.styles';
 import { Text } from '../text/Text';
 import clsx from 'clsx';
 import { ReactComponent as CrossMarkIcon } from '../../resources/img/icons/x.svg';
-import { ReactComponent as DeleteIcon } from '../../resources/img/icons/delete.svg';
+import { ReactComponent as TrashIcon } from '../../resources/img/icons/trash.svg';
 import { ReactComponent as PenIcon } from '../../resources/img/icons/pen.svg';
 import { useEffect, useState } from 'react';
 import { isStringValidEmail } from '../registration/registrationHelpers';
@@ -150,7 +150,10 @@ export const EditableData = ({
 					className="editableData__inputButton editableData__inputButton--remove"
 					onClick={handleRemoveButtonClick}
 				>
-					<CrossMarkIcon />
+					<CrossMarkIcon
+						title={translate('app.delete')}
+						aria-label={translate('app.delete')}
+					/>
 				</span>
 			)}
 			{isSingleEdit && isDisabled && (
@@ -160,14 +163,19 @@ export const EditableData = ({
 							className="editableData__inputButton editableData__inputButton--singleClear"
 							onClick={() => onSingleClear()}
 						>
-							<DeleteIcon />
+							<TrashIcon />
 						</span>
 					)}
 					<span
 						className="editableData__inputButton editableData__inputButton--singleEdit"
 						onClick={() => handleSingleEditActive()}
 					>
-						<PenIcon />
+						<PenIcon
+							title={translate('profile.data.edit.button.edit')}
+							aria-label={translate(
+								'profile.data.edit.button.edit'
+							)}
+						/>
 					</span>
 				</div>
 			)}

@@ -1,7 +1,7 @@
 {
 	"name": "@onlineberatung/onlineberatung-frontend",
 	"title": "Online-Beratung",
-	"version": "2.9.30",
+	"version": "2.9.32",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/onlineberatung/onlineberatung-frontend.git"
@@ -9,7 +9,7 @@
 	"main": "index.ts",
 	"bin": "cli.js",
 	"engines": {
-		"node": ">=12.20.0"
+		"node": ">=14.19.0"
 	},
 	"dependencies": {
 		"@babel/core": "^7.16.7",

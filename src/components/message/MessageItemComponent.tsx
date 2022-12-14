@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import sanitizeHtml from 'sanitize-html';
 import { PrettyDate } from '../../utils/dateHelpers';
 import {
@@ -9,9 +9,10 @@ import {
 	ConsultingTypeInterface,
 	STATUS_ARCHIVED,
 	E2EEContext,
-	SessionTypeContext
+	SessionTypeContext,
+	RocketChatGlobalSettingsContext
 } from '../../globalState';
-import { SESSION_LIST_TYPES } from '../session/sessionHelpers';
+import { isUserModerator, SESSION_LIST_TYPES } from '../session/sessionHelpers';
 import { ForwardMessage } from './ForwardMessage';
 import { MessageMetaData } from './MessageMetaData';
 import { CopyMessage } from './CopyMessage';
@@ -53,12 +54,26 @@ import { MasterKeyLostMessage } from './MasterKeyLostMessage';
 import { ALIAS_MESSAGE_TYPES } from '../../api/apiSendAliasMessage';
 import { useTranslation } from 'react-i18next';
 import { ERROR_LEVEL_WARN, TError } from '../../api/apiPostError';
+import { ReactComponent as TrashIcon } from '../../resources/img/icons/trash.svg';
+import { ReactComponent as DeletedIcon } from '../../resources/img/icons/deleted.svg';
+import {
+	IBooleanSetting,
+	SETTING_MESSAGE_ALLOWDELETING
+} from '../../api/apiRocketChatSettingsPublic';
+import { Overlay, OVERLAY_FUNCTIONS, OverlayItem } from '../overlay/Overlay';
+import { ReactComponent as XIllustration } from '../../resources/img/illustrations/x.svg';
+import { BUTTON_TYPES } from '../button/Button';
+import { apiDeleteMessage } from '../../api/apiDeleteMessage';
+import { FlyoutMenu } from '../flyoutMenu/FlyoutMenu';
+import { BanUser } from '../banUser/BanUser';
+import { getValueFromCookie } from '../sessionCookie/accessSessionCookie';
 
 export interface ForwardMessageDTO {
 	message: string;
 	rcUserId: string;
 	timestamp: any;
-	username: string; // TODO change to displayName if message service is adjusted
+	username: string;
+	displayName: string;
 }
 
 export interface VideoCallMessageDTO {
@@ -70,7 +85,6 @@ export interface VideoCallMessageDTO {
 export interface MessageItem {
 	_id: string;
 	message: string;
-	org: string;
 	messageDate: PrettyDate;
 	messageTime: string;
 	displayName: string;
@@ -90,7 +104,7 @@ export interface MessageItem {
 	};
 	attachments?: MessageService.Schemas.AttachmentDTO[];
 	file?: MessageService.Schemas.FileDTO;
-	t: null | 'e2e';
+	t: null | 'e2e' | 'rm' | 'room-removed-read-only' | 'room-set-read-only';
 	rid: string;
 }
 
@@ -114,7 +128,6 @@ export const MessageItemComponent = ({
 	alias,
 	userId,
 	message,
-	org,
 	messageDate,
 	messageTime,
 	resortData,
@@ -147,7 +160,7 @@ export const MessageItemComponent = ({
 	const { isE2eeEnabled } = useContext(E2EEContext);
 
 	useEffect((): void => {
-		if (isE2eeEnabled) {
+		if (isE2eeEnabled && message) {
 			decryptText(
 				message,
 				e2eeParams.keyID,
@@ -165,16 +178,16 @@ export const MessageItemComponent = ({
 						});
 					}
 
-					return `${org || message} *`;
+					return translate('e2ee.message.encryption.text');
 				})
 				.then(setDecryptedMessage)
 				.then(() => handleDecryptionSuccess(_id));
 		} else {
-			setDecryptedMessage(org || message);
+			setDecryptedMessage(message);
 		}
 	}, [
+		translate,
 		message,
-		org,
 		t,
 		isE2eeEnabled,
 		handleDecryptionErrors,
@@ -298,6 +311,8 @@ export const MessageItemComponent = ({
 		alias?.messageType === ALIAS_MESSAGE_TYPES.REASSIGN_CONSULTANT;
 	const isMasterKeyLostMessage =
 		alias?.messageType === ALIAS_MESSAGE_TYPES.MASTER_KEY_LOST;
+	const isAppointmentDefined =
+		alias?.messageType === ALIAS_MESSAGE_TYPES.INITIAL_APPOINTMENT_DEFINED;
 
 	// WORKAROUND for reassignment last message bug
 	// don't show this message in the session view
@@ -314,6 +329,9 @@ export const MessageItemComponent = ({
 		alias?.messageType === ALIAS_MESSAGE_TYPES.APPOINTMENT_SET ||
 		alias?.messageType === ALIAS_MESSAGE_TYPES.APPOINTMENT_RESCHEDULED ||
 		alias?.messageType === ALIAS_MESSAGE_TYPES.APPOINTMENT_CANCELLED;
+	const isDeleteMessage = t === 'rm';
+	const isRoomRemovedReadOnly = t === 'room-removed-read-only';
+	const isRoomSetReadOnly = t === 'room-set-read-only';
 
 	const messageContent = (): JSX.Element => {
 		switch (true) {
@@ -419,19 +437,51 @@ export const MessageItemComponent = ({
 						activeSessionAskerRcId={activeSession.item.askerRcId}
 					/>
 				);
+			case isDeleteMessage:
+				return (
+					<div className="messageItem__message messageItem__message--deleted flex flex--ai-c">
+						<div className="mr--1">
+							<DeletedIcon
+								width={14}
+								height={14}
+								aria-hidden="true"
+								focusable="false"
+							/>
+						</div>
+						<div>
+							{translate(
+								isMyMessage
+									? 'message.delete.deleted.own'
+									: 'message.delete.deleted.other'
+							)}
+						</div>
+					</div>
+				);
 			default:
 				return (
 					<>
-						<MessageDisplayName
-							alias={alias?.forwardMessageDTO}
-							isMyMessage={isMyMessage}
-							isUser={isUserMessage()}
-							type={getUsernameType()}
-							userId={userId}
-							username={username}
-							isUserBanned={isUserBanned}
-							displayName={displayName}
-						/>
+						<div className="flex flex--jc-sb">
+							<MessageDisplayName
+								alias={alias?.forwardMessageDTO}
+								isMyMessage={isMyMessage}
+								isUser={isUserMessage()}
+								type={getUsernameType()}
+								userId={userId}
+								username={username}
+								displayName={displayName}
+							/>
+							<MessageFlyoutMenu
+								_id={_id}
+								userId={userId}
+								username={username}
+								isUserBanned={isUserBanned}
+								isMyMessage={isMyMessage}
+								isArchived={
+									activeSession.item.status ===
+									STATUS_ARCHIVED
+								}
+							/>
+						</div>
 
 						<div
 							className={
@@ -452,7 +502,9 @@ export const MessageItemComponent = ({
 									<MessageAttachment
 										key={key}
 										attachment={attachment}
+										rid={rid}
 										file={file}
+										t={t}
 										hasRenderedMessage={hasRenderedMessage}
 									/>
 								))}
@@ -490,7 +542,13 @@ export const MessageItemComponent = ({
 		}
 	};
 
-	if (isUserMutedMessage) return null;
+	if (
+		isUserMutedMessage ||
+		isAppointmentDefined ||
+		isRoomRemovedReadOnly ||
+		isRoomSetReadOnly
+	)
+		return null;
 
 	if (isUpdateSessionDataMessage && !showAddVoluntaryInfo) {
 		return null;
@@ -524,6 +582,7 @@ export const MessageItemComponent = ({
 					isMyMessage={isMyMessage}
 					isNotRead={isNotRead}
 					messageTime={messageTime}
+					t={t}
 					type={getUsernameType()}
 					isReadStatusDisabled={
 						isVideoCallMessage || isFinishedConversationMessage
@@ -531,5 +590,135 @@ export const MessageItemComponent = ({
 				/>
 			</div>
 		</div>
+	);
+};
+
+const MessageFlyoutMenu = ({
+	_id,
+	userId,
+	isUserBanned,
+	isMyMessage,
+	isArchived,
+	username
+}: {
+	_id: string;
+	userId: string;
+	username: string;
+	isUserBanned: boolean;
+	isMyMessage: boolean;
+	isArchived: boolean;
+}) => {
+	const { activeSession } = useContext(ActiveSessionContext);
+	const { getSetting } = useContext(RocketChatGlobalSettingsContext);
+
+	const currentUserIsModerator = isUserModerator({
+		chatItem: activeSession.item,
+		rcUserId: getValueFromCookie('rc_uid')
+	});
+
+	const subscriberIsModerator = isUserModerator({
+		chatItem: activeSession.item,
+		rcUserId: userId
+	});
+
+	return (
+		<FlyoutMenu position={isMyMessage ? 'left-top' : 'right-top'}>
+			{currentUserIsModerator &&
+				!subscriberIsModerator &&
+				!isUserBanned && (
+					<BanUser
+						userName={username}
+						rcUserId={userId}
+						chatId={activeSession.item.id}
+					/>
+				)}
+
+			{isMyMessage &&
+				!isArchived &&
+				getSetting<IBooleanSetting>(SETTING_MESSAGE_ALLOWDELETING) && (
+					<DeleteMessage
+						messageId={_id}
+						className="flyoutMenu__item--delete"
+					/>
+				)}
+		</FlyoutMenu>
+	);
+};
+
+const DeleteMessage = ({
+	messageId,
+	className
+}: {
+	messageId: string;
+	className?: string;
+}) => {
+	const { t: translate } = useTranslation();
+	const [deleteOverlay, setDeleteOverlay] = useState(false);
+	const [isRequestInProgress, setIsRequestInProgress] = useState(false);
+
+	const deleteMessage = useCallback(() => {
+		setIsRequestInProgress(true);
+		apiDeleteMessage(messageId)
+			.then(() => setDeleteOverlay(false))
+			.then(() => setIsRequestInProgress(false));
+	}, [messageId]);
+
+	const deleteOverlayItem: OverlayItem = useMemo(
+		() => ({
+			headline: translate('message.delete.overlay.headline'),
+			copy: translate('message.delete.overlay.copy'),
+			svg: XIllustration,
+			illustrationBackground: 'neutral',
+			buttonSet: [
+				{
+					label: translate('message.delete.overlay.cancel'),
+					function: OVERLAY_FUNCTIONS.CLOSE,
+					type: BUTTON_TYPES.SECONDARY,
+					disabled: isRequestInProgress
+				},
+				{
+					label: translate('message.delete.overlay.confirm'),
+					function: 'CONFIRM',
+					type: BUTTON_TYPES.PRIMARY,
+					disabled: isRequestInProgress
+				}
+			],
+			handleOverlay: (functionName) => {
+				if (functionName === 'CONFIRM') {
+					deleteMessage();
+					return;
+				}
+				setDeleteOverlay(false);
+			}
+		}),
+		[deleteMessage, isRequestInProgress, translate]
+	);
+
+	return (
+		<>
+			<button
+				onClick={() => setDeleteOverlay(true)}
+				className={`flex ${className}`}
+			>
+				<div className="mr--1">
+					<TrashIcon
+						width={24}
+						height={24}
+						style={{ display: 'block', padding: '2px 0' }}
+						aria-hidden="true"
+						focusable="false"
+					/>
+				</div>
+				<div>{translate('message.delete.delete')}</div>
+			</button>
+			{deleteOverlay && (
+				<Overlay
+					item={deleteOverlayItem}
+					handleOverlayClose={() => {
+						setDeleteOverlay(false);
+					}}
+				/>
+			)}
+		</>
 	);
 };
