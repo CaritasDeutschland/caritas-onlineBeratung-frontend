@@ -70,6 +70,8 @@ export const Profile = () => {
 
 	const { selectableLocales } = useContext(LocaleContext);
 
+	const { selectableLocales } = useContext(LocaleContext);
+
 	useEffect(() => {
 		// Navigation is hidden and header shown on small screens if there is no enquiry yet. Should be as usual on profile routes
 		document

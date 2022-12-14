@@ -325,6 +325,17 @@ export const SessionStream = ({
 						);
 					}
 
+					if (activeSession.isLive) {
+						subscribe(
+							{
+								name: SUB_STREAM_NOTIFY_USER,
+								event: EVENT_ROOMS_CHANGED,
+								userId: getValueFromCookie('rc_uid')
+							},
+							handleLiveChatStopped
+						);
+					}
+
 					setLoading(false);
 				})
 				.catch((e) => {
@@ -366,6 +377,17 @@ export const SessionStream = ({
 
 				if (activeSession.isGroup || activeSession.isLive) {
 					unsubscribeTyping();
+				}
+
+				if (activeSession.isLive) {
+					unsubscribe(
+						{
+							name: SUB_STREAM_NOTIFY_USER,
+							event: EVENT_ROOMS_CHANGED,
+							userId: getValueFromCookie('rc_uid')
+						},
+						handleLiveChatStopped
+					);
 				}
 
 				if (activeSession.isLive) {

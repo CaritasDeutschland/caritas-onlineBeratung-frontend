@@ -430,6 +430,7 @@ export const decryptText = async (
 		const result = await decryptAES(vector, groupKey, cipherText);
 		return new TextDecoder('UTF-8').decode(result);
 	} catch (error) {
+		// TODO CATCH DOES NOT WORK IN SAFARI
 		console.error('Error decrypting message: ', error, encMessage);
 		throw error;
 	}

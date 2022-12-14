@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 2.9.30 (2022-10-11)
+
+### 2.9.29 (2022-09-08)
+
+### 2.9.28 (2022-09-01)
+
+### 2.9.27 (2022-08-17)
+
+
+### Bug Fixes
+
+* **config.ts:** hotfix hotfix - changing realm name ([545d1a9](https://github.com/caritasdeutschland/caritas-onlineberatung-frontend/commit/545d1a95db7cb6ac7d27da6fb363fbcfbc3e98bc))
+
+### 2.9.26 (2022-08-11)
+
+### 2.9.25 (2022-08-11)
+
+### 2.9.24 (2022-08-10)
+
+### 2.9.23 (2022-08-10)
+
+### 2.9.22 (2022-08-05)
+
+### 2.9.21 (2022-08-04)
+
+### 2.9.20 (2022-07-20)
+
+### 2.9.19 (2022-07-20)
+
+### 2.9.18 (2022-07-13)
+
+### 2.9.17 (2022-07-13)
+
+### 2.9.16 (2022-07-13)
+
+### 2.9.15 (2022-07-13)
+
 ### 2.9.14 (2022-03-08)
 
 ### 2.9.13 (2022-02-28)
