@@ -13,11 +13,11 @@ import { Overlay, OVERLAY_FUNCTIONS, OverlayItem } from '../overlay/Overlay';
 import { redirectToApp } from './autoLogin';
 import {
 	AgencyDataInterface,
-	LocaleContext,
 	ConsultantDataInterface,
 	ConsultingTypeInterface,
 	TenantContext,
-	useTenant
+	useTenant,
+	useLocaleData
 } from '../../globalState';
 import { FormAccordion } from '../formAccordion/FormAccordion';
 import { ReactComponent as WelcomeIcon } from '../../resources/img/illustrations/welcome.svg';
@@ -63,7 +63,7 @@ export const RegistrationForm = ({
 	const { t: translate } = useTranslation(['common', 'consultingTypes']);
 	const tenantData = useTenant();
 	const legalLinks = useContext(LegalLinksContext);
-	const { locale } = useContext(LocaleContext);
+	const { locale } = useLocaleData();
 	const settings = useAppConfig();
 	const [formAccordionData, setFormAccordionData] =
 		useState<FormAccordionData>({});
@@ -152,6 +152,7 @@ export const RegistrationForm = ({
 				})
 				.catch(() => setPreselectedAgencyData(null));
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [
 		consultingType?.registration.autoSelectPostcode,
 		consultingType?.id,
@@ -159,7 +160,8 @@ export const RegistrationForm = ({
 		formAccordionData.postcode,
 		consultant,
 		agency,
-		topicsAreRequired
+		topicsAreRequired,
+		locale
 	]);
 
 	const overlayItemRegistrationSuccess: OverlayItem = {
