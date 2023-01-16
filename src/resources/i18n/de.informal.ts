@@ -272,6 +272,12 @@ export const deInformal = {
 		}
 	},
 	profile: {
+		liveChat: {
+			title: 'Meine Live-Chat Verfügbarkeit',
+			subtitle:
+				'Aktiviere deine Verfügbarkeit und sehe in den Erstanfragen unter „Live-Chat Anfragen“ die wartenden anoymen Ratsuchenden.',
+			toggleLabel: 'Bin verfügbar'
+		},
 		functions: {
 			'absence': {
 				'label': 'Hinterlege eine Abwesenheitsnachricht',
@@ -355,7 +361,7 @@ export const deInformal = {
 		notifications: {
 			'subtitle': 'Wir benachrichtigen Dich, wenn Du:',
 			'follow.up.email.label':
-				'eine Nachricht von einem_r angenommenen Ratsuchenden erhalten hast.'
+				'eine Nachricht von angenommenen Ratsuchenden erhalten hast.'
 		},
 		spokenLanguages: {
 			info: 'Wähle die Sprache(n) aus, in der Du die Ratsuchenden beraten kannst. Deutsch ist als Standardsprache vorausgewählt und kann nicht entfernt werden.'
