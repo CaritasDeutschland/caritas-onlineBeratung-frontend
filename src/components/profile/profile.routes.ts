@@ -21,12 +21,14 @@ import { OverviewSessions } from './OverviewMobile/Sessions';
 import { profileRoutesSettings } from './profileSettings.routes';
 import { profileRoutesHelp } from './profileHelp.routes';
 import { ConsultantLiveChatAvailability } from './ConsultantLiveChatAvailability';
+import { TenantDataInterface } from '../../globalState/interfaces/TenantDataInterface';
 
 const shouldShowOverview = (useOverviewPage: boolean) =>
 	useOverviewPage && !isDesktop;
 
 const profileRoutes = (
 	settings: AppConfigInterface,
+	tenant: TenantDataInterface,
 	selectableLocales: string[]
 ): TabsType => [
 	{
@@ -90,7 +92,7 @@ const profileRoutes = (
 								userData
 							) && settings.enableWalkthrough,
 						component: EnableWalkthrough,
-						column: COLUMN_LEFT
+						column: COLUMN_RIGHT
 					},
 					{
 						condition: (userData) =>
@@ -130,7 +132,9 @@ const profileRoutes = (
 								userData
 							),
 						component: ConsultantPrivateData,
-						column: COLUMN_RIGHT
+						column: settings.enableWalkthrough
+							? COLUMN_LEFT
+							: COLUMN_RIGHT
 					},
 					{
 						condition: (userData) =>
@@ -158,6 +162,8 @@ const profileRoutes = (
 				elements: [
 					{
 						component: ConsultantStatistics,
+						condition: () =>
+							!!tenant?.settings?.featureStatisticsEnabled,
 						column: COLUMN_LEFT
 					}
 				]
@@ -192,7 +198,9 @@ const profileRoutes = (
 				elements: [
 					{
 						component: AbsenceFormular,
-						column: COLUMN_RIGHT
+						column: tenant?.settings?.featureStatisticsEnabled
+							? COLUMN_RIGHT
+							: COLUMN_LEFT
 					}
 				]
 			}
