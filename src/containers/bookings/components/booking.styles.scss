@@ -251,6 +251,7 @@ $headerHeight: 80px;
 
 	&__counselor {
 		grid-area: counselor;
+
 		// margin-top: 1rem;
 
 		@include breakpoint($fromLarge) {
