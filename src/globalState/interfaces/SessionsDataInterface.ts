@@ -25,7 +25,7 @@ export interface ListItemInterface {
 	chat?: GroupChatItemInterface;
 	user?: SessionUserInterface;
 	language?: string;
-	latestMessage?: Date;
+	latestMessage?: string;
 }
 
 export interface SessionConsultantInterface {
@@ -85,7 +85,6 @@ export interface SessionItemInterface {
 	createDate: string;
 	messagesRead: boolean;
 	messageTime?: number;
-	monitoring: boolean;
 	postcode: number;
 	registrationType: registrationTypeAnonymous | registrationTypeRegistered;
 	status:
