@@ -19,10 +19,6 @@ export const convertUserDataObjectToArray = (object) => {
 	return array;
 };
 
-export const getAddictiveDrugsTranslatable = (addictiveDrugs) => {
-	return addictiveDrugs ? addictiveDrugs.toString().split(',') : null;
-};
-
 export const getUserDataTranslateBase = (consultingType: number) => {
 	return consultingType === 0 ? 'user.userAddiction' : 'user.userU25';
 };
@@ -74,24 +70,6 @@ export const consultingTypeSelectOptionsSet = (
 			label: consultingType.titles.registrationDropdown
 		};
 	});
-};
-
-export const hasAskerEmailFeatures = (
-	userData: UserDataInterface,
-	consultingTypes: Array<ConsultingTypeBasicInterface>
-): boolean => {
-	const registeredConsultingTypes = getConsultingTypesForRegistrationStatus(
-		userData,
-		consultingTypes,
-		REGISTRATION_STATUS_KEYS.REGISTERED
-	);
-
-	return registeredConsultingTypes.some(
-		(element) =>
-			consultingTypes.find(
-				(cur) => cur.id === parseInt(element.consultingType)
-			)?.isSetEmailAllowed
-	);
 };
 
 export const isUniqueLanguage = (value, index, self) => {
