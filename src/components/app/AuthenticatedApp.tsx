@@ -26,6 +26,8 @@ import { RocketChatPublicSettingsProvider } from '../../globalState/provider/Roc
 import { RocketChatGetUserRolesProvider } from '../../globalState/provider/RocketChatSytemUsersProvider';
 import { useJoinGroupChat } from '../../hooks/useJoinGroupChat';
 import { RocketChatUserStatusProvider } from '../../globalState/provider/RocketChatUserStatusProvider';
+import { useAppConfig } from '../../hooks/useAppConfig';
+import { E2EEncryptionSupportBanner } from '../E2EEncryptionSupportBanner/E2EEncryptionSupportBanner';
 
 interface AuthenticatedAppProps {
 	onAppReady: Function;
@@ -36,6 +38,7 @@ export const AuthenticatedApp = ({
 	onLogout,
 	onAppReady
 }: AuthenticatedAppProps) => {
+	const { releaseToggles } = useAppConfig();
 	const { setConsultingTypes } = useContext(ConsultingTypesContext);
 	const { userData, reloadUserData } = useContext(UserDataContext);
 	const { locale, setLocale } = useContext(LocaleContext);
@@ -55,12 +58,13 @@ export const AuthenticatedApp = ({
 
 	useEffect(() => {
 		if (
+			!releaseToggles?.enableNewNotifications &&
 			userData &&
 			hasUserAuthority(AUTHORITIES.CONSULTANT_DEFAULT, userData)
 		) {
 			requestPermissions();
 		}
-	}, [userData]);
+	}, [releaseToggles?.enableNewNotifications, userData]);
 
 	useEffect(() => {
 		if (!userDataRequested) {
@@ -118,6 +122,7 @@ export const AuthenticatedApp = ({
 							<RocketChatSubscriptionsProvider>
 								<RocketChatUnreadProvider>
 									<RocketChatUserStatusProvider>
+										<E2EEncryptionSupportBanner/>
 										<Routing logout={handleLogout} />
 										{notifications && (
 											<Notifications

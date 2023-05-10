@@ -23,6 +23,7 @@ import apiAppointments from './api/appointments';
 import apiVideocalls from './api/videocalls';
 import {
 	SETTING_E2E_ENABLE,
+	SETTING_FILEUPLOAD_MAXFILESIZE,
 	SETTING_MESSAGE_MAXALLOWEDSIZE
 } from '../../../src/api/apiRocketChatSettingsPublic';
 
@@ -49,6 +50,7 @@ const defaultReturns = {
 		]
 	},
 	consultingTypes: [],
+	settings: {},
 	releases: {
 		statusCode: 404
 	},
@@ -169,7 +171,7 @@ Cypress.Commands.add('mockApi', () => {
 		});
 	}).as('askerSessions');
 
-	cy.intercept('GET', endpoints.messages.get, (req) => {
+	cy.intercept('GET', `${endpoints.messages.get}*`, (req) => {
 		if (overrides['messages']) {
 			return req.reply(overrides['messages']);
 		}
@@ -221,6 +223,11 @@ Cypress.Commands.add('mockApi', () => {
 					_id: SETTING_MESSAGE_MAXALLOWEDSIZE,
 					value: 999999,
 					enterprise: false
+				},
+				{
+					_id: SETTING_FILEUPLOAD_MAXFILESIZE,
+					value: 99999999,
+					enterprise: false
 				}
 			],
 			count: 1,
@@ -256,7 +263,7 @@ Cypress.Commands.add('mockApi', () => {
 
 	cy.intercept('POST', endpoints.rejectVideoCall, {}).as('rejectVideoCall');
 
-	cy.intercept('POST', endpoints.attachmentUpload, (req) =>
+	cy.intercept('POST', `${endpoints.attachmentUpload}*`, (req) =>
 		req.reply({
 			...defaultReturns['attachmentUpload'],
 			...(overrides['attachmentUpload'] || {})
@@ -301,7 +308,7 @@ Cypress.Commands.add('mockApi', () => {
 		]);
 	}).as('agencyConsultants');
 
-	cy.intercept('GET', endpoints.agencyConsultants, (req) => {
+	cy.intercept('GET', `${endpoints.agencyConsultants}*`, (req) => {
 		req.reply(
 			...defaultReturns['agencyConsultants'],
 			...(overrides['agencyConsultants'] || [])
@@ -339,6 +346,15 @@ Cypress.Commands.add('mockApi', () => {
 			...(overrides['consultingTypes'] || [])
 		]);
 	}).as('consultingTypeServiceBaseBasic');
+
+	cy.intercept('GET', `${endpoints.serviceSettings}`, (req) => {
+		req.reply(
+			JSON.stringify({
+				...defaultReturns['settings'],
+				...(overrides['settings'] || {})
+			})
+		);
+	}).as('settings');
 
 	cy.intercept('GET', '/releases/*.json**', (req) => {
 		req.reply({
@@ -394,13 +410,13 @@ Cypress.Commands.add('mockApi', () => {
 		let foundSession = null;
 		getAskerSessions().forEach((session, index) => {
 			if (session.session.groupId === rcGroupId) {
-				foundSession = session;
+				foundSession = session.session;
 			}
 		});
 
 		getConsultantSessions().forEach((session, index) => {
 			if (session.session.groupId === rcGroupId) {
-				foundSession = session;
+				foundSession = session.session;
 			}
 		});
 
