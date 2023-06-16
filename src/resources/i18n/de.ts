@@ -1627,6 +1627,12 @@ export const de = {
 				suffix: ' zur Kenntnis genommen. Für Authentifizierung und Navigation verwendet diese Webseite Cookies.'
 			}
 		},
+		'error': {
+			required_field_missing: {
+				title: 'Leider ist etwas schiefgelaufen.',
+				text: 'Bitte versuchen Sie es später noch einmal.'
+			}
+		},
 		'form.title': 'Registrierung abschließen',
 		'headline': 'Registrierung',
 		'login': {
