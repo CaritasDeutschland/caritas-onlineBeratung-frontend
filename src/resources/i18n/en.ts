@@ -1544,6 +1544,12 @@ export const en = {
 			'headline': 'Choose consulting center'
 		},
 		'consultingType.preselected.prefix': 'Your pre-selected topic: ',
+		'error': {
+			required_field_missing: {
+				title: 'Something went wrong.',
+				text: 'Please try again later.'
+			}
+		},
 		'username.headline': 'Choose username',
 		'user': {
 			label: 'Username',
