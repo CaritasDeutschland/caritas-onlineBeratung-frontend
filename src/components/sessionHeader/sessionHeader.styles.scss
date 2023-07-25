@@ -91,6 +91,7 @@ $iconSize: 24px;
 		overflow: hidden;
 
 		@include breakpoint($fromLarge) {
+			flex-grow: 1;
 			margin: 0;
 		}
 
