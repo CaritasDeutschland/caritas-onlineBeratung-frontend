@@ -192,26 +192,7 @@ export const FormAccordion = ({
 		name: 'dataProtectionCheckbox',
 		labelId: 'dataProtectionLabel',
 		checked: isDataProtectionSelected,
-		label: [
-			translate('registration.dataProtection.label.prefix'),
-			legalLinks
-				.filter((legalLink) => legalLink.registration)
-				.map(
-					(legalLink, index, { length }) =>
-						(index > 0
-							? index < length - 1
-								? ', '
-								: translate(
-										'registration.dataProtection.label.and'
-								  )
-							: '') +
-						`<span><button type="button" class="button-as-link" onclick="window.open('${
-							legalLink.url
-						}')">${translate(legalLink.label)}</button></span>`
-				)
-				.join(''),
-			translate('registration.dataProtection.label.suffix')
-		].join(' ')
+		label: `Ich bin damit einverstanden, dass der Deutsche Caritasverband e.V. gemeinsam mit seinen Beratungsstellen auf Fach-, Bistums- und Ortsebene <span><button type="button" class="button-as-link" onclick="window.open('https://www.caritas-beratungundhilfe.de/cms/contents/caritas-beratungundh/medien/dokumente/traeger-uebersicht/traeger-bersicht.pdf')">(Liste der Träger)</button></span> meine personenbezogenen Daten, einschließlich gegebenenfalls <span><button type="button" class="button-as-link" onclick="window.open('https://www.kdsa-nord.de/Download/Hamburg/201712_KDG.pdf')">besonders sensitiver Daten</button></span> zu Zwecken einer für mich optimalen Beratung verarbeiten und zu Qualitäts- und Statistikzwecken auswerten kann. Weitere Informationen kann ich aus der <span><button type="button" class="button-as-link" onclick="window.open('https://www.caritas-beratungundhilfe.de/dse-ratssuchende')">Datenschutzerklärung</button></span> entnehmen. \nMeine Einwilligung gilt so lange, bis ich sie widerrufe. Diesen Widerruf kann ich zu jedem späteren Zeitpunkt ohne Angabe von Gründen mit Wirkung für die Zukunft gegenüber dem Deutschen Caritasverband e.V. oder weiteren Verantwortlichen erklären und dafür <span><button type="button" class="button-as-link" onclick="window.open('https://www.caritas-beratungundhilfe.de/widerspruch')">diesen Text nutzen</button></span>. \nAuch ohne meine Einwilligung können meine Daten dann verarbeitet werden, wenn eine andere Rechtsgrundlage hierzu besteht (z.B. ein Beratungsvertrag). Eine fehlende Einwilligung kann eine Einschränkung meiner Beratung zur Folge haben.`
 	};
 
 	if (topicsAreRequired) {
