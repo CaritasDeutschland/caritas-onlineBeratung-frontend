@@ -295,10 +295,6 @@ export const SessionMenu = (props: SessionMenuProps) => {
 		}
 	};
 
-	const onSuccessDeleteSession = useCallback(() => {
-		setRedirectToSessionsList(true);
-	}, []);
-
 	//TODO:
 	//enquiries: only RS profil
 	//sessions/peer/team: feedback (if u25), rs, docu
@@ -570,25 +566,6 @@ export const SessionMenu = (props: SessionMenuProps) => {
 								</div>
 							)}
 						</>
-					)}
-
-				{hasUserAuthority(AUTHORITIES.CONSULTANT_DEFAULT, userData) &&
-					type !== SESSION_LIST_TYPES.ENQUIRY &&
-					activeSession.isSession &&
-					!activeSession.isLive && (
-						<DeleteSession
-							chatId={activeSession.item.id}
-							onSuccess={onSuccessDeleteSession}
-						>
-							{(onClick) => (
-								<div
-									onClick={onClick}
-									className="sessionMenu__item"
-								>
-									{translate('chatFlyout.remove')}
-								</div>
-							)}
-						</DeleteSession>
 					)}
 
 				{activeSession.isGroup && (

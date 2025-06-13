@@ -319,8 +319,7 @@ export const en = {
 		leaveGroupChat: 'Leave chat',
 		stopGroupChat: 'End chat',
 		archive: 'Archive',
-		dearchive: 'Dearchive',
-		remove: 'Delete'
+		dearchive: 'Dearchive'
 	},
 	consultant: {
 		'jobTitle': 'Consultant',
