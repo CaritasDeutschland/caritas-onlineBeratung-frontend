@@ -56,7 +56,7 @@ jobs:
             - name: Run build
               run: |
                   npm run build
-            - uses: actions/upload-artifact@v2
+            - uses: actions/upload-artifact@v4
               with:
                   name: buildfiles
                   path: build/**/*
@@ -87,7 +87,7 @@ jobs:
         steps:
             - uses: actions/checkout@v2
             - name: Download buildfiles artifact
-              uses: actions/download-artifact@v2
+              uses: actions/download-artifact@v4
               with:
                   name: buildfiles
             - name: Get current time
