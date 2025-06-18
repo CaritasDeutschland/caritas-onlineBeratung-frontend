@@ -330,8 +330,7 @@ export const de = {
 		leaveGroupChat: 'Chat verlassen',
 		stopGroupChat: 'Chat beenden',
 		archive: 'Archivieren',
-		dearchive: 'Dearchivieren',
-		remove: 'Löschen'
+		dearchive: 'Dearchivieren'
 	},
 	consultant: {
 		'jobTitle': 'Berater_in',
