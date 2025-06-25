@@ -59,7 +59,6 @@ import { ReactComponent as CallOnIcon } from '../../resources/img/icons/call-on.
 import { ReactComponent as CameraOnIcon } from '../../resources/img/icons/camera-on.svg';
 import { ReactComponent as CalendarMonthPlusIcon } from '../../resources/img/icons/calendar-plus.svg';
 import { supportsE2EEncryptionVideoCall } from '../../utils/videoCallHelpers';
-import DeleteSession from '../session/DeleteSession';
 import { ActiveSessionContext } from '../../globalState/provider/ActiveSessionProvider';
 import { Text } from '../text/Text';
 import { useSearchParam } from '../../hooks/useSearchParams';
@@ -294,10 +293,6 @@ export const SessionMenu = (props: SessionMenuProps) => {
 			history.push('/profile/hilfe/videoCall');
 		}
 	};
-
-	const onSuccessDeleteSession = useCallback(() => {
-		setRedirectToSessionsList(true);
-	}, []);
 
 	//TODO:
 	//enquiries: only RS profil
@@ -570,25 +565,6 @@ export const SessionMenu = (props: SessionMenuProps) => {
 								</div>
 							)}
 						</>
-					)}
-
-				{hasUserAuthority(AUTHORITIES.CONSULTANT_DEFAULT, userData) &&
-					type !== SESSION_LIST_TYPES.ENQUIRY &&
-					activeSession.isSession &&
-					!activeSession.isLive && (
-						<DeleteSession
-							chatId={activeSession.item.id}
-							onSuccess={onSuccessDeleteSession}
-						>
-							{(onClick) => (
-								<div
-									onClick={onClick}
-									className="sessionMenu__item"
-								>
-									{translate('chatFlyout.remove')}
-								</div>
-							)}
-						</DeleteSession>
 					)}
 
 				{activeSession.isGroup && (
