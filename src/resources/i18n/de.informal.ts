@@ -455,7 +455,8 @@ export const deInformal = {
 			infoText:
 				'Um Deine Anonymität zu schützen, raten wir Dir nicht Deinen tatsächlichen Namen oder Initialien zu verwenden.<br>Wähle bitte einen geeigneten Benutzernamen mit min. 5 Zeichen und ohne Leerzeichen.',
 			suitable: 'Dein Benutzername ist geeignet.',
-			unsuitable: 'Dein Benutzername ist zu kurz oder enthält Leerzeichen.'
+			unsuitable:
+				'Dein Benutzername ist zu kurz oder enthält Leerzeichen.'
 		},
 		'agencySelection': {
 			intro: {

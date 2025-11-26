@@ -1703,7 +1703,8 @@ export const de = {
 			infoText:
 				'Um Ihre Anonymität zu schützen, raten wir Ihnen, nicht Ihren tatsächlichen Namen oder Ihre Initialen zu verwenden.<br>Wählen Sie bitte einen geeigneten Benutzernamen mit min. 5 Zeichen und ohne Leerzeichen.',
 			suitable: 'Ihr Benutzername ist geeignet.',
-			unsuitable: 'Ihr Benutzername ist zu kurz oder enthält Leerzeichen.',
+			unsuitable:
+				'Ihr Benutzername ist zu kurz oder enthält Leerzeichen.',
 			unavailable: 'Der Benutzername ist bereits vergeben.'
 		},
 		'username.headline': 'Benutzernamen wählen',
