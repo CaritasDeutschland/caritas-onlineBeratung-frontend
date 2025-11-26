@@ -1553,9 +1553,9 @@ export const en = {
 		'user': {
 			label: 'Username',
 			infoText:
-				'To protect your anonymity, we advise you not to use your real name or initials.<br>Please choose a suitable username with min. 5 characters.',
+				'To protect your anonymity, we advise you not to use your real name or initials.<br>Please choose a suitable username with min. 5 characters and no spaces.',
 			suitable: 'Your username is suitable.',
-			unsuitable: 'Your username is too short.',
+			unsuitable: 'Your username is too short or contains spaces.',
 			unavailable: 'The username is already taken.'
 		},
 		'agencySelection': {
