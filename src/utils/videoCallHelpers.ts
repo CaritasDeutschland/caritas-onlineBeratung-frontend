@@ -1,6 +1,4 @@
-import {
-	getValueFromCookie
-} from '../components/sessionCookie/accessSessionCookie';
+import { getValueFromCookie } from '../components/sessionCookie/accessSessionCookie';
 import {
 	AUTHORITIES,
 	ConsultingTypeBasicInterface,

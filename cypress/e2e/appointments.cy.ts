@@ -1,9 +1,6 @@
 import { v4 as uuid } from 'uuid';
 
-import {
-	USER_CONSULTANT,
-	USER_VIDEO
-} from '../support/commands/login';
+import { USER_CONSULTANT, USER_VIDEO } from '../support/commands/login';
 import {
 	closeWebSocketServer,
 	mockWebSocket,

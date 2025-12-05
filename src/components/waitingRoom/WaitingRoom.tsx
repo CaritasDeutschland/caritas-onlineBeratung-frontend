@@ -1,13 +1,7 @@
 import './waitingRoom.styles';
 
 import * as React from 'react';
-import {
-	useCallback,
-	useContext,
-	useEffect,
-	useRef,
-	useState
-} from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
@@ -26,42 +20,19 @@ import {
 	AnonymousEnquiryAcceptedContext,
 	WebsocketConnectionDeactivatedContext
 } from '../../globalState';
-import {
-	GlobalComponentContext
-} from '../../globalState/provider/GlobalComponentContext';
-import {
-	LegalLinksContext
-} from '../../globalState/provider/LegalLinksProvider';
-import {
-	ReactComponent as ClosedIllustration
-} from '../../resources/img/illustrations/closed.svg';
-import {
-	ReactComponent as ErrorIllustration
-} from '../../resources/img/illustrations/not-found.svg';
-import {
-	ReactComponent as SecurityIllustration
-} from '../../resources/img/illustrations/security.svg';
-import {
-	ReactComponent as WaitingIllustration
-} from '../../resources/img/illustrations/waiting.svg';
+import { GlobalComponentContext } from '../../globalState/provider/GlobalComponentContext';
+import { LegalLinksContext } from '../../globalState/provider/LegalLinksProvider';
+import { ReactComponent as ClosedIllustration } from '../../resources/img/illustrations/closed.svg';
+import { ReactComponent as ErrorIllustration } from '../../resources/img/illustrations/not-found.svg';
+import { ReactComponent as SecurityIllustration } from '../../resources/img/illustrations/security.svg';
+import { ReactComponent as WaitingIllustration } from '../../resources/img/illustrations/waiting.svg';
 import { appConfig } from '../../utils/appConfig';
 import { capitalizeFirstLetter } from '../../utils/capitalizeFirstLetter';
 import { decodeUsername } from '../../utils/encryptionHelpers';
 import { Loading } from '../app/Loading';
-import {
-	handleTokenRefresh,
-	setTokens
-} from '../auth/auth';
-import {
-	Button,
-	BUTTON_TYPES,
-	ButtonItem
-} from '../button/Button';
-import {
-	Overlay,
-	OVERLAY_FUNCTIONS,
-	OverlayItem
-} from '../overlay/Overlay';
+import { handleTokenRefresh, setTokens } from '../auth/auth';
+import { Button, BUTTON_TYPES, ButtonItem } from '../button/Button';
+import { Overlay, OVERLAY_FUNCTIONS, OverlayItem } from '../overlay/Overlay';
 import { handleE2EESetup } from '../registration/autoLogin';
 import {
 	deleteCookieByName,
@@ -202,7 +173,7 @@ export const WaitingRoom = (props: WaitingRoomProps) => {
 				? username
 				: `<span class="waitingRoom__username--loading">${translate(
 						'anonymous.waitingroom.username.loading'
-				  )}</span>`
+					)}</span>`
 		}
 		</div>
 		`;
@@ -229,9 +200,15 @@ export const WaitingRoom = (props: WaitingRoomProps) => {
 					retryCount.current += 1;
 					return new Promise<AnonymousRegistrationResponse>(
 						(resolve) => {
-							setTimeout(() => {
-								resolve(registerAnonymous());
-							}, Math.ceil(retryCount.current / USERNAME_CONFLICT_RETRY_SLOWDOWN) * 500);
+							setTimeout(
+								() => {
+									resolve(registerAnonymous());
+								},
+								Math.ceil(
+									retryCount.current /
+										USERNAME_CONFLICT_RETRY_SLOWDOWN
+								) * 500
+							);
 						}
 					);
 				} else {
@@ -332,7 +309,7 @@ export const WaitingRoom = (props: WaitingRoomProps) => {
 												? ', '
 												: translate(
 														'registration.dataProtection.label.and'
-												  )
+													)
 											: '') +
 										`<a target="_blank" href="${
 											legalLink.url
