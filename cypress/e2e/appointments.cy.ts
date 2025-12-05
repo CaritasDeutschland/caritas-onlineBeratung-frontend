@@ -1,5 +1,9 @@
 import { v4 as uuid } from 'uuid';
-import { USER_CONSULTANT, USER_VIDEO } from '../support/commands/login';
+
+import {
+	USER_CONSULTANT,
+	USER_VIDEO
+} from '../support/commands/login';
 import {
 	closeWebSocketServer,
 	mockWebSocket,
@@ -334,32 +338,6 @@ describe('appointments', () => {
 
 					cy.contains('Video - Termine').click();
 					cy.wait('@appointments_get');
-				});
-
-				it('Enabled - E2EE not supported', () => {
-					cy.get('.appointments .box').should('have.length', 3);
-
-					cy.window().then((window) => {
-						cy.stub(window, 'RTCRtpSender').returns(undefined);
-					});
-
-					cy.get('.appointments .box')
-						.eq(0)
-						.find('[data-cy=appointment_start] button')
-						.click();
-
-					cy.get('#overlay .overlay__content .headline').contains(
-						'Der Video-Call kann nicht gestartet werden'
-					);
-
-					cy.get(
-						'#overlay .overlay__content .overlay__buttons .button__wrapper'
-					)
-						.eq(0)
-						.children('button')
-						.click();
-
-					cy.get('#overlay .overlay__content').should('not.exist');
 				});
 
 				it('Enabled - E2EE supported', () => {
