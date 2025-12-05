@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useContext } from 'react';
 
 import { useTranslation } from 'react-i18next';
-import { generatePath, useHistory } from 'react-router-dom';
+import { generatePath } from 'react-router-dom';
 
 import { apiRejectVideoCall } from '../../api';
 import {
@@ -13,11 +13,21 @@ import {
 	UserDataContext
 } from '../../globalState';
 import { useAppConfig } from '../../hooks/useAppConfig';
-import { ReactComponent as CallOffIcon } from '../../resources/img/icons/call-off.svg';
-import { ReactComponent as CallOnIcon } from '../../resources/img/icons/call-on.svg';
-import { ReactComponent as CameraOnIcon } from '../../resources/img/icons/camera-on.svg';
+import {
+	ReactComponent as CallOffIcon
+} from '../../resources/img/icons/call-off.svg';
+import {
+	ReactComponent as CallOnIcon
+} from '../../resources/img/icons/call-on.svg';
+import {
+	ReactComponent as CameraOnIcon
+} from '../../resources/img/icons/camera-on.svg';
 import { decodeUsername } from '../../utils/encryptionHelpers';
-import { Button, BUTTON_TYPES, ButtonItem } from '../button/Button';
+import {
+	Button,
+	BUTTON_TYPES,
+	ButtonItem
+} from '../button/Button';
 
 export interface VideoCallRequestProps {
 	rcGroupId: string;
@@ -54,7 +64,6 @@ const getInitials = (text: string) => {
 export const IncomingVideoCall = (props: IncomingVideoCallProps) => {
 	const settings = useAppConfig();
 	const { t: translate } = useTranslation();
-	const history = useHistory();
 
 	const { removeNotification } = useContext(NotificationsContext);
 	const { userData } = useContext(UserDataContext);
