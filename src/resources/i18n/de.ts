@@ -749,7 +749,7 @@ export const de = {
 	},
 	help: {
 		googleChrome: 'Google Chrome',
-		'mozillaFirefox': 'Mozilla Firefox',
+		mozillaFirefox: 'Mozilla Firefox',
 		msEdge: 'Microsoft Edge',
 		safari: 'Safari',
 		openInNewTab: 'In neuem Tab öffnen',

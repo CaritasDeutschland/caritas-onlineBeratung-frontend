@@ -733,7 +733,7 @@ export const en = {
 		googleChrome: 'Google Chrome',
 		msEdge: 'Microsoft Edge',
 		safari: 'Safari',
-		'mozillaFirefox': 'Mozilla Firefox',
+		mozillaFirefox: 'Mozilla Firefox',
 		openInNewTab: 'Open in new tab',
 		videoCall: {
 			waitingRoom: {
