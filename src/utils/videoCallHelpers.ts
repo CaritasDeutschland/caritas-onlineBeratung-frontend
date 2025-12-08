@@ -30,30 +30,3 @@ export const hasVideoCallFeature = (userData, consultingTypes) =>
 					consultingType.isVideoCallAllowed
 			)
 	);
-
-export const hasVideoCallAbility = (
-	userData: UserDataInterface,
-	consultingTypes: ConsultingTypeBasicInterface[]
-) => {
-	// check if User can be called by any of his registered agencies
-	if (hasUserAuthority(AUTHORITIES.ASKER_DEFAULT, userData)) {
-		const registeredConsultingTypes = Object.values(
-			userData.consultingTypes
-		)
-			.filter((el) => el.isRegistered)
-			.map((el) => el.agency.consultingType);
-		const userCanBeCalled = registeredConsultingTypes.some((el) =>
-			Object.values(consultingTypes).some(
-				(consultingType) =>
-					consultingType.id === el &&
-					consultingType.isVideoCallAllowed
-			)
-		);
-		if (userCanBeCalled) {
-			return true;
-		}
-	} else if (hasVideoCallFeature(userData, consultingTypes)) {
-		return true;
-	}
-	return false;
-};
