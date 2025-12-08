@@ -191,7 +191,7 @@ export const Appointment = ({
 													? appointment.description
 													: shortDescription(
 															appointment.description
-														)
+													  )
 												).replaceAll('\n', '<br/>')
 											}}
 										/>
@@ -205,10 +205,10 @@ export const Appointment = ({
 												{showMore
 													? translate(
 															'appointments.showLess'
-														)
+													  )
 													: translate(
 															'appointments.showMore'
-														)}
+													  )}
 											</span>
 										)}
 									</>

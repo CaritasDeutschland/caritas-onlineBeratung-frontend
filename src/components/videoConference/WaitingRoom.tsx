@@ -120,7 +120,7 @@ export const WaitingRoom = ({
 													? ', '
 													: translate(
 															'registration.dataProtection.label.and'
-														)
+													  )
 												: '') +
 											`<a target="_blank" href="${
 												legalLink.url
