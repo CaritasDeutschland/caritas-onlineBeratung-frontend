@@ -1,9 +1,7 @@
 import { getValueFromCookie } from '../components/sessionCookie/accessSessionCookie';
 import {
 	AUTHORITIES,
-	ConsultingTypeBasicInterface,
 	hasUserAuthority,
-	UserDataInterface
 } from '../globalState';
 
 export const currentUserWasVideoCallInitiator = (initiatorRcUserId: string) =>
