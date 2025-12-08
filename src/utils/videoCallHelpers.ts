@@ -1,8 +1,5 @@
 import { getValueFromCookie } from '../components/sessionCookie/accessSessionCookie';
-import {
-	AUTHORITIES,
-	hasUserAuthority,
-} from '../globalState';
+import { AUTHORITIES, hasUserAuthority } from '../globalState';
 
 export const currentUserWasVideoCallInitiator = (initiatorRcUserId: string) =>
 	initiatorRcUserId === getValueFromCookie('rc_uid');
