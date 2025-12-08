@@ -1,12 +1,12 @@
-import * as React from 'react';
-import { Text } from '../text/Text';
-import { v4 as uuid } from 'uuid';
 import './waitingRoom.styles';
-import { ReactComponent as WaitingIllustration } from '../../resources/img/illustrations/waiting.svg';
-import { ReactComponent as ErrorIllustration } from '../../resources/img/illustrations/not-found.svg';
-import { ReactComponent as SecurityIllustration } from '../../resources/img/illustrations/security.svg';
-import { ReactComponent as ClosedIllustration } from '../../resources/img/illustrations/closed.svg';
+
+import * as React from 'react';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+
+import { useTranslation } from 'react-i18next';
+import { useHistory } from 'react-router-dom';
+import { v4 as uuid } from 'uuid';
+
 import {
 	AnonymousConversationAvailabilityInterface,
 	AnonymousRegistrationResponse,
@@ -14,38 +14,40 @@ import {
 	apiPostAnonymousRegistration,
 	FETCH_ERRORS
 } from '../../api';
-import { Button, ButtonItem, BUTTON_TYPES } from '../button/Button';
+import {
+	AnonymousConversationFinishedContext,
+	AnonymousConversationStartedContext,
+	AnonymousEnquiryAcceptedContext,
+	WebsocketConnectionDeactivatedContext
+} from '../../globalState';
+import { GlobalComponentContext } from '../../globalState/provider/GlobalComponentContext';
+import { LegalLinksContext } from '../../globalState/provider/LegalLinksProvider';
+import { ReactComponent as ClosedIllustration } from '../../resources/img/illustrations/closed.svg';
+import { ReactComponent as ErrorIllustration } from '../../resources/img/illustrations/not-found.svg';
+import { ReactComponent as SecurityIllustration } from '../../resources/img/illustrations/security.svg';
+import { ReactComponent as WaitingIllustration } from '../../resources/img/illustrations/waiting.svg';
+import { appConfig } from '../../utils/appConfig';
+import { capitalizeFirstLetter } from '../../utils/capitalizeFirstLetter';
 import { decodeUsername } from '../../utils/encryptionHelpers';
+import { Loading } from '../app/Loading';
+import { handleTokenRefresh, setTokens } from '../auth/auth';
+import { Button, BUTTON_TYPES, ButtonItem } from '../button/Button';
+import { Overlay, OVERLAY_FUNCTIONS, OverlayItem } from '../overlay/Overlay';
+import { handleE2EESetup } from '../registration/autoLogin';
 import {
 	deleteCookieByName,
 	getValueFromCookie,
 	removeAllCookies,
 	setValueInCookie
 } from '../sessionCookie/accessSessionCookie';
-import { Overlay, OverlayItem, OVERLAY_FUNCTIONS } from '../overlay/Overlay';
-import {
-	AnonymousConversationFinishedContext,
-	AnonymousEnquiryAcceptedContext,
-	WebsocketConnectionDeactivatedContext,
-	AnonymousConversationStartedContext
-} from '../../globalState';
-import { capitalizeFirstLetter } from '../../utils/capitalizeFirstLetter';
+import { StageLayout } from '../stageLayout/StageLayout';
+import { Text } from '../text/Text';
+import { WaitingRoomContent } from './WaitingRoomContent';
 import {
 	acceptanceOverlayItem,
 	rejectionOverlayItem
 } from './waitingRoomHelpers';
-import { handleTokenRefresh, setTokens } from '../auth/auth';
-import { handleE2EESetup } from '../registration/autoLogin';
-import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
-import { LegalLinksContext } from '../../globalState/provider/LegalLinksProvider';
-import { WaitingRoomContent } from './WaitingRoomContent';
-import { StageLayout } from '../stageLayout/StageLayout';
-import { appConfig } from '../../utils/appConfig';
-import { Loading } from '../app/Loading';
-import { GlobalComponentContext } from '../../globalState/provider/GlobalComponentContext';
-import { supportsE2EEncryptionVideoCall } from '../../utils/videoCallHelpers';
-import { E2EEncryptionSupportHelp } from '../E2EEncryptionSupportHelp/E2EEncryptionSupportHelp';
+
 export interface WaitingRoomProps {
 	consultingTypeSlug: string;
 	consultingTypeId: number;
@@ -171,7 +173,7 @@ export const WaitingRoom = (props: WaitingRoomProps) => {
 				? username
 				: `<span class="waitingRoom__username--loading">${translate(
 						'anonymous.waitingroom.username.loading'
-				  )}</span>`
+					)}</span>`
 		}
 		</div>
 		`;
@@ -198,9 +200,15 @@ export const WaitingRoom = (props: WaitingRoomProps) => {
 					retryCount.current += 1;
 					return new Promise<AnonymousRegistrationResponse>(
 						(resolve) => {
-							setTimeout(() => {
-								resolve(registerAnonymous());
-							}, Math.ceil(retryCount.current / USERNAME_CONFLICT_RETRY_SLOWDOWN) * 500);
+							setTimeout(
+								() => {
+									resolve(registerAnonymous());
+								},
+								Math.ceil(
+									retryCount.current /
+										USERNAME_CONFLICT_RETRY_SLOWDOWN
+								) * 500
+							);
 						}
 					);
 				} else {
@@ -269,9 +277,7 @@ export const WaitingRoom = (props: WaitingRoomProps) => {
 	};
 
 	const getContent = () => {
-		if (!supportsE2EEncryptionVideoCall()) {
-			return <E2EEncryptionSupportHelp />;
-		} else if (isDataProtectionViewActive) {
+		if (isDataProtectionViewActive) {
 			return (
 				<WaitingRoomContent
 					showRegistrationInfo={false}
@@ -303,7 +309,7 @@ export const WaitingRoom = (props: WaitingRoomProps) => {
 												? ', '
 												: translate(
 														'registration.dataProtection.label.and'
-												  )
+													)
 											: '') +
 										`<a target="_blank" href="${
 											legalLink.url
