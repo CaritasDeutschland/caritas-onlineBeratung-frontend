@@ -749,6 +749,7 @@ export const de = {
 	},
 	help: {
 		googleChrome: 'Google Chrome',
+		mozillaFirefox: 'Mozilla Firefox',
 		msEdge: 'Microsoft Edge',
 		safari: 'Safari',
 		openInNewTab: 'In neuem Tab öffnen',
@@ -757,13 +758,13 @@ export const de = {
 				headline: 'Es liegt nicht an Ihnen, sondern an Ihrem Browser.',
 				infoBox: {
 					headline: 'Ihr Browser unterstützt keine Video-Calls.',
-					text: 'Damit Sie an Video-Calls teilnehmen können, verwenden Sie bitte Google Chrome, Microsoft Edge oder Safari.'
+					text: 'Damit Sie an Video-Calls teilnehmen können, verwenden Sie bitte Google Chrome, Microsoft Edge, Safari oder Mozilla Firefox.'
 				},
 				subline1:
-					'Haben Sie noch keinen Google Chrome, Microsoft Edge oder Safari?',
+					'Haben Sie noch keinen Google Chrome, Microsoft Edge, Safari oder Mozilla Firefox?',
 				text1: 'Laden Sie sich einen der Browser herunter.',
 				subline2:
-					'Sie haben bereits Google Chrome, Microsoft Edge oder Safari?',
+					'Sie haben bereits Google Chrome, Microsoft Edge, Safari oder Mozilla Firefox?',
 				text2: 'Öffnen Sie nun Ihren Link zur Online-Beratung mit einem der unterstützten Browser.',
 				copyLink: 'Link kopieren',
 				copiedLink: 'Link kopiert!'
@@ -775,7 +776,7 @@ export const de = {
 			},
 			asker: {
 				headline: 'Video-Call',
-				intro: 'Damit Sie an Video-Calls teilnehmen können, müssen Sie sich über einen der unterstützten Browser anmelden. Die Chat-Beratung funktioniert weiterhin mit Firefox.',
+				intro: 'Damit Sie an Video-Calls teilnehmen können, müssen Sie sich über einen der unterstützten Browser anmelden.',
 				steps: {
 					'1.1': 'Folgen Sie dem Link zu ',
 					'1.2': ' oder ',
@@ -790,13 +791,13 @@ export const de = {
 					'6': 'Bitten Sie Ihre_n Berater_in Sie nochmals anzurufen.',
 					'headline': {
 						'1': 'Schritt für Schritt Anleitung',
-						'2': 'Sie haben bereits Google Chrome, Microsoft Edge oder Safari?'
+						'2': 'Sie haben bereits Google Chrome, Microsoft Edge, Safari oder Mozilla Firefox?'
 					}
 				}
 			},
 			consultant: {
 				headline: 'Video-Call',
-				intro: 'Um einen Video-Call durchführen zu können, müssen Sie sich über einen der unterstützten Browser anmelden. Die Chat-Beratung funktioniert weiterhin mit Firefox.',
+				intro: 'Um einen Video-Call durchführen zu können, müssen Sie sich über einen der unterstützten Browser anmelden.',
 				steps: {
 					'1.1': 'Folgen Sie dem Link zu ',
 					'1.2': ' oder ',
@@ -811,7 +812,7 @@ export const de = {
 					'6': 'Starten Sie den Video-Call.',
 					'headline': {
 						'1': 'Schritt für Schritt Anleitung',
-						'2': 'Sie haben bereits Google Chrome, Microsoft Edge oder Safari?'
+						'2': 'Sie haben bereits Google Chrome, Microsoft Edge, Safari oder Mozilla Firefox?'
 					}
 				}
 			},
