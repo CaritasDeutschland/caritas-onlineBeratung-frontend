@@ -6,14 +6,14 @@ Release notes can be added to this folder. They will automatically be shown to t
 
 The filename must follow the format `YYYYMMDD001.md` where:
 
-- `YYYYMMDD` is the **production deployment date**
-- `001` is a counter (allows multiple releases per day)
-- File extension must be `.md` (Markdown)
+-   `YYYYMMDD` is the **production deployment date**
+-   `001` is a counter (allows multiple releases per day)
+-   File extension must be `.md` (Markdown)
 
 **Examples:**
 
-- `20251211001.md` - First release on December 11, 2025
-- `20251211002.md` - Second release on December 11, 2025 (e.g., hotfix)
+-   `20251211001.md` - First release on December 11, 2025
+-   `20251211002.md` - Second release on December 11, 2025 (e.g., hotfix)
 
 ## Configuration
 
