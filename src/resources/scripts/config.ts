@@ -72,7 +72,7 @@ export const config: AppConfigInterface = {
 			label: 'login.legal.infoText.impressum'
 		},
 		{
-			url: 'https://www.caritas-beratungundhilfe.de/dse-ratssuchende',
+			url: 'https://www.caritas-beratungundhilfe.de/dse-ratsuchende',
 			label: 'login.legal.infoText.dataprotection',
 			registration: true
 		}

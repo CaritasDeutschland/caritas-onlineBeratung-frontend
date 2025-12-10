@@ -154,4 +154,53 @@ $form-accordion-item-input-margin-left: 0 !default;
 			width: 65%;
 		}
 	}
+
+	.data-protection-details {
+		margin-top: $grid-base-two;
+		margin-bottom: $grid-base-two;
+		margin-left: 0;
+
+		summary {
+			cursor: pointer;
+			font-weight: $font-weight-regular;
+			list-style: none;
+			padding: $grid-base 0;
+			user-select: none;
+
+			&::-webkit-details-marker {
+				display: none;
+			}
+
+			&::before {
+				content: '▶';
+				display: inline-block;
+				margin-right: 8px;
+				text-decoration: none;
+			}
+		}
+
+		&[open] {
+			summary::before {
+				transform: rotate(90deg);
+			}
+		}
+
+		&__content {
+			margin-top: $grid-base;
+			padding-left: $grid-base-three;
+
+			p {
+				margin-bottom: $grid-base-two;
+				line-height: 1.5;
+
+				&:last-child {
+					margin-bottom: 0;
+				}
+			}
+
+			a {
+				text-decoration: underline;
+			}
+		}
+	}
 }

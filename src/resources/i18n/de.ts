@@ -1620,7 +1620,23 @@ export const de = {
 					'Ihr_e Berater_in ist in mehreren Beratungsstellen tätig. Bitte wählen Sie Ihre gewünschte Beratungsstelle.'
 			}
 		},
+		'dataProtectionCheckbox': {
+			label:
+				'Sofern Sie personenbezogene Daten mitteilen, erteilen Sie folgende Einwilligung:' +
+				'<p>Ich willige ein, dass der Deutsche Caritasverband e.V. die personenbezogenen Daten verarbeitet, die ich freiwillig über die Online-Beratungsplattform mitteile (z. B. durch Angabe der E-Mail-Adresse im Profil oder Chat). Die Einwilligung umfasst auch besondere Kategorien personenbezogener Daten, z.B. Gesundheitsdaten, sofern ich diese mitteile.</p>' +
+				'<p>Die Verarbeitung erfolgt ausschließlich zum Betrieb der Online-Beratungsplattform und zur Übermittlung meiner Nachrichten an die ausgewählte Beratungsstelle.</p>' +
+				'<p>Ich willige außerdem ein, dass die Beratungsstelle die von mir mitgeteilten Daten, einschließlich besonderer Kategorien personenbezogener Daten, verarbeitet. Dies gilt nur, sofern mich die Beratungsstelle nicht vorab darüber informiert, dass eine andere Rechtsgrundlage besteht.</p>' +
+				'<p>Ich kann diese Einwilligung jederzeit mit Wirkung für die Zukunft sowohl gegenüber dem Deutschen Caritasverband e.V. (<a href="mailto:datenschutz@caritas.de" class="button-as-link">datenschutz@caritas.de</a>) als auch gegenüber der Beratungsstelle widerrufen. Durch den Widerruf bleibt die Rechtmäßigkeit der bis dahin erfolgten Verarbeitung unberührt.</p>' +
+				'<p>Gebe ich keine personenbezogenen Daten an, hat dies grundsätzlich keine negativen Auswirkungen auf die Nutzung der Online-Beratungsplattform.</p>' +
+				'<p>Weitere Informationen zur Datenverarbeitung finden Sie in unserer <span><button type="button" class="button-as-link" onclick="window.open(\'https://www.caritas-beratungundhilfe.de/dse-ratsuchende\')">Datenschutzerklärung</button></span> und der Datenschutz-Information der jeweiligen Beratungsstelle.</p>',
+			summary: 'Mehr zum Hintergrund der Datenverarbeitung:',
+			details:
+				'<p>Sie können die Online-Beratung grundsätzlich ohne Angabe personenbezogener Daten nutzen. Technisch bedingt wird von Ihrem Gerät eine IP-Adresse übermittelt.  Durch den Einsatz eines Load Balancers wird sie faktisch anonymisiert, sodass kein unmittelbarer Rückschluss auf Ihre Person möglich ist. Weitere Informationen dazu finden Sie in der <span><button type="button" class="button-as-link" onclick="window.open(\'https://www.caritas-beratungundhilfe.de/dse-ratsuchende\')">Datenschutzerklärung</button></span>.</p>' +
+				'<p>Die Beratung erfolgt durch die ausgewählte Beratungsstelle, nicht durch den Deutschen Caritasverband e.V. Diese Kommunikation ist Ende-zu-Ende-verschlüsselt. Das bedeutet, dass nur Sie und die Beratungsstelle die Inhalte Ihrer Nachrichten lesen können. Der Deutsche Caritasverband e.V. hat keinen Zugriff auf Beratungsinhalte.</p>' +
+				'<p>Geben Sie personenbezogene Daten an, benötigen wir Ihre Einwilligung, um diese verarbeiten zu dürfen. Die Beratungsstelle kann personenbezogene Daten zudem auch auf einer anderen Rechtsgrundlage verarbeiten, insbesondere auf Basis des durch Inanspruchnahme entstehenden Beratungsvertrags.</p>'
+		},
 		'dataProtection': {
+			// this is for watingroom not for registration
 			label: {
 				prefix: 'Ich habe die ',
 				and: ' und ',
@@ -1633,7 +1649,7 @@ export const de = {
 				text: 'Bitte versuchen Sie es später noch einmal.'
 			}
 		},
-		'form.title': 'Registrierung abschließen',
+		'form.title': 'Datenschutz',
 		'headline': 'Registrierung',
 		'login': {
 			helper: 'Bereits registriert?',
