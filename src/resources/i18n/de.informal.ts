@@ -219,7 +219,7 @@ export const deInformal = {
 			},
 			asker: {
 				headline: 'Video-Call',
-				intro: 'Damit Du an Video-Calls teilnehmen kannst, musst Du Dich über einen der unterstützten Browser anmelden. Die Chat-Beratung funktioniert weiterhin mit Firefox.',
+				intro: 'Damit Du an Video-Calls teilnehmen kannst, musst Du Dich über einen der unterstützten Browser anmelden.',
 				steps: {
 					'1.1': 'Folge dem Link zu ',
 					'1.2': ' oder ',
@@ -239,7 +239,7 @@ export const deInformal = {
 			},
 			consultant: {
 				headline: 'Video-Call',
-				intro: 'Um einen Video-Call durchführen zu können, musst Du Dich über einen der unterstützten Browser anmelden. Die Chat-Beratung funktioniert weiterhin mit Firefox.',
+				intro: 'Damit Du an Video-Calls teilnehmen kannst, musst Du Dich über einen der unterstützten Browser anmelden.',
 				steps: {
 					'1.1': 'Folge dem Link zu ',
 					'1.2': ' oder ',
@@ -453,9 +453,10 @@ export const deInformal = {
 			'Dein vorausgewähltes Themenfeld: ',
 		'user': {
 			infoText:
-				'Um Deine Anonymität zu schützen, raten wir Dir nicht Deinen tatsächlichen Namen oder Initialien zu verwenden.<br>Wähle bitte einen geeigneten Benutzernamen mit min. 5 Zeichen.',
+				'Um Deine Anonymität zu schützen, raten wir Dir nicht Deinen tatsächlichen Namen oder Initialien zu verwenden.<br>Wähle bitte einen geeigneten Benutzernamen mit min. 5 Zeichen und ohne Leerzeichen.',
 			suitable: 'Dein Benutzername ist geeignet.',
-			unsuitable: 'Dein Benutzername ist zu kurz.'
+			unsuitable:
+				'Dein Benutzername ist zu kurz oder enthält Leerzeichen.'
 		},
 		'agencySelection': {
 			intro: {

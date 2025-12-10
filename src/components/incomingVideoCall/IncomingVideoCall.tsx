@@ -1,23 +1,23 @@
+import './incomingVideoCall.styles';
+
 import * as React from 'react';
 import { useContext } from 'react';
-import { isMobile } from 'react-device-detect';
-import { generatePath, useHistory } from 'react-router-dom';
-import { Button, ButtonItem, BUTTON_TYPES } from '../button/Button';
-import { ReactComponent as CallOnIcon } from '../../resources/img/icons/call-on.svg';
-import { ReactComponent as CallOffIcon } from '../../resources/img/icons/call-off.svg';
-import { ReactComponent as CameraOnIcon } from '../../resources/img/icons/camera-on.svg';
+
+import { useTranslation } from 'react-i18next';
+import { generatePath } from 'react-router-dom';
+
+import { apiRejectVideoCall } from '../../api';
 import {
-	NotificationType,
 	NotificationsContext,
+	NotificationType,
 	UserDataContext
 } from '../../globalState';
-import { supportsE2EEncryptionVideoCall } from '../../utils/videoCallHelpers';
-import { decodeUsername } from '../../utils/encryptionHelpers';
-import { apiRejectVideoCall } from '../../api';
-import './incomingVideoCall.styles';
-import { ReactComponent as CloseIcon } from '../../resources/img/icons/x.svg';
-import { useTranslation } from 'react-i18next';
 import { useAppConfig } from '../../hooks/useAppConfig';
+import { ReactComponent as CallOffIcon } from '../../resources/img/icons/call-off.svg';
+import { ReactComponent as CallOnIcon } from '../../resources/img/icons/call-on.svg';
+import { ReactComponent as CameraOnIcon } from '../../resources/img/icons/camera-on.svg';
+import { decodeUsername } from '../../utils/encryptionHelpers';
+import { Button, BUTTON_TYPES, ButtonItem } from '../button/Button';
 
 export interface VideoCallRequestProps {
 	rcGroupId: string;
@@ -54,7 +54,6 @@ const getInitials = (text: string) => {
 export const IncomingVideoCall = (props: IncomingVideoCallProps) => {
 	const settings = useAppConfig();
 	const { t: translate } = useTranslation();
-	const history = useHistory();
 
 	const { removeNotification } = useContext(NotificationsContext);
 	const { userData } = useContext(UserDataContext);
@@ -142,55 +141,20 @@ export const IncomingVideoCall = (props: IncomingVideoCallProps) => {
 						{getInitials(decodedUsername)}
 					</div>
 				</div>
-				{!supportsE2EEncryptionVideoCall() && !isMobile && (
-					<div
-						className="notification__close"
-						onClick={handleRejectVideoCall}
-					>
-						<CloseIcon />
-					</div>
-				)}
 			</div>
 
 			<p className="incomingVideoCall__description">
-				{supportsE2EEncryptionVideoCall() ? (
+				{
 					<>
 						<span className="incomingVideoCall__username">
 							{decodedUsername}
 						</span>{' '}
 						{translate('videoCall.incomingCall.description')}
 					</>
-				) : (
-					<span className="incomingVideoCall__username">
-						{translate(
-							'videoCall.incomingCall.unsupported.description',
-							{
-								username: decodedUsername
-							}
-						)}
-					</span>
-				)}
+				}
 			</p>
 
-			{!supportsE2EEncryptionVideoCall() ? (
-				<div className="incomingVideoCall__hint">
-					{translate(`videoCall.incomingCall.unsupported.hint`)}
-					<div className="mt--2">
-						<button
-							onClick={() => {
-								handleRejectVideoCall();
-								history.push('/profile/hilfe/videoCall');
-							}}
-							className="px--2 text--bold"
-							type="button"
-						>
-							{translate(
-								`videoCall.incomingCall.unsupported.button`
-							)}
-						</button>
-					</div>
-				</div>
-			) : (
+			{
 				<div className="incomingVideoCall__buttons mt--2 py--3">
 					<Button
 						buttonHandle={() => handleAnswerVideoCall(true)}
@@ -207,7 +171,7 @@ export const IncomingVideoCall = (props: IncomingVideoCallProps) => {
 						testingAttribute="reject-incoming-video-call"
 					/>
 				</div>
-			)}
+			}
 		</div>
 	);
 };

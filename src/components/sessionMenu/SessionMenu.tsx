@@ -1,3 +1,6 @@
+import '../sessionHeader/sessionHeader.styles';
+import './sessionMenu.styles';
+
 import * as React from 'react';
 import {
 	MouseEventHandler,
@@ -6,7 +9,18 @@ import {
 	useEffect,
 	useState
 } from 'react';
+
+import { useTranslation } from 'react-i18next';
 import { generatePath, Link, Redirect, useHistory } from 'react-router-dom';
+
+import {
+	apiFinishAnonymousConversation,
+	apiPutArchive,
+	apiPutDearchive,
+	apiPutGroupChat,
+	apiStartVideoCall,
+	GROUP_CHAT_API
+} from '../../api';
 import {
 	AnonymousConversationFinishedContext,
 	AUTHORITIES,
@@ -18,12 +32,31 @@ import {
 	useConsultingType,
 	UserDataContext
 } from '../../globalState';
+import { ActiveSessionContext } from '../../globalState/provider/ActiveSessionProvider';
+import { LegalLinksContext } from '../../globalState/provider/LegalLinksProvider';
+import { useAppConfig } from '../../hooks/useAppConfig';
+import { useSearchParam } from '../../hooks/useSearchParams';
+import { ReactComponent as CalendarMonthPlusIcon } from '../../resources/img/icons/calendar-plus.svg';
+import { ReactComponent as CallOnIcon } from '../../resources/img/icons/call-on.svg';
+import { ReactComponent as CameraOnIcon } from '../../resources/img/icons/camera-on.svg';
+import { ReactComponent as EditGroupChatIcon } from '../../resources/img/icons/gear.svg';
+import { ReactComponent as GroupChatInfoIcon } from '../../resources/img/icons/i.svg';
+import { ReactComponent as LeaveChatIcon } from '../../resources/img/icons/out.svg';
+import { ReactComponent as FeedbackIcon } from '../../resources/img/icons/pen-paper.svg';
+import { ReactComponent as MenuHorizontalIcon } from '../../resources/img/icons/stack-horizontal.svg';
+import { ReactComponent as MenuVerticalIcon } from '../../resources/img/icons/stack-vertical.svg';
+import { ReactComponent as StopGroupChatIcon } from '../../resources/img/icons/x.svg';
+import { mobileListView } from '../app/navigationHandler';
+import { Button, BUTTON_TYPES, ButtonItem } from '../button/Button';
+import { isGroupChatOwner } from '../groupChat/groupChatHelpers';
+import { logout } from '../logout/logout';
+import { Overlay, OVERLAY_FUNCTIONS } from '../overlay/Overlay';
 import {
 	SESSION_LIST_TAB,
 	SESSION_LIST_TAB_ARCHIVE,
 	SESSION_LIST_TYPES
 } from '../session/sessionHelpers';
-import { Overlay, OVERLAY_FUNCTIONS } from '../overlay/Overlay';
+import { Text } from '../text/Text';
 import {
 	archiveSessionSuccessOverlayItem,
 	finishAnonymousChatSecurityOverlayItem,
@@ -31,40 +64,8 @@ import {
 	leaveGroupChatSecurityOverlayItem,
 	leaveGroupChatSuccessOverlayItem,
 	stopGroupChatSecurityOverlayItem,
-	stopGroupChatSuccessOverlayItem,
-	videoCallErrorOverlayItem
+	stopGroupChatSuccessOverlayItem
 } from './sessionMenuHelpers';
-import {
-	apiFinishAnonymousConversation,
-	apiPutArchive,
-	apiPutDearchive,
-	apiPutGroupChat,
-	apiStartVideoCall,
-	GROUP_CHAT_API
-} from '../../api';
-import { logout } from '../logout/logout';
-import { mobileListView } from '../app/navigationHandler';
-import { isGroupChatOwner } from '../groupChat/groupChatHelpers';
-import { ReactComponent as FeedbackIcon } from '../../resources/img/icons/pen-paper.svg';
-import { ReactComponent as LeaveChatIcon } from '../../resources/img/icons/out.svg';
-import { ReactComponent as GroupChatInfoIcon } from '../../resources/img/icons/i.svg';
-import { ReactComponent as StopGroupChatIcon } from '../../resources/img/icons/x.svg';
-import { ReactComponent as EditGroupChatIcon } from '../../resources/img/icons/gear.svg';
-import { ReactComponent as MenuHorizontalIcon } from '../../resources/img/icons/stack-horizontal.svg';
-import { ReactComponent as MenuVerticalIcon } from '../../resources/img/icons/stack-vertical.svg';
-import '../sessionHeader/sessionHeader.styles';
-import './sessionMenu.styles';
-import { Button, BUTTON_TYPES, ButtonItem } from '../button/Button';
-import { ReactComponent as CallOnIcon } from '../../resources/img/icons/call-on.svg';
-import { ReactComponent as CameraOnIcon } from '../../resources/img/icons/camera-on.svg';
-import { ReactComponent as CalendarMonthPlusIcon } from '../../resources/img/icons/calendar-plus.svg';
-import { supportsE2EEncryptionVideoCall } from '../../utils/videoCallHelpers';
-import { ActiveSessionContext } from '../../globalState/provider/ActiveSessionProvider';
-import { Text } from '../text/Text';
-import { useSearchParam } from '../../hooks/useSearchParams';
-import { useAppConfig } from '../../hooks/useAppConfig';
-import { useTranslation } from 'react-i18next';
-import { LegalLinksContext } from '../../globalState/provider/LegalLinksProvider';
 
 type TReducedSessionItemInterface = Omit<
 	SessionItemInterface,
@@ -367,12 +368,6 @@ export const SessionMenu = (props: SessionMenuProps) => {
 		consultingType.isVideoCallAllowed;
 
 	const handleStartVideoCall = (isVideoActivated: boolean = false) => {
-		if (!supportsE2EEncryptionVideoCall(userData.e2eEncryptionEnabled)) {
-			setOverlayItem(videoCallErrorOverlayItem);
-			setOverlayActive(true);
-			return;
-		}
-
 		const videoCallWindow = window.open('', '_blank');
 		apiStartVideoCall(
 			activeSession.item.id,

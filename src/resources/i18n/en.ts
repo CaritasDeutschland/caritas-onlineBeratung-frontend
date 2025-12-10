@@ -733,19 +733,20 @@ export const en = {
 		googleChrome: 'Google Chrome',
 		msEdge: 'Microsoft Edge',
 		safari: 'Safari',
+		mozillaFirefox: 'Mozilla Firefox',
 		openInNewTab: 'Open in new tab',
 		videoCall: {
 			waitingRoom: {
 				headline: "It's not you, it's your browser.",
 				infoBox: {
 					headline: 'Your browser does not support video calls.',
-					text: 'To participate in video calls, please use Google Chrome, Microsoft Edge or Safari.'
+					text: 'To participate in video calls, please use Google Chrome, Microsoft Edge, Safari or Mozilla Firefox.'
 				},
 				subline1:
-					"Don't have Google Chrome, Microsoft Edge, or Safari yet?",
+					"Don't have Google Chrome, Microsoft Edge, Safari or Mozilla Firefox yet?",
 				text1: 'Download one of the browsers.',
 				subline2:
-					'Already have Google Chrome, Microsoft Edge, or Safari?',
+					'Already have Google Chrome, Microsoft Edge, Safari or Mozilla Firefox?',
 				text2: 'Now open your link to the online consultation with one of the supported browsers.',
 				copyLink: 'Copy link',
 				copiedLink: 'Link copied!'
@@ -757,7 +758,7 @@ export const en = {
 			},
 			asker: {
 				headline: 'Video Call',
-				intro: 'To participate in video calls, you must log in using one of the supported browsers. The chat consultation still works with Firefox.',
+				intro: 'To participate in video calls, you must log in using one of the supported browsers.',
 				steps: {
 					'1.1': 'Follow the link to ',
 					'1.2': ' or ',
@@ -772,13 +773,13 @@ export const en = {
 					'6': 'Ask your advisor to call you again.',
 					'headline': {
 						'1': 'Step by step guide',
-						'2': 'Already have Google Chrome, Microsoft Edge or Safari?'
+						'2': 'Already have Google Chrome, Microsoft Edge, Safari or Mozilla Firefox?'
 					}
 				}
 			},
 			consultant: {
 				headline: 'Video Call',
-				intro: 'To perform a video call, you must log in using one of the supported browsers. The chat consultation still works with Firefox.',
+				intro: 'To perform a video call, you must log in using one of the supported browsers.',
 				steps: {
 					'1.1': 'Follow the link to ',
 					'1.2': ' or ',
@@ -793,7 +794,7 @@ export const en = {
 					'6': 'Start the video call.',
 					'headline': {
 						'1': 'Step by step guide',
-						'2': 'Already have Google Chrome, Microsoft Edge or Safari?'
+						'2': 'Already have Google Chrome, Microsoft Edge, Safari or Mozilla Firefox?'
 					}
 				}
 			},
@@ -1553,9 +1554,9 @@ export const en = {
 		'user': {
 			label: 'Username',
 			infoText:
-				'To protect your anonymity, we advise you not to use your real name or initials.<br>Please choose a suitable username with min. 5 characters.',
+				'To protect your anonymity, we advise you not to use your real name or initials.<br>Please choose a suitable username with min. 5 characters and no spaces.',
 			suitable: 'Your username is suitable.',
-			unsuitable: 'Your username is too short.',
+			unsuitable: 'Your username is too short or contains spaces.',
 			unavailable: 'The username is already taken.'
 		},
 		'agencySelection': {

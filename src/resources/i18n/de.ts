@@ -749,6 +749,7 @@ export const de = {
 	},
 	help: {
 		googleChrome: 'Google Chrome',
+		mozillaFirefox: 'Mozilla Firefox',
 		msEdge: 'Microsoft Edge',
 		safari: 'Safari',
 		openInNewTab: 'In neuem Tab öffnen',
@@ -757,13 +758,13 @@ export const de = {
 				headline: 'Es liegt nicht an Ihnen, sondern an Ihrem Browser.',
 				infoBox: {
 					headline: 'Ihr Browser unterstützt keine Video-Calls.',
-					text: 'Damit Sie an Video-Calls teilnehmen können, verwenden Sie bitte Google Chrome, Microsoft Edge oder Safari.'
+					text: 'Damit Sie an Video-Calls teilnehmen können, verwenden Sie bitte Google Chrome, Microsoft Edge, Safari oder Mozilla Firefox.'
 				},
 				subline1:
-					'Haben Sie noch keinen Google Chrome, Microsoft Edge oder Safari?',
+					'Haben Sie noch keinen Google Chrome, Microsoft Edge, Safari oder Mozilla Firefox?',
 				text1: 'Laden Sie sich einen der Browser herunter.',
 				subline2:
-					'Sie haben bereits Google Chrome, Microsoft Edge oder Safari?',
+					'Sie haben bereits Google Chrome, Microsoft Edge, Safari oder Mozilla Firefox?',
 				text2: 'Öffnen Sie nun Ihren Link zur Online-Beratung mit einem der unterstützten Browser.',
 				copyLink: 'Link kopieren',
 				copiedLink: 'Link kopiert!'
@@ -775,7 +776,7 @@ export const de = {
 			},
 			asker: {
 				headline: 'Video-Call',
-				intro: 'Damit Sie an Video-Calls teilnehmen können, müssen Sie sich über einen der unterstützten Browser anmelden. Die Chat-Beratung funktioniert weiterhin mit Firefox.',
+				intro: 'Damit Sie an Video-Calls teilnehmen können, müssen Sie sich über einen der unterstützten Browser anmelden.',
 				steps: {
 					'1.1': 'Folgen Sie dem Link zu ',
 					'1.2': ' oder ',
@@ -790,13 +791,13 @@ export const de = {
 					'6': 'Bitten Sie Ihre_n Berater_in Sie nochmals anzurufen.',
 					'headline': {
 						'1': 'Schritt für Schritt Anleitung',
-						'2': 'Sie haben bereits Google Chrome, Microsoft Edge oder Safari?'
+						'2': 'Sie haben bereits Google Chrome, Microsoft Edge, Safari oder Mozilla Firefox?'
 					}
 				}
 			},
 			consultant: {
 				headline: 'Video-Call',
-				intro: 'Um einen Video-Call durchführen zu können, müssen Sie sich über einen der unterstützten Browser anmelden. Die Chat-Beratung funktioniert weiterhin mit Firefox.',
+				intro: 'Um einen Video-Call durchführen zu können, müssen Sie sich über einen der unterstützten Browser anmelden.',
 				steps: {
 					'1.1': 'Folgen Sie dem Link zu ',
 					'1.2': ' oder ',
@@ -811,7 +812,7 @@ export const de = {
 					'6': 'Starten Sie den Video-Call.',
 					'headline': {
 						'1': 'Schritt für Schritt Anleitung',
-						'2': 'Sie haben bereits Google Chrome, Microsoft Edge oder Safari?'
+						'2': 'Sie haben bereits Google Chrome, Microsoft Edge, Safari oder Mozilla Firefox?'
 					}
 				}
 			},
@@ -1619,7 +1620,23 @@ export const de = {
 					'Ihr_e Berater_in ist in mehreren Beratungsstellen tätig. Bitte wählen Sie Ihre gewünschte Beratungsstelle.'
 			}
 		},
+		'dataProtectionCheckbox': {
+			label:
+				'Sofern Sie personenbezogene Daten mitteilen, erteilen Sie folgende Einwilligung:' +
+				'<p>Ich willige ein, dass der Deutsche Caritasverband e.V. die personenbezogenen Daten verarbeitet, die ich freiwillig über die Online-Beratungsplattform mitteile (z. B. durch Angabe der E-Mail-Adresse im Profil oder Chat). Die Einwilligung umfasst auch besondere Kategorien personenbezogener Daten, z.B. Gesundheitsdaten, sofern ich diese mitteile.</p>' +
+				'<p>Die Verarbeitung erfolgt ausschließlich zum Betrieb der Online-Beratungsplattform und zur Übermittlung meiner Nachrichten an die ausgewählte Beratungsstelle.</p>' +
+				'<p>Ich willige außerdem ein, dass die Beratungsstelle die von mir mitgeteilten Daten, einschließlich besonderer Kategorien personenbezogener Daten, verarbeitet. Dies gilt nur, sofern mich die Beratungsstelle nicht vorab darüber informiert, dass eine andere Rechtsgrundlage besteht.</p>' +
+				'<p>Ich kann diese Einwilligung jederzeit mit Wirkung für die Zukunft sowohl gegenüber dem Deutschen Caritasverband e.V. (<a href="mailto:datenschutz@caritas.de" class="button-as-link">datenschutz@caritas.de</a>) als auch gegenüber der Beratungsstelle widerrufen. Durch den Widerruf bleibt die Rechtmäßigkeit der bis dahin erfolgten Verarbeitung unberührt.</p>' +
+				'<p>Gebe ich keine personenbezogenen Daten an, hat dies grundsätzlich keine negativen Auswirkungen auf die Nutzung der Online-Beratungsplattform.</p>' +
+				'<p>Weitere Informationen zur Datenverarbeitung finden Sie in unserer <span><button type="button" class="button-as-link" onclick="window.open(\'https://www.caritas-beratungundhilfe.de/dse-ratsuchende\')">Datenschutzerklärung</button></span> und der Datenschutz-Information der jeweiligen Beratungsstelle.</p>',
+			summary: 'Mehr zum Hintergrund der Datenverarbeitung:',
+			details:
+				'<p>Sie können die Online-Beratung grundsätzlich ohne Angabe personenbezogener Daten nutzen. Technisch bedingt wird von Ihrem Gerät eine IP-Adresse übermittelt.  Durch den Einsatz eines Load Balancers wird sie faktisch anonymisiert, sodass kein unmittelbarer Rückschluss auf Ihre Person möglich ist. Weitere Informationen dazu finden Sie in der <span><button type="button" class="button-as-link" onclick="window.open(\'https://www.caritas-beratungundhilfe.de/dse-ratsuchende\')">Datenschutzerklärung</button></span>.</p>' +
+				'<p>Die Beratung erfolgt durch die ausgewählte Beratungsstelle, nicht durch den Deutschen Caritasverband e.V. Diese Kommunikation ist Ende-zu-Ende-verschlüsselt. Das bedeutet, dass nur Sie und die Beratungsstelle die Inhalte Ihrer Nachrichten lesen können. Der Deutsche Caritasverband e.V. hat keinen Zugriff auf Beratungsinhalte.</p>' +
+				'<p>Geben Sie personenbezogene Daten an, benötigen wir Ihre Einwilligung, um diese verarbeiten zu dürfen. Die Beratungsstelle kann personenbezogene Daten zudem auch auf einer anderen Rechtsgrundlage verarbeiten, insbesondere auf Basis des durch Inanspruchnahme entstehenden Beratungsvertrags.</p>'
+		},
 		'dataProtection': {
+			// this is for watingroom not for registration
 			label: {
 				prefix: 'Ich habe die ',
 				and: ' und ',
@@ -1632,7 +1649,7 @@ export const de = {
 				text: 'Bitte versuchen Sie es später noch einmal.'
 			}
 		},
-		'form.title': 'Registrierung abschließen',
+		'form.title': 'Datenschutz',
 		'headline': 'Registrierung',
 		'login': {
 			helper: 'Bereits registriert?',
@@ -1701,9 +1718,10 @@ export const de = {
 		'user': {
 			label: 'Benutzername',
 			infoText:
-				'Um Ihre Anonymität zu schützen, raten wir Ihnen nicht Ihren tatsächlichen Namen oder Initialien zu verwenden.<br>Wählen Sie bitte einen geeigneten Benutzernamen mit min. 5 Zeichen.',
+				'Um Ihre Anonymität zu schützen, raten wir Ihnen, nicht Ihren tatsächlichen Namen oder Ihre Initialen zu verwenden.<br>Wählen Sie bitte einen geeigneten Benutzernamen mit min. 5 Zeichen und ohne Leerzeichen.',
 			suitable: 'Ihr Benutzername ist geeignet.',
-			unsuitable: 'Ihr Benutzername ist zu kurz.',
+			unsuitable:
+				'Ihr Benutzername ist zu kurz oder enthält Leerzeichen.',
 			unavailable: 'Der Benutzername ist bereits vergeben.'
 		},
 		'username.headline': 'Benutzernamen wählen',

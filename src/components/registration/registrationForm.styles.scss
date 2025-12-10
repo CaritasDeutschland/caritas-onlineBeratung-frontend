@@ -15,37 +15,37 @@ $registration-form-headline-margin-bottom: 24px;
 		}
 	}
 
+	.button-as-link {
+		border: none;
+		background: none;
+		padding: 0;
+		color: $link-color;
+		text-decoration: $link-text-decoration;
+		font-weight: $link-font-weight;
+
+		&:hover {
+			color: var(--skin-color-primary-hover, $hover-primary);
+			text-decoration: $link-text-decoration-hover;
+			cursor: pointer;
+		}
+
+		&:focus {
+			outline: $focus-outline;
+			outline-offset: 4px;
+			border-radius: 4px;
+		}
+
+		&:focus:not(:focus-visible) {
+			outline: none;
+		}
+	}
+
 	&__dataProtection {
 		margin-left: 4px;
 		text-align: left;
 
 		.checkbox__label {
 			line-height: $line-height-primary;
-		}
-
-		.button-as-link {
-			border: none;
-			background: none;
-			padding: 0;
-			color: $link-color;
-			text-decoration: $link-text-decoration;
-			font-weight: $link-font-weight;
-
-			&:hover {
-				color: var(--skin-color-primary-hover, $hover-primary);
-				text-decoration: $link-text-decoration-hover;
-				cursor: pointer;
-			}
-
-			&:focus {
-				outline: $focus-outline;
-				outline-offset: 4px;
-				border-radius: 4px;
-			}
-
-			&:focus:not(:focus-visible) {
-				outline: none;
-			}
 		}
 
 		.checkbox__input {

@@ -1,11 +1,32 @@
-## Release Notes
+# Release Notes
 
-Release notes can be added to this folder. They will automatically be shown to the consultant user if the version of the application matches the filename.
-The filename needs to be prepended by an "v" and must be a valid markdown file.
+Release notes can be added to this folder. They will automatically be shown to the consultant on login if they haven't been read yet.
 
-For this repository the version is set in the package.json.
+## File Naming Convention
 
-For example:
-`v.2.9.14.md`
-if the package version is
-`2.9.14`
+The filename must follow the format `YYYYMMDD001.md` where:
+
+-   `YYYYMMDD` is the **production deployment date**
+-   `001` is a counter (allows multiple releases per day)
+-   File extension must be `.md` (Markdown)
+
+**Examples:**
+
+-   `20251211001.md` - First release on December 11, 2025
+-   `20251211002.md` - Second release on December 11, 2025 (e.g., hotfix)
+
+## Configuration
+
+All available release notes must be registered in `releases.json`:
+
+```json
+{
+	"20251211001": {
+		"file": "20251211001.md",
+		"title": "Optional Title for Multi-Release Display"
+	},
+	"20230717001": {
+		"file": "20230717001.md"
+	}
+}
+```
