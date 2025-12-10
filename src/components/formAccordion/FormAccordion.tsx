@@ -324,10 +324,18 @@ export const FormAccordion = ({
 					/>
 				</div>
 				<details className="data-protection-details">
-					<summary>{translate('registration.dataProtectionCheckbox.summary')}</summary>
+					<summary>
+						{translate(
+							'registration.dataProtectionCheckbox.summary'
+						)}
+					</summary>
 					<div
 						className="data-protection-details__content"
-						dangerouslySetInnerHTML={{ __html: translate('registration.dataProtectionCheckbox.details') }}
+						dangerouslySetInnerHTML={{
+							__html: translate(
+								'registration.dataProtectionCheckbox.details'
+							)
+						}}
 					/>
 				</details>
 				<FormAccordionRegistrationText

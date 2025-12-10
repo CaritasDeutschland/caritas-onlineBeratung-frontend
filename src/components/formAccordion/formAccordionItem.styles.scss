@@ -155,65 +155,52 @@ $form-accordion-item-input-margin-left: 0 !default;
 		}
 	}
 
-  .data-protection-details {
-    margin-top: $grid-base-two;
-    margin-bottom: $grid-base-two;
-    margin-left: 0;
+	.data-protection-details {
+		margin-top: $grid-base-two;
+		margin-bottom: $grid-base-two;
+		margin-left: 0;
 
-    summary {
-      cursor: pointer;
-      font-weight: $font-weight-medium;
-      color: var(--skin-color-primary, $primary);
-      list-style: none;
-      padding: $grid-base 0;
-      user-select: none;
-      text-decoration: underline;
+		summary {
+			cursor: pointer;
+			font-weight: $font-weight-regular;
+			list-style: none;
+			padding: $grid-base 0;
+			user-select: none;
 
-      &::-webkit-details-marker {
-        display: none;
-      }
+			&::-webkit-details-marker {
+				display: none;
+			}
 
-      &::before {
-        content: '▶';
-        display: inline-block;
-        margin-right: 8px;
-        text-decoration: none;
-      }
+			&::before {
+				content: '▶';
+				display: inline-block;
+				margin-right: 8px;
+				text-decoration: none;
+			}
+		}
 
-      &:hover {
-        color: var(--skin-color-primary-hover, $hover-primary);
-      }
+		&[open] {
+			summary::before {
+				transform: rotate(90deg);
+			}
+		}
 
-      &:focus {
-        outline: 2px solid var(--skin-color-primary, $primary);
-        outline-offset: 2px;
-      }
-    }
+		&__content {
+			margin-top: $grid-base;
+			padding-left: $grid-base-three;
 
-    &[open] {
-      summary::before {
-        transform: rotate(90deg);
-      }
-    }
+			p {
+				margin-bottom: $grid-base-two;
+				line-height: 1.5;
 
-    &__content {
-      margin-top: $grid-base;
-      padding-left: $grid-base-three;
+				&:last-child {
+					margin-bottom: 0;
+				}
+			}
 
-      p {
-        margin-bottom: $grid-base-two;
-        line-height: 1.5;
-
-        &:last-child {
-          margin-bottom: 0;
-        }
-      }
-
-      a {
-        text-decoration: underline;
-      }
-    }
-  }
-
-
+			a {
+				text-decoration: underline;
+			}
+		}
+	}
 }
