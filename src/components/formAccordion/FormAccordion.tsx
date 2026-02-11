@@ -1,3 +1,5 @@
+import './formAccordion.styles';
+
 import * as React from 'react';
 import {
 	Dispatch,
@@ -8,33 +10,33 @@ import {
 	useMemo,
 	useState
 } from 'react';
-import './formAccordion.styles';
+
+import { useTranslation } from 'react-i18next';
+
+import { ProposedAgencies } from '../../containers/registration/components/ProposedAgencies/ProposedAgencies';
+import { useConsultantAgenciesAndConsultingTypes } from '../../containers/registration/hooks/useConsultantAgenciesAndConsultingTypes';
 import {
-	RequiredComponentsInterface,
+	LegalLinkInterface,
 	RegistrationNotesInterface,
-	useTenant,
-	LegalLinkInterface
+	RequiredComponentsInterface,
+	useTenant
 } from '../../globalState';
+import { UrlParamsContext } from '../../globalState/provider/UrlParamsProvider';
+import { Button, BUTTON_TYPES, ButtonItem } from '../button/Button';
 import { FormAccordionItem } from '../formAccordion/FormAccordionItem';
-import { RegistrationUsername } from '../registration/RegistrationUsername';
+import { MainTopicSelection } from '../mainTopicSelection/MainTopicSelection';
 import { RegistrationAge } from '../registration/RegistrationAge';
-import { RegistrationState } from '../registration/RegistrationState';
-import { RegistrationPassword } from '../registration/RegistrationPassword';
+import { FormAccordionData } from '../registration/RegistrationForm';
 import {
 	AccordionItemValidity,
 	VALIDITY_INITIAL,
 	VALIDITY_VALID
 } from '../registration/registrationHelpers';
-import { MainTopicSelection } from '../mainTopicSelection/MainTopicSelection';
-import { useTranslation } from 'react-i18next';
-import { Checkbox, CheckboxItem } from '../checkbox/Checkbox';
-import { Button, BUTTON_TYPES, ButtonItem } from '../button/Button';
-import { FormAccordionRegistrationText } from './FormAccordionRegistrationText';
+import { RegistrationPassword } from '../registration/RegistrationPassword';
+import { RegistrationState } from '../registration/RegistrationState';
+import { RegistrationUsername } from '../registration/RegistrationUsername';
 import { setValueInCookie } from '../sessionCookie/accessSessionCookie';
-import { ProposedAgencies } from '../../containers/registration/components/ProposedAgencies/ProposedAgencies';
-import { useConsultantAgenciesAndConsultingTypes } from '../../containers/registration/hooks/useConsultantAgenciesAndConsultingTypes';
-import { FormAccordionData } from '../registration/RegistrationForm';
-import { UrlParamsContext } from '../../globalState/provider/UrlParamsProvider';
+import { FormAccordionRegistrationText } from './FormAccordionRegistrationText';
 
 interface FormAccordionProps {
 	formAccordionData: FormAccordionData;
@@ -46,8 +48,6 @@ interface FormAccordionProps {
 	legalLinks: Array<LegalLinkInterface>;
 	handleSubmitButtonClick: Function;
 	isSubmitButtonDisabled: boolean;
-	setIsDataProtectionSelected: Dispatch<SetStateAction<boolean>>;
-	isDataProtectionSelected: boolean;
 }
 
 export const FormAccordion = ({
@@ -59,9 +59,7 @@ export const FormAccordion = ({
 	registrationNotes,
 	legalLinks,
 	handleSubmitButtonClick,
-	isSubmitButtonDisabled,
-	setIsDataProtectionSelected,
-	isDataProtectionSelected
+	isSubmitButtonDisabled
 }: FormAccordionProps) => {
 	const { t: translate } = useTranslation(['common', 'consultingTypes']);
 	const tenantData = useTenant();
@@ -94,7 +92,7 @@ export const FormAccordion = ({
 			: VALIDITY_VALID,
 		mainTopic: topicsAreRequired ? VALIDITY_INITIAL : VALIDITY_VALID,
 		agency: VALIDITY_INITIAL,
-		dataProtection: VALIDITY_INITIAL
+		dataProtection: VALIDITY_VALID
 	});
 
 	useEffect(() => {
@@ -106,9 +104,7 @@ export const FormAccordion = ({
 					? formAccordionData.agency?.tenantId?.toString()
 					: '0'
 			);
-		formAccordionData.agency?.tenantId &&
-			setIsDataProtectionSelected(false);
-	}, [formAccordionData.agency, setIsDataProtectionSelected]);
+	}, [formAccordionData.agency]);
 
 	useEffect(() => {
 		onValidation(
@@ -130,13 +126,6 @@ export const FormAccordion = ({
 			setActiveItem(1);
 		}
 	}, [isUsernameAlreadyInUse]);
-
-	useEffect(() => {
-		handleValidity(
-			'dataProtection',
-			isDataProtectionSelected ? VALIDITY_VALID : VALIDITY_INITIAL
-		);
-	}, [handleValidity, isDataProtectionSelected]);
 
 	const handleKeyDown = (e, isLastInput = true, isFirstInput = true) => {
 		if (
@@ -186,14 +175,6 @@ export const FormAccordion = ({
 			isValid: validity.password
 		}
 	];
-
-	const checkboxItemDataProtection: CheckboxItem = {
-		inputId: 'dataProtectionCheckbox',
-		name: 'dataProtectionCheckbox',
-		labelId: 'dataProtectionLabel',
-		checked: isDataProtectionSelected,
-		label: translate('registration.dataProtectionCheckbox.label')
-	};
 
 	if (topicsAreRequired) {
 		accordionItemData.push({
@@ -305,24 +286,12 @@ export const FormAccordion = ({
 			<div>
 				<div
 					className="registrationForm__dataProtection"
-					onKeyDown={handleKeyDown}
-				>
-					<Checkbox
-						item={checkboxItemDataProtection}
-						checkboxHandle={() =>
-							setIsDataProtectionSelected(
-								!isDataProtectionSelected
-							)
-						}
-						onKeyPress={(event) => {
-							if (event.key === 'Enter') {
-								setIsDataProtectionSelected(
-									!isDataProtectionSelected
-								);
-							}
-						}}
-					/>
-				</div>
+					dangerouslySetInnerHTML={{
+						__html: translate(
+							'registration.dataProtectionCheckbox.label'
+						)
+					}}
+				/>
 				<details className="data-protection-details">
 					<summary>
 						{translate(
@@ -349,7 +318,7 @@ export const FormAccordion = ({
 				/>
 			</div>
 		),
-		isValid: validity.dataProtection
+		isValid: VALIDITY_INITIAL
 	});
 
 	const handleItemHeaderClick = (indexOfItem) => {

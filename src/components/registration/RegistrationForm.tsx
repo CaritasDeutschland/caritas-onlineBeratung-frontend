@@ -1,10 +1,13 @@
+import './registrationForm.styles';
+
 import * as React from 'react';
-import { useState, useEffect, useCallback, useContext } from 'react';
-import { BUTTON_TYPES } from '../button/Button';
+import { useCallback, useContext, useEffect, useState } from 'react';
+
+import { useTranslation } from 'react-i18next';
+
 import { apiPostRegistration, FETCH_ERRORS, X_REASON } from '../../api';
-import { endpoints } from '../../resources/scripts/endpoints';
-import { Overlay, OVERLAY_FUNCTIONS, OverlayItem } from '../overlay/Overlay';
-import { redirectToApp } from './autoLogin';
+import { apiPostError, ERROR_LEVEL_ERROR } from '../../api/apiPostError';
+import { ConsultingTypeRegistrationDefaults } from '../../containers/registration/components/ProposedAgencies/ProposedAgencies';
 import {
 	AgencyDataInterface,
 	ConsultingTypeInterface,
@@ -13,23 +16,23 @@ import {
 	TenantContext,
 	useLocaleData
 } from '../../globalState';
-import { FormAccordion } from '../formAccordion/FormAccordion';
+import { TopicsDataInterface } from '../../globalState/interfaces/TopicsDataInterface';
+import { LegalLinksContext } from '../../globalState/provider/LegalLinksProvider';
+import { UrlParamsContext } from '../../globalState/provider/UrlParamsProvider';
+import { useAppConfig } from '../../hooks/useAppConfig';
 import { ReactComponent as WelcomeIcon } from '../../resources/img/illustrations/welcome.svg';
-import './registrationForm.styles';
+import { endpoints } from '../../resources/scripts/endpoints';
+import { getUrlParameter } from '../../utils/getUrlParameter';
+import { getTenantSettings } from '../../utils/tenantSettingsHelper';
+import { budibaseLogout } from '../budibase/budibaseLogout';
+import { BUTTON_TYPES } from '../button/Button';
 import {
 	getErrorCaseForStatus,
 	redirectToErrorPage
 } from '../error/errorHandling';
-import { useTranslation } from 'react-i18next';
-import { LegalLinksContext } from '../../globalState/provider/LegalLinksProvider';
-import { useAppConfig } from '../../hooks/useAppConfig';
-import { getTenantSettings } from '../../utils/tenantSettingsHelper';
-import { budibaseLogout } from '../budibase/budibaseLogout';
-import { getUrlParameter } from '../../utils/getUrlParameter';
-import { UrlParamsContext } from '../../globalState/provider/UrlParamsProvider';
-import { TopicsDataInterface } from '../../globalState/interfaces/TopicsDataInterface';
-import { ConsultingTypeRegistrationDefaults } from '../../containers/registration/components/ProposedAgencies/ProposedAgencies';
-import { apiPostError, ERROR_LEVEL_ERROR } from '../../api/apiPostError';
+import { FormAccordion } from '../formAccordion/FormAccordion';
+import { Overlay, OVERLAY_FUNCTIONS, OverlayItem } from '../overlay/Overlay';
+import { redirectToApp } from './autoLogin';
 
 export interface FormAccordionData {
 	username?: string;
@@ -73,8 +76,6 @@ export const RegistrationForm = () => {
 	const [formAccordionValid, setFormAccordionValid] = useState(false);
 	const [isUsernameAlreadyInUse, setIsUsernameAlreadyInUse] =
 		useState<boolean>(false);
-	const [isDataProtectionSelected, setIsDataProtectionSelected] =
-		useState(false);
 	const [isSubmitButtonDisabled, setIsSubmitButtonDisabled] = useState(true);
 	const [overlayActive, setOverlayActive] = useState(false);
 	const [missingFieldsErrorPosted, setMissingFieldsErrorPosted] = useState<
@@ -90,10 +91,8 @@ export const RegistrationForm = () => {
 	}, [featureToolsEnabled]);
 
 	useEffect(() => {
-		setIsSubmitButtonDisabled(
-			!(formAccordionValid && isDataProtectionSelected)
-		);
-	}, [formAccordionValid, isDataProtectionSelected]);
+		setIsSubmitButtonDisabled(!formAccordionValid);
+	}, [formAccordionValid]);
 
 	const overlayItemRegistrationSuccess: OverlayItem = {
 		svg: WelcomeIcon,
@@ -123,7 +122,7 @@ export const RegistrationForm = () => {
 			password: encodeURIComponent(formAccordionData.password),
 			postcode: formAccordionData.postcode,
 			agencyId: formAccordionData?.agency.id.toString(),
-			termsAccepted: isDataProtectionSelected.toString(),
+			termsAccepted: 'true',
 			consultingType: formAccordionData.consultingType?.id?.toString(),
 			mainTopicId: formAccordionData.mainTopic?.id?.toString(),
 			preferredLanguage: locale,
@@ -252,10 +251,6 @@ export const RegistrationForm = () => {
 						legalLinks={legalLinks}
 						handleSubmitButtonClick={handleSubmitButtonClick}
 						isSubmitButtonDisabled={isSubmitButtonDisabled}
-						setIsDataProtectionSelected={
-							setIsDataProtectionSelected
-						}
-						isDataProtectionSelected={isDataProtectionSelected}
 					/>
 				)}
 			</form>
