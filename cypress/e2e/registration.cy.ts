@@ -13,7 +13,6 @@ const checkForGenericRegistrationElements = () => {
 	cy.get('#username').should('exist');
 	cy.get('#passwordInput').should('exist');
 	cy.get('#passwordConfirmation').should('exist');
-	cy.get('#dataProtectionCheckbox').should('exist');
 	cy.get('.button__primary').should('exist');
 	cy.get('.stageLayout__toLogin').should('exist');
 };
@@ -167,7 +166,6 @@ describe('registration', () => {
 			cy.get('[id^="react-select"]:contains("Bayern")').click();
 			cy.get('button:contains("Weiter"):visible').click();
 			cy.get('button:contains("Weiter"):visible').click();
-			cy.get('#dataProtectionLabel').click();
 			cy.contains('Registrieren').should('be.enabled');
 		});
 	});
