@@ -122,7 +122,6 @@ export const RegistrationForm = () => {
 			password: encodeURIComponent(formAccordionData.password),
 			postcode: formAccordionData.postcode,
 			agencyId: formAccordionData?.agency.id.toString(),
-			termsAccepted: 'true',
 			consultingType: formAccordionData.consultingType?.id?.toString(),
 			mainTopicId: formAccordionData.mainTopic?.id?.toString(),
 			preferredLanguage: locale,
@@ -136,7 +135,6 @@ export const RegistrationForm = () => {
 			'password',
 			'postcode',
 			'agencyId',
-			'termsAccepted',
 			'consultingType'
 		].filter(
 			(required) =>
