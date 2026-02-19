@@ -57,7 +57,6 @@ export const FormAccordion = ({
 	onValidation,
 	additionalStepsData,
 	registrationNotes,
-	legalLinks,
 	handleSubmitButtonClick,
 	isSubmitButtonDisabled
 }: FormAccordionProps) => {
@@ -91,8 +90,7 @@ export const FormAccordion = ({
 			? VALIDITY_INITIAL
 			: VALIDITY_VALID,
 		mainTopic: topicsAreRequired ? VALIDITY_INITIAL : VALIDITY_VALID,
-		agency: VALIDITY_INITIAL,
-		dataProtection: VALIDITY_VALID
+		agency: VALIDITY_INITIAL
 	});
 
 	useEffect(() => {
