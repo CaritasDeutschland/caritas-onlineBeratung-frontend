@@ -32,7 +32,7 @@ export const HelpConsultantProfile: React.FC = () => {
 					{translate(`${translationPrefix}.supportPortalDescription`)}
 				</p>
 				<p>
-					<a href="https://support.beratung.caritas.de/support/home">
+					<a href="https://service.beratung.caritas.de/support/catalog/items">
 						{translate(`${translationPrefix}.servicePortal`)}
 					</a>
 					<br />
