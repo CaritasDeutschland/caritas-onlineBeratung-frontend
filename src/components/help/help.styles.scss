@@ -65,6 +65,10 @@
 		}
 	}
 
+	&__text--centered {
+		text-align: center;
+	}
+
 	&__copyLink {
 		display: block;
 		color: $primary;
