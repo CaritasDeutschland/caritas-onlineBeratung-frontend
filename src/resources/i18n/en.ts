@@ -777,27 +777,6 @@ export const en = {
 					}
 				}
 			},
-			consultant: {
-				headline: 'Video Call',
-				intro: 'To perform a video call, you must log in using one of the supported browsers.',
-				steps: {
-					'1.1': 'Follow the link to ',
-					'1.2': ' or ',
-					'1.3': ' (only for macOS and iOS available)',
-					'2': 'Download one of the supported browsers. You may need the support of your IT for this.',
-					'3': 'Install it on your PC/laptop/tablet/smartphone.',
-					'4': {
-						'1': 'Now open the online consultation with this browser.',
-						'2': 'Open the online consultation with one of these browsers.'
-					},
-					'5': 'Sign up for online counseling.',
-					'6': 'Start the video call.',
-					'headline': {
-						'1': 'Step by step guide',
-						'2': 'Already have Google Chrome, Microsoft Edge, Safari or Mozilla Firefox?'
-					}
-				}
-			},
 			loginLink: {
 				title: 'Copy link to clipboard',
 				text: 'Copy link',
@@ -806,6 +785,40 @@ export const en = {
 					text: 'Link copied to clipboard!'
 				}
 			}
+		},
+		consultant: {
+			headline: 'Technical Request & Support',
+			intro: 'Do you need help with the system or would you like to submit an administration request? Our support team is happy to assist you.',
+			supportPortal: 'Support Portal',
+			supportPortalDescription:
+				'for consultants experiencing technical issues and other reports',
+			servicePortal: 'Service Portal',
+			servicePortalDescription:
+				'only for service administrators to submit the following administration requests:',
+			serviceItems: {
+				'1': 'Creation of a new counseling center',
+				'2': 'Deletion of the counseling center',
+				'3': 'Information about counseling center details (name / description)',
+				'4': 'Adjustment of counseling center details (name / description)',
+				'5': 'Information about the postal code area of the counseling center',
+				'6': 'Adjustment of the postal code area of the counseling center',
+				'7': 'Information on the status of the counseling center (deactivated: yes / no)',
+				'8': 'Re-activation of the counseling center',
+				'9': 'Deactivation of the counseling center',
+				'10': 'Information about existing consultant accounts of the counseling center',
+				'11': 'Assignment of the consultant account to a different counseling center',
+				'12': 'Creation of a new consultant account',
+				'13': 'Deletion of a consultant account',
+				'14': 'Creation of a new U25 consultant account',
+				'15': 'Deletion of a U25 consultant account',
+				'16': 'Reset of the two-factor authentication of the consultant account',
+				'17': 'Change of the signature of the consultant account',
+				'18': 'Change of the email address of the consultant account',
+				'19': 'Granting administration rights in the service portal for the consultant account',
+				'20': 'Revoking administration rights in the service portal for the consultant account'
+			},
+			note: 'Note: If you are not a service admin yourself, please contact your service admin to initiate such a request. Do you not know who your service admin is? Then please reach out to ',
+			noteEmail: 'online-beratung@caritas.de'
 		}
 	},
 	jitsi: {
