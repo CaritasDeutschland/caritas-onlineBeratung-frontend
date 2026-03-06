@@ -26,7 +26,12 @@ export const en = {
 			},
 			master_key_lost: '',
 			// WORKAROUND for reassignment lastMessage bug
-			reassign_consultant_reset_last_message: 'reassigned'
+			reassign_consultant_reset_last_message: 'reassigned',
+			consultant_display_name_changed: 'Display name changed'
+		},
+		message: {
+			consultantDisplayNameChanged:
+				'Your counselor has changed their display name. New messages will now appear under the new pseudonym. However, it is still the same person you have been in contact with.'
 		}
 	},
 	anonymous: {
@@ -1259,7 +1264,21 @@ export const en = {
 			},
 			info: {
 				private: 'This data cannot be viewed by those seeking advice.',
-				public: 'With the display name you will appear to those seeking advice.'
+				public: 'With this display name you will appear to those seeking advice. By default, display names consist of the first letter of your first name followed by .LastName (e.g. M.Mustermensch). If you change your display name, please agree on a consistent format within your counseling center, composed of the following optional parts separated by underscores:'
+			},
+			displayNameHint: {
+				formatItem1: '"Counselor"',
+				formatItem2: 'First name or initial',
+				formatItem3: 'Last name',
+				formatItem4: 'Department abbreviation',
+				formatItem5: 'City code',
+				formatItem6: 'A sequential number',
+				examplesTitle: 'For example:',
+				exampleItem1: 'firstname_lastname',
+				exampleItem2: 'Counselor_1',
+				exampleItem3: 'Maxi_1',
+				exampleItem4: 'Maxi_U25_Berlin',
+				exampleItem5: 'Maxi_U25'
 			},
 			edit: {
 				'button.cancel': 'Cancel',

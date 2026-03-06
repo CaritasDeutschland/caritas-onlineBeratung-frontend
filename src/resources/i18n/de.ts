@@ -27,7 +27,12 @@ export const de = {
 				REQUESTED: 'Anfrage zur Zuweisung'
 			},
 			// WORKAROUND for reassignment lastMessage bug
-			reassign_consultant_reset_last_message: 'neu zugewiesen'
+			reassign_consultant_reset_last_message: 'neu zugewiesen',
+			consultant_display_name_changed: 'Anzeigename geändert'
+		},
+		message: {
+			consultantDisplayNameChanged:
+				'Ihr*e Berater*in hat den Anzeigenamen geändert. Neuen Nachrichten erscheinen jetzt unter dem neuen Pseudonym. Es handelt sich allerdings um dieselbe Person, mit der die Beratung bisher lief.'
 		}
 	},
 	anonymous: {
@@ -1239,7 +1244,21 @@ export const de = {
 			},
 			info: {
 				private: 'Diese Daten können die Ratsuchenden nicht einsehen.',
-				public: 'Mit dem Anzeigenamen erscheinen Sie bei den Ratsuchenden.'
+				public: 'Mit diesem Anzeigenamen erscheinen Sie bei den Ratsuchenden. Anzeigenamen sind per Default der erste Buchstabe ihres Vornamens gefolgt von .Nachname (Beispiel: M.Mustermensch). Wenn Sie Änderungen an ihrem Anzeigenamen vornehmen, wählen Sie bitte innerhalb Ihrer Beratungsstelle ein einheitliches Format zusammengesetzt aus folgenden, optionalen Bestandteilen jeweils getrennt durch einen Unterstrich:'
+			},
+			displayNameHint: {
+				formatItem1: '"Berater*in"',
+				formatItem2: 'Vorname oder Anfangsbuchstabe vom Vornamen',
+				formatItem3: 'Nachname',
+				formatItem4: 'Fachbereichskürzel',
+				formatItem5: 'Städte-Kennzeichen',
+				formatItem6: 'eine fortlaufende Zahl',
+				examplesTitle: 'Beispielsweise:',
+				exampleItem1: 'vorname_nachname',
+				exampleItem2: 'Berater*in_1',
+				exampleItem3: 'Maxi_1',
+				exampleItem4: 'Maxi_U25_Berlin',
+				exampleItem5: 'Maxi_U25'
 			},
 			edit: {
 				'button.cancel': 'Abbrechen',
