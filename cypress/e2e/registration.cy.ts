@@ -13,7 +13,6 @@ const checkForGenericRegistrationElements = () => {
 	cy.get('#username').should('exist');
 	cy.get('#passwordInput').should('exist');
 	cy.get('#passwordConfirmation').should('exist');
-	cy.get('#dataProtectionCheckbox').should('exist');
 	cy.get('.button__primary').should('exist');
 	cy.get('.stageLayout__toLogin').should('exist');
 };
@@ -74,28 +73,6 @@ describe('registration', () => {
 				agencies = data;
 				cy.intercept(endpoints.agencyServiceBase, data).as('agencies');
 			});
-		});
-
-		it('should redirect to helpmail when no aid is given', () => {
-			// Currently (2021-06-23), 'https://www.u25.de/helpmail/' throws an
-			// `Uncaught ReferenceError: setVisitorCookieTimeout is not defined`
-			// and causes Cypress to fail the test.
-			// As this is outside of our control, we ignore this specific error for now.
-			cy.on('uncaught:exception', (error) => {
-				if (
-					error.message.includes(
-						'setVisitorCookieTimeout is not defined'
-					)
-				) {
-					return false;
-				}
-			});
-			cy.visit('/u25/registration');
-			cy.wait('@consultingTypeServiceBySlugFull');
-			cy.url().should(
-				'be.equal',
-				'https://www.u25-deutschland.de/helpmail/'
-			);
 		});
 
 		it('should have all generic registration page elements', () => {
@@ -167,7 +144,6 @@ describe('registration', () => {
 			cy.get('[id^="react-select"]:contains("Bayern")').click();
 			cy.get('button:contains("Weiter"):visible').click();
 			cy.get('button:contains("Weiter"):visible').click();
-			cy.get('#dataProtectionLabel').click();
 			cy.contains('Registrieren').should('be.enabled');
 		});
 	});

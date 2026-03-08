@@ -27,7 +27,12 @@ export const de = {
 				REQUESTED: 'Anfrage zur Zuweisung'
 			},
 			// WORKAROUND for reassignment lastMessage bug
-			reassign_consultant_reset_last_message: 'neu zugewiesen'
+			reassign_consultant_reset_last_message: 'neu zugewiesen',
+			consultant_display_name_changed: 'Anzeigename geändert'
+		},
+		message: {
+			consultantDisplayNameChanged:
+				'Ihr*e Berater*in hat den Anzeigenamen geändert. Neuen Nachrichten erscheinen jetzt unter dem neuen Pseudonym. Es handelt sich allerdings um dieselbe Person, mit der die Beratung bisher lief.'
 		}
 	},
 	anonymous: {
@@ -795,27 +800,6 @@ export const de = {
 					}
 				}
 			},
-			consultant: {
-				headline: 'Video-Call',
-				intro: 'Um einen Video-Call durchführen zu können, müssen Sie sich über einen der unterstützten Browser anmelden.',
-				steps: {
-					'1.1': 'Folgen Sie dem Link zu ',
-					'1.2': ' oder ',
-					'1.3': ' (nur für macOS und iOS verfügbar)',
-					'2': 'Laden Sie einen der unterstützten Browser herunter. Dafür brauchen Sie möglicherweise die Unterstützung Ihrer EDV.',
-					'3': 'Installieren Sie diesen auf Ihrem PC/Laptop/Tablet/Smartphone.',
-					'4': {
-						'1': 'Öffnen Sie nun mit diesem Browser die Online-Beratung.',
-						'2': 'Öffnen Sie die Online-Beratung mit einem dieser Browser.'
-					},
-					'5': 'Melden Sie sich bei der Online-Beratung an.',
-					'6': 'Starten Sie den Video-Call.',
-					'headline': {
-						'1': 'Schritt für Schritt Anleitung',
-						'2': 'Sie haben bereits Google Chrome, Microsoft Edge, Safari oder Mozilla Firefox?'
-					}
-				}
-			},
 			loginLink: {
 				notification: {
 					text: 'Link in Zwischenablage kopiert!',
@@ -824,6 +808,40 @@ export const de = {
 				text: 'Link kopieren',
 				title: 'Link in Zwischenablage kopieren'
 			}
+		},
+		consultant: {
+			headline: 'Technische Anfrage & Unterstützung',
+			intro: 'Benötigen Sie Hilfe mit dem System oder möchten Sie eine Admininstrationsanfrage stellen? Unser Support-Team ist gerne für Sie da.',
+			supportPortal: 'Support-Portal',
+			supportPortalDescription:
+				'für Berater*innen bei technischen Problemen und sonstigen Meldungen',
+			servicePortal: 'Service-Portal',
+			servicePortalDescription:
+				'nur für Service-Administrator*innen zur Anfrage folgende Administrationsanfragen:',
+			serviceItems: {
+				'1': 'Erstellung einer neuen Beratungsstelle',
+				'2': 'Löschung der Beratungsstelle',
+				'3': 'Auskunft über Beratungsstellendetails (Name / Beschreibung)',
+				'4': 'Anpassung der Beratungsstellendetails (Name / Beschreibung)',
+				'5': 'Auskunft über PLZ-Gebiets der Beratungsstelle',
+				'6': 'Anpassung des PLZ-Gebiets der Beratungsstelle',
+				'7': 'Auskunft zum Status der Beratungsstelle (deaktiviert: ja / nein)',
+				'8': 'Re-Aktivierung der Beratungsstelle',
+				'9': 'Deaktivierung der Beratungsstelle',
+				'10': 'Auskunft über bestehende Berater:innen-Accounts der Beratungsstelle',
+				'11': 'Zuweisung des Berater:innen-Account zu einer anderen Beratungsstelle',
+				'12': 'Anlage eines neuen Berater:innen-Accounts',
+				'13': 'Löschung eines Berater:innen-Accounts',
+				'14': 'Anlage eines neuen U25 Berater:innen-Accounts',
+				'15': 'Löschung eines U25 Berater:innen-Accounts',
+				'16': 'Zurücksetzung der 2-Faktor-Authentifizierung des Berater:innen-Accounts',
+				'17': 'Änderung der Signatur des Berater:innen-Accounts',
+				'18': 'Änderungen der E-Mail-Adresse des Berater:innen-Accounts',
+				'19': 'Erteilung von Administrationsrechten im Service-Portal für den Berater:innen-Account',
+				'20': 'Entzug von Administrationsrechten im Service-Portal für den Berater:innen-Account'
+			},
+			note: 'Hinweis: Wenn Sie nicht selbst Service-Admin sind, kontaktieren Sie bitte Ihre*n Service-Admin, um ein solches Anliegen auf den Weg zu bringen. Sie wissen nicht wer ihr Service-Admin ist? Dann wenden Sie sich bitte an ',
+			noteEmail: 'online-beratung@caritas.de'
 		}
 	},
 	jitsi: {
@@ -1226,7 +1244,21 @@ export const de = {
 			},
 			info: {
 				private: 'Diese Daten können die Ratsuchenden nicht einsehen.',
-				public: 'Mit dem Anzeigenamen erscheinen Sie bei den Ratsuchenden.'
+				public: 'Mit diesem Anzeigenamen erscheinen Sie bei den Ratsuchenden. Anzeigenamen sind per Default der erste Buchstabe ihres Vornamens gefolgt von .Nachname (Beispiel: M.Mustermensch). Wenn Sie Änderungen an ihrem Anzeigenamen vornehmen, wählen Sie bitte innerhalb Ihrer Beratungsstelle ein einheitliches Format zusammengesetzt aus folgenden, optionalen Bestandteilen jeweils getrennt durch einen Unterstrich:'
+			},
+			displayNameHint: {
+				formatItem1: '"Berater*in"',
+				formatItem2: 'Vorname oder Anfangsbuchstabe vom Vornamen',
+				formatItem3: 'Nachname',
+				formatItem4: 'Fachbereichskürzel',
+				formatItem5: 'Städte-Kennzeichen',
+				formatItem6: 'eine fortlaufende Zahl',
+				examplesTitle: 'Beispielsweise:',
+				exampleItem1: 'vorname_nachname',
+				exampleItem2: 'Berater*in_1',
+				exampleItem3: 'Maxi_1',
+				exampleItem4: 'Maxi_U25_Berlin',
+				exampleItem5: 'Maxi_U25'
 			},
 			edit: {
 				'button.cancel': 'Abbrechen',

@@ -1,16 +1,20 @@
-import React, { useCallback, useContext } from 'react';
 import './help.styles.scss';
-import { copyTextToClipboard } from '../../utils/clipboardHelpers';
+
+import React, { useCallback, useContext } from 'react';
+
+import { useTranslation } from 'react-i18next';
+
 import {
 	AUTHORITIES,
 	hasUserAuthority,
-	NotificationsContext,
 	NOTIFICATION_TYPE_SUCCESS,
+	NotificationsContext,
 	UserDataContext
 } from '../../globalState';
-import { HelpVideoCall } from './HelpVideoCall';
-import { useTranslation } from 'react-i18next';
 import { useAppConfig } from '../../hooks/useAppConfig';
+import { copyTextToClipboard } from '../../utils/clipboardHelpers';
+import { HelpConsultantProfile } from './HelpConsultantProfile';
+import { HelpVideoCall } from './HelpVideoCall';
 
 interface HelpProps {}
 export const Help: React.FC<HelpProps> = () => {
@@ -37,12 +41,7 @@ export const Help: React.FC<HelpProps> = () => {
 
 	return (
 		<div className="help">
-			{isConsultant && (
-				<HelpVideoCall
-					copyLoginLink={copyLoginLink}
-					consultant={true}
-				/>
-			)}
+			{isConsultant && <HelpConsultantProfile />}
 			{isAsker && (
 				<HelpVideoCall
 					copyLoginLink={copyLoginLink}
