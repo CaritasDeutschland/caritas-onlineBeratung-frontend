@@ -300,6 +300,9 @@ export const MessageItemComponent = ({
 		alias?.messageType === ALIAS_MESSAGE_TYPES.MASTER_KEY_LOST;
 	const isAppointmentDefined =
 		alias?.messageType === ALIAS_MESSAGE_TYPES.INITIAL_APPOINTMENT_DEFINED;
+	const isConsultantDisplayNameChangedMessage =
+		alias?.messageType ===
+		ALIAS_MESSAGE_TYPES.CONSULTANT_DISPLAY_NAME_CHANGED;
 
 	// WORKAROUND for reassignment last message bug
 	// don't show this message in the session view
@@ -394,6 +397,14 @@ export const MessageItemComponent = ({
 					<span className="messageItem__message--system">
 						{translate(
 							'anonymous.session.systemMessage.chatFinished'
+						)}
+					</span>
+				);
+			case isConsultantDisplayNameChangedMessage:
+				return (
+					<span className="messageItem__message--system">
+						{translate(
+							'aliases.message.consultantDisplayNameChanged'
 						)}
 					</span>
 				);

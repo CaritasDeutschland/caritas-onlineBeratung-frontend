@@ -236,27 +236,11 @@ export const deInformal = {
 						'2': 'Du hast bereits Google Chrome, Microsoft Edge oder Safari?'
 					}
 				}
-			},
-			consultant: {
-				headline: 'Video-Call',
-				intro: 'Damit Du an Video-Calls teilnehmen kannst, musst Du Dich über einen der unterstützten Browser anmelden.',
-				steps: {
-					'1.1': 'Folge dem Link zu ',
-					'1.2': ' oder ',
-					'1.3': ' (nur für macOS und iOS verfügbar)',
-					'2': 'Lade einen der unterstützten Browser herunter. Dafür brauchst Du möglicherweise die Unterstützung Deiner EDV.',
-					'3': 'Installiere diesen auf Deinem PC/Laptop/Tablet/Smartphone.',
-					'4': {
-						'1': 'Öffne nun mit diesem Browser die Online-Beratung.',
-						'2': 'Öffne die Online-Beratung mit einem dieser Browser.'
-					},
-					'5': 'Melde Dich bei der Online-Beratung an.',
-					'6': 'Starte den Video-Call.',
-					'headline': {
-						'2': 'Du hast bereits Google Chrome, Microsoft Edge oder Safari?'
-					}
-				}
 			}
+		},
+		consultant: {
+			intro: 'Brauchst du Hilfe mit dem System oder möchtest du eine Administrationsanfrage stellen? Unser Support-Team ist gerne für dich da.',
+			note: 'Hinweis: Wenn du nicht selbst Service-Admin bist, kontaktiere bitte deine*n Service-Admin, um ein solches Anliegen auf den Weg zu bringen. Du weißt nicht, wer dein Service-Admin ist? Dann wende dich bitte an '
 		}
 	},
 	message: {

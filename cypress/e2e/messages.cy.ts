@@ -372,4 +372,25 @@ describe('Messages', () => {
 			});
 		});
 	});
+
+	describe('Alias Messages', () => {
+		describe('CONSULTANT_DISPLAY_NAME_CHANGED', () => {
+			it('should show consultant display name changed system message', () => {
+				cy.addMessage({
+					alias: {
+						messageType: 'CONSULTANT_DISPLAY_NAME_CHANGED'
+					}
+				});
+
+				cy.fastLogin();
+
+				cy.get('[data-cy=session-list-item]').click();
+				cy.wait('@messages');
+
+				cy.contains(
+					'Ihr*e Berater*in hat den Anzeigenamen geändert'
+				).should('be.visible');
+			});
+		});
+	});
 });
