@@ -140,15 +140,17 @@ export const sessionsReply = ({
 
 export const generateMessage = ({
 	rcGroupId,
-	unread
+	unread,
+	alias
 }: {
 	rcGroupId?: string;
 	unread?: boolean;
+	alias?: MessageService.Schemas.AliasMessageDTO;
 } = {}): MessageService.Schemas.MessagesDTO => {
 	const id = uuid();
 	return {
 		_id: id,
-		alias: null,
+		alias: alias || null,
 		rid: rcGroupId,
 		msg: `message id ${id}`,
 		ts: new Date().toISOString(),

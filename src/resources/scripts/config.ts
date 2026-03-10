@@ -315,5 +315,7 @@ export const ALIAS_LAST_MESSAGES = {
 		'aliases.lastMessage.reassign_consultant_reset_last_message',
 	APPOINTMENT_SET: 'message.appointment.component.header.confirmation',
 	APPOINTMENT_CANCELLED: 'message.appointment.component.header.cancellation',
-	APPOINTMENT_RESCHEDULED: 'message.appointment.component.header.change'
+	APPOINTMENT_RESCHEDULED: 'message.appointment.component.header.change',
+	CONSULTANT_DISPLAY_NAME_CHANGED:
+		'aliases.lastMessage.consultant_display_name_changed'
 };
