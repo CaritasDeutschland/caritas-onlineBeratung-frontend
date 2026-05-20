@@ -177,7 +177,6 @@ export const MessageSubmitInterfaceComponent = ({
 	const [attachmentSelected, setAttachmentSelected] = useState<File[]>([]);
 	const [uploadProgress, setUploadProgress] = useState(null);
 	const [fileProgresses, setFileProgresses] = useState<number[]>([]);
-	const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
 	const [isRequestInProgress, setIsRequestInProgress] = useState(false);
 	const [attachmentUpload, setAttachmentUpload] =
 		useState<XMLHttpRequest | null>(null);
@@ -384,7 +383,6 @@ export const MessageSubmitInterfaceComponent = ({
 	const cleanupAttachment = useCallback(() => {
 		setUploadProgress(0);
 		setFileProgresses([]);
-		setUploadingIndex(null);
 		setAttachmentSelected([]);
 		setAttachmentUpload(null);
 		removeSelectedAttachment();
@@ -565,8 +563,6 @@ export const MessageSubmitInterfaceComponent = ({
 				for (let i = 0; i < attachments.length; i++) {
 					const attachment = attachments[i];
 					const fileIndex = i;
-					const totalFiles = attachments.length;
-					setUploadingIndex(fileIndex);
 
 					let attachmentFile = attachment;
 					let signature = null;
@@ -641,8 +637,6 @@ export const MessageSubmitInterfaceComponent = ({
 					}
 				}
 			}
-
-			setUploadingIndex(null);
 
 			if (getTypedMarkdownMessage()) {
 				await apiSendMessage(
