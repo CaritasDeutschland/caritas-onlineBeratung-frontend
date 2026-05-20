@@ -359,19 +359,22 @@ $inputBoxShadow: inset 0 2px 0 0 $message-submit-interface-textarea-shadow-color
 			border-right: $inputBorder;
 			left: 1px;
 			bottom: 0;
-			height: 48px;
+			min-height: 48px;
 			width: calc(100% - #{1px});
 			background-color: white;
 			z-index: 2;
+			display: flex;
+			flex-wrap: wrap;
+			gap: $grid-base;
+			padding: 4px $grid-base;
+			align-items: center;
 		}
 
 		&__attachmentSelected {
-			position: absolute;
+			position: relative;
 			background: $dark-grey;
 			border-radius: $grid-base-two;
 			padding: $grid-base $grid-base-two;
-			top: 4px;
-			left: $grid-base;
 
 			svg {
 				width: $attachmentIconSize;

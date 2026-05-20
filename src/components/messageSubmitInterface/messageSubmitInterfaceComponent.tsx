@@ -173,10 +173,10 @@ export const MessageSubmitInterfaceComponent = ({
 	const { isE2eeEnabled } = useContext(E2EEContext);
 
 	const [activeInfo, setActiveInfo] = useState(null);
-	const [attachmentSelected, setAttachmentSelected] = useState<File | null>(
-		null
-	);
+	const [attachmentSelected, setAttachmentSelected] = useState<File[]>([]);
 	const [uploadProgress, setUploadProgress] = useState(null);
+	const [fileProgresses, setFileProgresses] = useState<number[]>([]);
+	const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
 	const [isRequestInProgress, setIsRequestInProgress] = useState(false);
 	const [attachmentUpload, setAttachmentUpload] =
 		useState<XMLHttpRequest | null>(null);
@@ -382,7 +382,9 @@ export const MessageSubmitInterfaceComponent = ({
 
 	const cleanupAttachment = useCallback(() => {
 		setUploadProgress(0);
-		setAttachmentSelected(null);
+		setFileProgresses([]);
+		setUploadingIndex(null);
+		setAttachmentSelected([]);
 		setAttachmentUpload(null);
 		removeSelectedAttachment();
 	}, [removeSelectedAttachment]);
@@ -449,9 +451,10 @@ export const MessageSubmitInterfaceComponent = ({
 		let textInputMaxHeight = isRichtextActive
 			? textareaMaxHeight - richtextHeight
 			: textareaMaxHeight;
-		textInputMaxHeight = attachmentSelected
-			? textInputMaxHeight - fileHeight
-			: textInputMaxHeight;
+		textInputMaxHeight =
+			attachmentSelected.length > 0
+				? textInputMaxHeight - fileHeight
+				: textInputMaxHeight;
 		const currentInputHeight =
 			textHeight > textInputMaxHeight ? textInputMaxHeight : textHeight;
 
@@ -463,18 +466,20 @@ export const MessageSubmitInterfaceComponent = ({
 		const textInputMarginTop = isRichtextActive
 			? `margin-top: ${richtextHeight}px;`
 			: '';
-		const textInputMarginBottom = attachmentSelected
-			? `margin-bottom: ${fileHeight}px;`
-			: '';
+		const textInputMarginBottom =
+			attachmentSelected.length > 0
+				? `margin-bottom: ${fileHeight}px;`
+				: '';
 		let textInputStyles = `min-height: ${currentInputHeight}px; ${currentOverflow} ${textInputMarginTop} ${textInputMarginBottom}`;
 		textInputStyles = isRichtextActive
 			? textInputStyles +
 			  `border-top: none; border-top-right-radius: 0; box-shadow: none;`
 			: textInputStyles;
-		textInputStyles = attachmentSelected
-			? textInputStyles +
-			  `border-bottom: none; border-bottom-right-radius: 0;`
-			: textInputStyles;
+		textInputStyles =
+			attachmentSelected.length > 0
+				? textInputStyles +
+				  `border-bottom: none; border-bottom-right-radius: 0;`
+				: textInputStyles;
 		textInput?.setAttribute('style', textInputStyles);
 
 		const textareaContainer = textInput?.closest('.textarea');
@@ -548,7 +553,7 @@ export const MessageSubmitInterfaceComponent = ({
 		async (
 			sendToFeedbackEndpoint,
 			message,
-			attachment: File,
+			attachments: File[],
 			isEncrypted
 		) => {
 			const sendToRoomWithId = sendToFeedbackEndpoint
@@ -557,82 +562,100 @@ export const MessageSubmitInterfaceComponent = ({
 			const getSendMailNotificationStatus = () =>
 				!activeSession.isGroup && !activeSession.isLive;
 
-			if (attachment) {
-				let res: any;
-
+			if (attachments.length > 0) {
 				const isAttachmentEncryptionEnabledDevTools = parseInt(
 					getDevToolbarOption(STORAGE_KEY_ATTACHMENT_ENCRYPTION)
 				);
-				let attachmentFile = attachment;
-				let signature = null;
-				let encryptEnabled =
-					isEncrypted && !!isAttachmentEncryptionEnabledDevTools;
+				setFileProgresses(new Array(attachments.length).fill(0));
 
-				if (encryptEnabled) {
-					try {
-						signature = await getSignature(attachment);
-						attachmentFile = await encryptAttachment(
-							attachment,
-							keyID,
-							key
-						);
-					} catch (e: any) {
-						encryptEnabled = false;
+				for (let i = 0; i < attachments.length; i++) {
+					const attachment = attachments[i];
+					const fileIndex = i;
+					const totalFiles = attachments.length;
+					setUploadingIndex(fileIndex);
 
-						apiPostError({
-							name: e.name,
-							message: e.message,
-							stack: e.stack,
-							level: ERROR_LEVEL_WARN
-						}).then();
-					}
-				}
+					let attachmentFile = attachment;
+					let signature = null;
+					let encryptEnabled =
+						isEncrypted && !!isAttachmentEncryptionEnabledDevTools;
 
-				res = await apiUploadAttachment(
-					attachmentFile,
-					sendToRoomWithId,
-					sendToFeedbackEndpoint,
-					getSendMailNotificationStatus(),
-					setUploadProgress,
-					setAttachmentUpload,
-					encryptEnabled,
-					signature
-				).catch((res: XMLHttpRequest) => {
-					if (res.status === 413) {
-						handleAttachmentUploadError(
-							INFO_TYPES.ATTACHMENT_SIZE_ERROR
-						);
-					} else if (res.status === 415) {
-						handleAttachmentUploadError(
-							INFO_TYPES.ATTACHMENT_FORMAT_ERROR
-						);
-					} else if (
-						res.status === 403 &&
-						res.getResponseHeader('X-Reason') === 'QUOTA_REACHED'
-					) {
-						handleAttachmentUploadError(
-							INFO_TYPES.ATTACHMENT_QUOTA_REACHED_ERROR
-						);
-					} else {
-						handleAttachmentUploadError(
-							INFO_TYPES.ATTACHMENT_OTHER_ERROR
-						);
+					if (encryptEnabled) {
+						try {
+							signature = await getSignature(attachment);
+							attachmentFile = await encryptAttachment(
+								attachment,
+								keyID,
+								key
+							);
+						} catch (e: any) {
+							encryptEnabled = false;
+
+							apiPostError({
+								name: e.name,
+								message: e.message,
+								stack: e.stack,
+								level: ERROR_LEVEL_WARN
+							}).then();
+						}
 					}
 
-					return null;
-				});
+					const fileProgressCallback = (progress: number) => {
+						setFileProgresses((prev) => {
+							const updated = [...prev];
+							updated[fileIndex] = progress;
+							return updated;
+						});
+					};
 
-				if (!res) {
-					return;
+					const res = await apiUploadAttachment(
+						attachmentFile,
+						sendToRoomWithId,
+						sendToFeedbackEndpoint,
+						getSendMailNotificationStatus(),
+						fileProgressCallback,
+						setAttachmentUpload,
+						encryptEnabled,
+						signature
+					).catch((res: XMLHttpRequest) => {
+						if (res.status === 413) {
+							handleAttachmentUploadError(
+								INFO_TYPES.ATTACHMENT_SIZE_ERROR
+							);
+						} else if (res.status === 415) {
+							handleAttachmentUploadError(
+								INFO_TYPES.ATTACHMENT_FORMAT_ERROR
+							);
+						} else if (
+							res.status === 403 &&
+							res.getResponseHeader('X-Reason') ===
+								'QUOTA_REACHED'
+						) {
+							handleAttachmentUploadError(
+								INFO_TYPES.ATTACHMENT_QUOTA_REACHED_ERROR
+							);
+						} else {
+							handleAttachmentUploadError(
+								INFO_TYPES.ATTACHMENT_OTHER_ERROR
+							);
+						}
+
+						return null;
+					});
+
+					if (!res) {
+						return;
+					}
 				}
 			}
+
+			setUploadingIndex(null);
 
 			if (getTypedMarkdownMessage()) {
 				await apiSendMessage(
 					message,
 					sendToRoomWithId,
 					sendToFeedbackEndpoint,
-					getSendMailNotificationStatus() && !attachment,
+					getSendMailNotificationStatus() && attachments.length === 0,
 					isEncrypted
 				)
 					.then(() => encryptRoom(setE2EEState))
@@ -673,15 +696,19 @@ export const MessageSubmitInterfaceComponent = ({
 
 	const prepareAndSendMessage = useCallback(async () => {
 		const attachmentInput: any = attachmentInputRef.current;
-		const selectedFile = attachmentInput && attachmentInput.files[0];
-		const attachment = preselectedFile || selectedFile;
+		const selectedFiles = attachmentInput
+			? Array.from(attachmentInput.files as FileList)
+			: [];
+		const attachments: File[] = preselectedFile
+			? [preselectedFile]
+			: selectedFiles;
 
 		if (isE2eeEnabled && encrypted && !keyID) {
 			console.error("Can't send message without key");
 			return;
 		}
 
-		if (getTypedMarkdownMessage() || attachment) {
+		if (getTypedMarkdownMessage() || attachments.length > 0) {
 			setIsRequestInProgress(true);
 		} else {
 			return null;
@@ -725,7 +752,7 @@ export const MessageSubmitInterfaceComponent = ({
 		await sendMessage(
 			sendToFeedbackEndpoint,
 			message,
-			attachment,
+			attachments,
 			isEncrypted
 		);
 
@@ -812,8 +839,8 @@ export const MessageSubmitInterfaceComponent = ({
 		attachmentInput.click();
 	}, []);
 
-	const displayAttachmentToUpload = useCallback((attachment: File) => {
-		setAttachmentSelected(attachment);
+	const displayAttachmentToUpload = useCallback((attachments: File[]) => {
+		setAttachmentSelected(attachments);
 		setActiveInfo('');
 	}, []);
 
@@ -824,19 +851,26 @@ export const MessageSubmitInterfaceComponent = ({
 
 	const handleAttachmentChange = useCallback(() => {
 		const attachmentInput: any = attachmentInputRef.current;
-		const attachment = attachmentInput.files[0];
-		const attachmentSizeMB = getAttachmentSizeMBForKB(attachment.size);
-		attachmentSizeMB > ATTACHMENT_MAX_SIZE_IN_MB
-			? handleLargeAttachments()
-			: displayAttachmentToUpload(attachment);
-	}, [displayAttachmentToUpload, handleLargeAttachments]);
+		const files = Array.from(attachmentInput.files as FileList);
+		const validFiles = files.filter(
+			(f) => getAttachmentSizeMBForKB(f.size) <= ATTACHMENT_MAX_SIZE_IN_MB
+		);
+		if (validFiles.length < files.length) {
+			setActiveInfo(INFO_TYPES.ATTACHMENT_SIZE_ERROR);
+		}
+		if (validFiles.length > 0) {
+			displayAttachmentToUpload(validFiles);
+		} else {
+			removeSelectedAttachment();
+		}
+	}, [displayAttachmentToUpload, removeSelectedAttachment]);
 
 	const handlePreselectedAttachmentChange = useCallback(() => {
 		const attachment = preselectedFile;
 		const attachmentSizeMB = getAttachmentSizeMBForKB(attachment.size);
 		attachmentSizeMB > ATTACHMENT_MAX_SIZE_IN_MB
 			? handleLargeAttachments()
-			: displayAttachmentToUpload(attachment);
+			: displayAttachmentToUpload([attachment]);
 	}, [displayAttachmentToUpload, handleLargeAttachments, preselectedFile]);
 
 	useEffect(() => {
@@ -1081,7 +1115,7 @@ export const MessageSubmitInterfaceComponent = ({
 									/>
 								</div>
 								{hasUploadFunctionality &&
-									(!attachmentSelected ? (
+									(attachmentSelected.length === 0 ? (
 										<span className="textarea__attachmentSelect">
 											<ClipIcon
 												aria-label={translate(
@@ -1095,32 +1129,64 @@ export const MessageSubmitInterfaceComponent = ({
 										</span>
 									) : (
 										<div className="textarea__attachmentWrapper">
-											<span className="textarea__attachmentSelected">
-												<span className="textarea__attachmentSelected__progress"></span>
-												<span className="textarea__attachmentSelected__labelWrapper">
-													{getAttachmentIcon(
-														attachmentSelected.type
-													)}
-													<p className="textarea__attachmentSelected__label">
-														{
-															attachmentSelected.name
-														}
-													</p>
-													<span className="textarea__attachmentSelected__remove">
-														<RemoveIcon
-															onClick={
-																handleAttachmentRemoval
-															}
-															title={translate(
-																'app.remove'
+											{attachmentSelected.map(
+												(file, index) => (
+													<span
+														key={index}
+														className="textarea__attachmentSelected"
+													>
+														<span
+															className="textarea__attachmentSelected__progress"
+															style={{
+																width: `${
+																	fileProgresses[
+																		index
+																	] ?? 0
+																}%`
+															}}
+														></span>
+														<span className="textarea__attachmentSelected__labelWrapper">
+															{getAttachmentIcon(
+																file.type
 															)}
-															aria-label={translate(
-																'app.remove'
-															)}
-														/>
+															<p className="textarea__attachmentSelected__label">
+																{file.name}
+															</p>
+															<span className="textarea__attachmentSelected__remove">
+																<RemoveIcon
+																	onClick={() => {
+																		const updated =
+																			attachmentSelected.filter(
+																				(
+																					_,
+																					i
+																				) =>
+																					i !==
+																					index
+																			);
+																		if (
+																			updated.length ===
+																			0
+																		) {
+																			handleAttachmentRemoval();
+																		} else {
+																			setAttachmentSelected(
+																				updated
+																			);
+																		}
+																	}}
+																	title={translate(
+																		'app.remove'
+																	)}
+																	aria-label={translate(
+																		'app.remove'
+																	)}
+																/>
+															</span>
+														</span>
 													</span>
-												</span>
-											</span>
+												)
+											)}
 										</div>
 									))}
 							</span>
@@ -1160,6 +1226,7 @@ export const MessageSubmitInterfaceComponent = ({
 							type="file"
 							id="dataUpload"
 							name="dataUpload"
+							multiple
 							accept="image/jpeg, image/png, .pdf, .docx, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 						/>
 					)}
