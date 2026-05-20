@@ -162,6 +162,7 @@ export const MessageSubmitInterfaceComponent = ({
 	const textareaInputRef = useRef<HTMLDivElement>(null);
 	const inputWrapperRef = useRef<HTMLSpanElement>(null);
 	const attachmentInputRef = useRef<HTMLInputElement>(null);
+	const attachmentWrapperRef = useRef<HTMLDivElement>(null);
 
 	const { userData } = useContext(UserDataContext);
 	const { activeSession, reloadActiveSession } =
@@ -442,19 +443,14 @@ export const MessageSubmitInterfaceComponent = ({
 			textareaMaxHeight = 218;
 		}
 		const richtextHeight = 38;
-		const fileHeight = 48;
 
 		// calculate inputHeight
 		const textHeight = document.querySelector(
 			'.public-DraftEditor-content > div'
 		)?.scrollHeight;
-		let textInputMaxHeight = isRichtextActive
+		const textInputMaxHeight = isRichtextActive
 			? textareaMaxHeight - richtextHeight
 			: textareaMaxHeight;
-		textInputMaxHeight =
-			attachmentSelected.length > 0
-				? textInputMaxHeight - fileHeight
-				: textInputMaxHeight;
 		const currentInputHeight =
 			textHeight > textInputMaxHeight ? textInputMaxHeight : textHeight;
 
@@ -466,21 +462,19 @@ export const MessageSubmitInterfaceComponent = ({
 		const textInputMarginTop = isRichtextActive
 			? `margin-top: ${richtextHeight}px;`
 			: '';
-		const textInputMarginBottom =
-			attachmentSelected.length > 0
-				? `margin-bottom: ${fileHeight}px;`
-				: '';
-		let textInputStyles = `min-height: ${currentInputHeight}px; ${currentOverflow} ${textInputMarginTop} ${textInputMarginBottom}`;
+		let textInputStyles = `min-height: ${currentInputHeight}px; ${currentOverflow} ${textInputMarginTop}`;
 		textInputStyles = isRichtextActive
 			? textInputStyles +
 			  `border-top: none; border-top-right-radius: 0; box-shadow: none;`
 			: textInputStyles;
-		textInputStyles =
-			attachmentSelected.length > 0
-				? textInputStyles +
-				  `border-bottom: none; border-bottom-right-radius: 0;`
-				: textInputStyles;
 		textInput?.setAttribute('style', textInputStyles);
+
+		// border styling via class
+		if (attachmentSelected.length > 0) {
+			textInput?.classList.add('textarea__input--with-attachment');
+		} else {
+			textInput?.classList.remove('textarea__input--with-attachment');
+		}
 
 		const textareaContainer = textInput?.closest('.textarea');
 		const textareaContainerHeight = textareaContainer?.offsetHeight;
@@ -1128,7 +1122,10 @@ export const MessageSubmitInterfaceComponent = ({
 											/>
 										</span>
 									) : (
-										<div className="textarea__attachmentWrapper">
+										<div
+											className="textarea__attachmentWrapper"
+											ref={attachmentWrapperRef}
+										>
 											{attachmentSelected.map(
 												(file, index) => (
 													<span
@@ -1187,6 +1184,19 @@ export const MessageSubmitInterfaceComponent = ({
 													</span>
 												)
 											)}
+											<span
+												className="textarea__attachmentClearAll"
+												onClick={
+													handleAttachmentRemoval
+												}
+												role="button"
+												tabIndex={0}
+												aria-label={translate(
+													'app.removeAll'
+												)}
+											>
+												{translate('app.removeAll')}
+											</span>
 										</div>
 									))}
 							</span>

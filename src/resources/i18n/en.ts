@@ -119,6 +119,7 @@ export const en = {
 		'claim': 'Online. Anonymous. Secure.',
 		'save': 'Save',
 		'remove': 'Remove',
+		'removeAll': 'Remove all',
 		'download': 'Download',
 		'stage.title': 'Consulting & Help',
 		'logout': 'Log out',
