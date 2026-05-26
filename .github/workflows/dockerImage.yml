@@ -35,9 +35,11 @@ jobs:
                   node-version: 14
                   cache: 'npm'
             - name: Load .env file
-              uses: xom9ikk/dotenv@v2
-              with:
-                  mode: ${{ env.ENV_NAME }}
+              run: |
+                while IFS= read -r line; do
+                  [[ -z "$line" || "$line" =~ ^# ]] && continue
+                  echo "$line" >> $GITHUB_ENV
+                done < ".env.${ENV_NAME}"
             - run: npm ci
             - name: Run linters
               uses: wearerequired/lint-action@v1
