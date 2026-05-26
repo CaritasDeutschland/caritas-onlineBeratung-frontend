@@ -25,7 +25,7 @@ jobs:
                   RAW=$(git branch -r --contains ${{ github.ref }})
                   BRANCH=${RAW##*/}
                   echo BRANCH_NAME="$(echo -n "${BRANCH}")" >> $GITHUB_ENV
-                  if [ "${{ github.ref }}" = "refs/heads/staging" ]; then
+                  if [ "${{ github.ref }}" = "refs/heads/staging" ] || echo "${{ github.ref }}" | grep -q "^refs/tags/.*staging"; then
                     echo ENV_NAME="staging" >> $GITHUB_ENV
                   else
                     echo ENV_NAME="prod" >> $GITHUB_ENV
