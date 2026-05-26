@@ -19,7 +19,7 @@ jobs:
             FAIL_WEBHOOK_SECRET: ${{ secrets.MS_TEAMS_FAIL_WEBHOOK_URI }}
         steps:
             - name: Checkout
-              uses: actions/checkout@v2
+              uses: actions/checkout@v4
             - name: set env
               run: |
                   RAW=$(git branch -r --contains ${{ github.ref }})
@@ -30,7 +30,7 @@ jobs:
                   else
                     echo ENV_NAME="prod" >> $GITHUB_ENV
                   fi
-            - uses: actions/setup-node@v3
+            - uses: actions/setup-node@v4
               with:
                   node-version: 14
                   cache: 'npm'
@@ -40,7 +40,7 @@ jobs:
                   mode: ${{ env.ENV_NAME }}
             - run: npm ci
             - name: Run linters
-              uses: wearerequired/lint-action@v1
+              uses: wearerequired/lint-action@v2
               with:
                   github_token: ${{ secrets.github_token }}
                   eslint: true
@@ -85,7 +85,7 @@ jobs:
             IMAGE_WEBHOOK_SECRET: ${{ secrets.MS_TEAMS_IMAGE_WEBHOOK_URI }}
             FAIL_WEBHOOK_SECRET: ${{ secrets.MS_TEAMS_FAIL_WEBHOOK_URI }}
         steps:
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v4
             - name: Download buildfiles artifact
               uses: actions/download-artifact@v4
               with:
@@ -119,7 +119,7 @@ jobs:
               shell: bash
             - name: Docker meta
               id: meta
-              uses: docker/metadata-action@v4
+              uses: docker/metadata-action@v5
               with:
                   images: '${{ env.DOCKER_REGISTRY }}/${{ env.REPO_NAME_WITHOUT_PREFIX }}'
                   flavor: |
@@ -130,19 +130,19 @@ jobs:
                       type=raw,value=${{ env.DOCKER_IMAGE_TAG}}
                       type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'release') }}
             - name: Login to GitHub Container Registry
-              uses: docker/login-action@v2
+              uses: docker/login-action@v3
               with:
                   registry: ${{ env.DOCKER_REGISTRY }}
                   username: ${{ secrets.GH_PACKAGE_RELEASE_USER }}
                   password: ${{ secrets.GH_PACKAGE_RELEASE_TOKEN }}
             - name: Push to GitHub Packages
-              uses: docker/build-push-action@v3
+              uses: docker/build-push-action@v6
               with:
                   context: .
                   push: true
                   tags: ${{ steps.meta.outputs.tags }}
                   labels: ${{ steps.meta.outputs.labels }}
-                  build_args: DOCKER_MATRIX=${{ env.MATRIX_REGISTRY }}
+                  build-args: DOCKER_MATRIX=${{ env.MATRIX_REGISTRY }}
             - name: Hint about the Docker Image Tag if successfull
               if: ${{ success() }}
               run: |
