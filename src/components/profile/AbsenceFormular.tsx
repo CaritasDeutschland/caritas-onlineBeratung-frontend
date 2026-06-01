@@ -19,6 +19,8 @@ export const AbsenceFormular = () => {
 
 	const [absentMessage, setAbsentMessage] = useState(userData.absenceMessage);
 	const [overlayActive, setOverlayActive] = useState(false);
+	const [activationOverlayActive, setActivationOverlayActive] =
+		useState(false);
 	const [isRequestInProgress, setIsRequestInProgress] = useState(false);
 
 	const isAbsent = useMemo(() => userData.absent, [userData.absent]);
@@ -31,6 +33,31 @@ export const AbsenceFormular = () => {
 				label: translate('absence.overlay.changeSuccess.buttonLabel'),
 				function: OVERLAY_FUNCTIONS.CLOSE,
 				type: BUTTON_TYPES.AUTO_CLOSE
+			}
+		]
+	};
+
+	const activationOverlayItem: OverlayItem = {
+		headline: translate('absence.overlay.activation.headline'),
+		nestedComponent: (
+			<div
+				className="absenceForm__activationCopy"
+				dangerouslySetInnerHTML={{
+					__html: translate('absence.overlay.activation.copy')
+				}}
+			/>
+		),
+		buttonSet: [
+			{
+				id: 'absenceActivationCancel',
+				label: translate('absence.overlay.activation.cancelLabel'),
+				function: OVERLAY_FUNCTIONS.CLOSE,
+				type: BUTTON_TYPES.SECONDARY
+			},
+			{
+				label: translate('absence.overlay.activation.confirmLabel'),
+				function: OVERLAY_FUNCTIONS.CLOSE_SUCCESS,
+				type: BUTTON_TYPES.PRIMARY
 			}
 		]
 	};
@@ -62,6 +89,21 @@ export const AbsenceFormular = () => {
 
 	const handleOverlayAction = () => {
 		setOverlayActive(false);
+	};
+
+	const handleActivationOverlayAction = (action: string) => {
+		setActivationOverlayActive(false);
+		if (action === OVERLAY_FUNCTIONS.CLOSE_SUCCESS) {
+			saveAbsence(true);
+		}
+	};
+
+	const handleToggleChange = () => {
+		if (!isAbsent) {
+			setActivationOverlayActive(true);
+			return;
+		}
+		saveAbsence(false);
 	};
 
 	return (
@@ -99,7 +141,7 @@ export const AbsenceFormular = () => {
 				<div className="flex">
 					<Switch
 						className="mr--1"
-						onChange={() => saveAbsence(!isAbsent)}
+						onChange={handleToggleChange}
 						checked={isAbsent}
 						uncheckedIcon={false}
 						checkedIcon={false}
@@ -121,6 +163,12 @@ export const AbsenceFormular = () => {
 				<Overlay
 					item={absenceOverlayItem}
 					handleOverlay={handleOverlayAction}
+				/>
+			)}
+			{activationOverlayActive && (
+				<Overlay
+					item={activationOverlayItem}
+					handleOverlay={handleActivationOverlayAction}
 				/>
 			)}
 		</div>

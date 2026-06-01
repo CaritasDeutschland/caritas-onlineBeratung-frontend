@@ -10,7 +10,13 @@ export const de = {
 			},
 
 			'copy': 'Ihre Abwesenheitsnachricht ist momentan aktiviert. <br> Möchten Sie diese deaktivieren?',
-			'headline': 'Willkommen zurück!'
+			'headline': 'Willkommen zurück!',
+			'activation': {
+				headline: 'Abwesenheitsnotiz aktivieren',
+				copy: '<ul><li>Ratsuchende aus Ihren laufenden Beratungen sehen diese Abwesenheitsnachricht und können Ihnen trotzdem weiterhin schreiben.</li><li><strong>Beachten Sie:</strong> Erstanfragen an Ihre Beratungsstelle sind immer noch möglich, auch wenn alle Ihre Kolleg*innen und Sie die Abwesenheitsnotiz einschalten. Falls Sie wünschen, dass keine Erstanfragen mehr an Ihre Beratungsstelle gesendet werden können, wenden Sie sich für eine temporäre Deaktivierung an Ihre*n Service-Admin.</li></ul>',
+				confirmLabel: 'Aktivieren',
+				cancelLabel: 'Abbrechen'
+			}
 		},
 		'checkbox.label': 'Ratsuchende über meine Abwesenheit informieren',
 		'input.infoText':
