@@ -2138,6 +2138,23 @@ export const de = {
 						deny: 'Abbrechen',
 						edit: 'Zweiter Faktor bearbeiten'
 					}
+				},
+				infoOverlay: {
+					title: 'Wichtiger Hinweis zur Änderung Ihrer Mailadresse',
+					lead: '<b>Ändern Sie die Mailadresse nicht direkt, falls Ihre 2FA über E\u2011Mail läuft.</b> Wenn Ihre <b>2\u2011Faktor\u2011Authentifizierung (2FA) über Ihre bisherige E\u2011Mailadresse</b> eingerichtet ist, wird die Änderung der Mailadresse dazu führen, dass Sie <b>keine 2FA\u2011Codes mehr erhalten</b> und sich nicht mehr anmelden können.',
+					stepsIntro:
+						'So <b>stellen Sie sicher, dass alles korrekt umgestellt wird:</b>',
+					steps: {
+						'1': '<b>Setzen Sie Ihre 2\u2011Faktor\u2011Authentifizierung zurück</b> unter Einstellungen → Zwei-Faktor-Authentifizierung.',
+						'2': 'Melden Sie sich danach <b>mit Ihrem bisherigen Zugang</b> an (alte Mailadresse <i>oder</i> Benutzername + Passwort).',
+						'3': 'Richten Sie die 2FA <b>neu ein</b> und geben Sie dabei Ihre <b>neue Mailadresse</b> an.',
+						'4': 'Ändern Sie danach erst die Mailadresse hier an dieser Stelle.'
+					},
+					success:
+						'✅ Alle zukünftigen 2FA\u2011Codes und die Mail-Benachrichtigungen oder Passwort-Rücksetzungs-E-Mails werden ab sofort an die neue Adresse gesendet.',
+					button: {
+						close: 'Verstanden'
+					}
 				}
 			},
 			'delete.confirmOverlay.copy':

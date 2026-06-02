@@ -514,4 +514,37 @@ $profile-footer-justify-content: center !default;
 			margin: 0 8px;
 		}
 	}
+
+	&__emailInfoOverlay {
+		text-align: left;
+
+		.headline,
+		.text {
+			text-align: left;
+		}
+
+		&__steps {
+			padding-left: $grid-base-three;
+			margin: $grid-base-two 0;
+			text-align: left;
+
+			li {
+				text-align: left;
+				margin-bottom: $grid-base;
+
+				.text {
+					text-align: left;
+				}
+			}
+		}
+	}
+}
+
+.overlay .profile__emailInfoOverlay,
+.overlay .profile__emailInfoOverlay .headline,
+.overlay .profile__emailInfoOverlay .text,
+.overlay .profile__emailInfoOverlay__steps,
+.overlay .profile__emailInfoOverlay__steps li,
+.overlay .profile__emailInfoOverlay__steps li .text {
+	text-align: left;
 }
