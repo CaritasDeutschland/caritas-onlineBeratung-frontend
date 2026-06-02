@@ -43,3 +43,23 @@
 		}
 	}
 }
+
+.absenceForm__activationCopy {
+	text-align: left;
+
+	ul {
+		margin: 0;
+		padding-left: $grid-base-three;
+	}
+
+	li + li {
+		margin-top: $grid-base;
+	}
+}
+
+[id='absence-activation-cancel'] {
+	&:focus,
+	&:focus-visible {
+		outline: none;
+	}
+}
