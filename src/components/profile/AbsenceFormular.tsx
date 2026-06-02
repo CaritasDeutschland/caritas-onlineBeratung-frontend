@@ -1,17 +1,20 @@
+import './absenceFormular.styles';
+
 import * as React from 'react';
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { apiSetAbsence } from '../../api';
-import { BUTTON_TYPES } from '../button/Button';
-import { OverlayItem, OVERLAY_FUNCTIONS, Overlay } from '../overlay/Overlay';
-import { UserDataContext } from '../../globalState';
-import { ReactComponent as CheckIcon } from '../../resources/img/illustrations/check.svg';
-import './absenceFormular.styles';
-import { Headline } from '../headline/Headline';
-import Switch from 'react-switch';
-import { Text } from '../text/Text';
-import { Textarea } from '../form/textarea';
+
 import { isMobile } from 'react-device-detect';
 import { useTranslation } from 'react-i18next';
+import Switch from 'react-switch';
+
+import { apiSetAbsence } from '../../api';
+import { UserDataContext } from '../../globalState';
+import { ReactComponent as CheckIcon } from '../../resources/img/illustrations/check.svg';
+import { BUTTON_TYPES } from '../button/Button';
+import { Textarea } from '../form/textarea';
+import { Headline } from '../headline/Headline';
+import { Overlay, OVERLAY_FUNCTIONS, OverlayItem } from '../overlay/Overlay';
+import { Text } from '../text/Text';
 
 export const AbsenceFormular = () => {
 	const { t: translate } = useTranslation();
@@ -19,6 +22,8 @@ export const AbsenceFormular = () => {
 
 	const [absentMessage, setAbsentMessage] = useState(userData.absenceMessage);
 	const [overlayActive, setOverlayActive] = useState(false);
+	const [activationOverlayActive, setActivationOverlayActive] =
+		useState(false);
 	const [isRequestInProgress, setIsRequestInProgress] = useState(false);
 
 	const isAbsent = useMemo(() => userData.absent, [userData.absent]);
@@ -31,6 +36,31 @@ export const AbsenceFormular = () => {
 				label: translate('absence.overlay.changeSuccess.buttonLabel'),
 				function: OVERLAY_FUNCTIONS.CLOSE,
 				type: BUTTON_TYPES.AUTO_CLOSE
+			}
+		]
+	};
+
+	const activationOverlayItem: OverlayItem = {
+		headline: translate('absence.overlay.activation.headline'),
+		nestedComponent: (
+			<div
+				className="absenceForm__activationCopy"
+				dangerouslySetInnerHTML={{
+					__html: translate('absence.overlay.activation.copy')
+				}}
+			/>
+		),
+		buttonSet: [
+			{
+				id: 'absence-activation-cancel',
+				label: translate('absence.overlay.activation.cancelLabel'),
+				function: OVERLAY_FUNCTIONS.CLOSE,
+				type: BUTTON_TYPES.SECONDARY
+			},
+			{
+				label: translate('absence.overlay.activation.confirmLabel'),
+				function: OVERLAY_FUNCTIONS.CLOSE_SUCCESS,
+				type: BUTTON_TYPES.PRIMARY
 			}
 		]
 	};
@@ -62,6 +92,21 @@ export const AbsenceFormular = () => {
 
 	const handleOverlayAction = () => {
 		setOverlayActive(false);
+	};
+
+	const handleActivationOverlayAction = (action: string) => {
+		setActivationOverlayActive(false);
+		if (action === OVERLAY_FUNCTIONS.CLOSE_SUCCESS) {
+			saveAbsence(true);
+		}
+	};
+
+	const handleToggleChange = () => {
+		if (!isAbsent) {
+			setActivationOverlayActive(true);
+			return;
+		}
+		saveAbsence(false);
 	};
 
 	return (
@@ -99,7 +144,7 @@ export const AbsenceFormular = () => {
 				<div className="flex">
 					<Switch
 						className="mr--1"
-						onChange={() => saveAbsence(!isAbsent)}
+						onChange={handleToggleChange}
 						checked={isAbsent}
 						uncheckedIcon={false}
 						checkedIcon={false}
@@ -121,6 +166,12 @@ export const AbsenceFormular = () => {
 				<Overlay
 					item={absenceOverlayItem}
 					handleOverlay={handleOverlayAction}
+				/>
+			)}
+			{activationOverlayActive && (
+				<Overlay
+					item={activationOverlayItem}
+					handleOverlay={handleActivationOverlayAction}
 				/>
 			)}
 		</div>

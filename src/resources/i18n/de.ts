@@ -10,7 +10,13 @@ export const de = {
 			},
 
 			'copy': 'Ihre Abwesenheitsnachricht ist momentan aktiviert. <br> Möchten Sie diese deaktivieren?',
-			'headline': 'Willkommen zurück!'
+			'headline': 'Willkommen zurück!',
+			'activation': {
+				headline: 'Abwesenheitsnotiz aktivieren',
+				copy: '<ul><li>Ratsuchende aus Ihren laufenden Beratungen sehen diese Abwesenheitsnachricht und können Ihnen trotzdem weiterhin schreiben.</li><li><strong>Beachten Sie:</strong> Erstanfragen an Ihre Beratungsstelle sind immer noch möglich, auch wenn alle Ihre Kolleg*innen und Sie die Abwesenheitsnotiz einschalten. Falls Sie wünschen, dass keine Erstanfragen mehr an Ihre Beratungsstelle gesendet werden können, wenden Sie sich für eine temporäre Deaktivierung an Ihre*n Service-Admin.</li></ul>',
+				confirmLabel: 'Aktivieren',
+				cancelLabel: 'Abbrechen'
+			}
 		},
 		'checkbox.label': 'Ratsuchende über meine Abwesenheit informieren',
 		'input.infoText':
@@ -2137,6 +2143,23 @@ export const de = {
 						confirm: 'Authentifizierung deaktivieren',
 						deny: 'Abbrechen',
 						edit: 'Zweiter Faktor bearbeiten'
+					}
+				},
+				infoOverlay: {
+					title: 'Wichtiger Hinweis zur Änderung Ihrer Mailadresse',
+					lead: '<b>Ändern Sie die Mailadresse nicht direkt, falls Ihre 2FA über E\u2011Mail läuft.</b> Wenn Ihre <b>2\u2011Faktor\u2011Authentifizierung (2FA) über Ihre bisherige E\u2011Mailadresse</b> eingerichtet ist, wird die Änderung der Mailadresse dazu führen, dass Sie <b>keine 2FA\u2011Codes mehr erhalten</b> und sich nicht mehr anmelden können.',
+					stepsIntro:
+						'So <b>stellen Sie sicher, dass alles korrekt umgestellt wird:</b>',
+					steps: {
+						'1': '<b>Setzen Sie Ihre 2\u2011Faktor\u2011Authentifizierung zurück</b> unter Einstellungen → Zwei-Faktor-Authentifizierung.',
+						'2': 'Melden Sie sich danach <b>mit Ihrem bisherigen Zugang</b> an (alte Mailadresse <i>oder</i> Benutzername + Passwort).',
+						'3': 'Richten Sie die 2FA <b>neu ein</b> und geben Sie dabei Ihre <b>neue Mailadresse</b> an.',
+						'4': 'Ändern Sie danach erst die Mailadresse hier an dieser Stelle.'
+					},
+					success:
+						'✅ Alle zukünftigen 2FA\u2011Codes und die Mail-Benachrichtigungen oder Passwort-Rücksetzungs-E-Mails werden ab sofort an die neue Adresse gesendet.',
+					button: {
+						close: 'Verstanden'
 					}
 				}
 			},
