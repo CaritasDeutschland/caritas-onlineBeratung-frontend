@@ -526,7 +526,7 @@ export const de = {
 		'write': {
 			infotext: {
 				copy: {
-					facts: '<ul><li>Was ist passiert?</li><li>Wie ist Ihre aktuelle Situation?</li><li>Was beschäftigt Sie?</li><li>Haben Sie eine bestimmte Frage oder wissen Sie vielleicht selbst noch nicht so genau was Ihnen helfen könnte?</li></ul>',
+					facts: '<ul><li>Was ist passiert?</li><li>Wie ist Ihre aktuelle Situation?</li><li>Was beschäftigt Sie?</li><li>Haben Sie eine bestimmte Frage oder wissen Sie vielleicht selbst noch nicht so genau was Ihnen helfen könnte?</li><li>Schreiben Sie uns direkt eine kurze Nachricht, damit dieser Account aktiv bleibt. Ohne erste Nachricht wird dieser Account in der kommenden Nacht automatisch gelöscht. Danach müssen Sie sich zunächst neu registrieren, bevor Sie Ihre Nachricht verfassen können..</li></ul>',
 					title: 'Vielleicht helfen Ihnen folgende Punkte bei der Formulierung weiter:'
 				},
 				headline: 'Hier ist Platz für Ihre Anliegen.',
@@ -1705,7 +1705,8 @@ export const de = {
 				button: 'Nachricht verfassen',
 				copy: 'Sie haben sich erfolgreich registriert.',
 				headline:
-					'Herzlich willkommen<br>bei der Beratung & Hilfe der Caritas.'
+					'Herzlich willkommen<br>bei der Beratung & Hilfe der Caritas.',
+				note: '* Schreiben Sie uns direkt eine kurze Nachricht, damit dieser Account aktiv bleibt. Ohne erste Nachricht wird dieser Account in der kommenden Nacht automatisch gelöscht. Danach müssen Sie sich zunächst neu registrieren, bevor Sie Ihre Nachricht verfassen können..'
 			}
 		},
 		'password': {
