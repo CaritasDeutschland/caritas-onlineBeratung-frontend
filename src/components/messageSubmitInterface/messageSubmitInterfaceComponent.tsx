@@ -1,3 +1,7 @@
+import './emojiPicker.styles';
+import './messageSubmitInterface.styles';
+import './messageSubmitInterface.yellowTheme.styles';
+
 import * as React from 'react';
 import {
 	useCallback,
@@ -7,17 +11,35 @@ import {
 	useRef,
 	useState
 } from 'react';
+
+import clsx from 'clsx';
+import {
+	convertToRaw,
+	DraftHandleValue,
+	EditorState,
+	RichUtils
+} from 'draft-js';
+import { draftToMarkdown } from 'markdown-draft-js';
+import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
 
-import { SendMessageButton } from './SendMessageButton';
-import { SESSION_LIST_TYPES } from '../session/sessionHelpers';
-import { Checkbox, CheckboxItem } from '../checkbox/Checkbox';
-import { UserDataContext } from '../../globalState/provider/UserDataProvider';
 import {
-	AUTHORITIES,
-	getContact,
-	hasUserAuthority
-} from '../../globalState/helpers/stateHelpers';
+	BoldButton,
+	ItalicButton,
+	UnorderedListButton
+} from '@draft-js-plugins/buttons';
+import PluginsEditor from '@draft-js-plugins/editor';
+import createEmojiPlugin from '@draft-js-plugins/emoji';
+import createLinkifyPlugin from '@draft-js-plugins/linkify';
+import createToolbarPlugin from '@draft-js-plugins/static-toolbar';
+
+import {
+	apiPutDearchive,
+	apiSendEnquiry,
+	apiSendMessage,
+	apiUploadAttachment
+} from '../../api';
+import { apiPostError, ERROR_LEVEL_WARN } from '../../api/apiPostError';
 import {
 	AnonymousConversationFinishedContext,
 	E2EEContext,
@@ -27,36 +49,51 @@ import {
 	useTenant
 } from '../../globalState';
 import {
-	apiPutDearchive,
-	apiSendEnquiry,
-	apiSendMessage,
-	apiUploadAttachment
-} from '../../api';
+	AUTHORITIES,
+	getContact,
+	hasUserAuthority
+} from '../../globalState/helpers/stateHelpers';
 import {
-	MessageSubmitInfo,
-	MessageSubmitInfoInterface
-} from './MessageSubmitInfo';
+	OVERLAY_E2EE,
+	OVERLAY_REQUEST
+} from '../../globalState/interfaces/AppConfig/OverlaysConfigInterface';
+import { ActiveSessionContext } from '../../globalState/provider/ActiveSessionProvider';
+import { UserDataContext } from '../../globalState/provider/UserDataProvider';
+import { useE2EE } from '../../hooks/useE2EE';
+import { useE2EEViewElements } from '../../hooks/useE2EEViewElements';
+import { useTimeoutOverlay } from '../../hooks/useTimeoutOverlay';
+import { ReactComponent as CalendarMonthIcon } from '../../resources/img/icons/calendar-month-navigation.svg';
+import { ReactComponent as ClipIcon } from '../../resources/img/icons/clip.svg';
+import { ReactComponent as RichtextToggleIcon } from '../../resources/img/icons/richtext-toggle.svg';
+import { ReactComponent as EmojiIcon } from '../../resources/img/icons/smiley-positive.svg';
+import { ReactComponent as RemoveIcon } from '../../resources/img/icons/x.svg';
+import {
+	encryptAttachment,
+	encryptText,
+	getSignature
+} from '../../utils/encryptionHelpers';
+import { mobileListView } from '../app/navigationHandler';
+import { Button, BUTTON_TYPES, ButtonItem } from '../button/Button';
+import { Checkbox, CheckboxItem } from '../checkbox/Checkbox';
+import {
+	STORAGE_KEY_ATTACHMENT_ENCRYPTION,
+	useDevToolbar
+} from '../devToolbar/DevToolbar';
+import { Headline } from '../headline/Headline';
+import { getIconForAttachmentType } from '../message/messageHelpers';
+import { Overlay } from '../overlay/Overlay';
+import { RoomNotFound } from '../session/RoomNotFound';
+import { SESSION_LIST_TYPES } from '../session/sessionHelpers';
+import { SubscriptionKeyLost } from '../session/SubscriptionKeyLost';
+import { TypingIndicator } from '../typingIndicator/typingIndicator';
 import {
 	ATTACHMENT_MAX_SIZE_IN_MB,
 	getAttachmentSizeMBForKB
 } from './attachmentHelpers';
-import { TypingIndicator } from '../typingIndicator/typingIndicator';
-import PluginsEditor from '@draft-js-plugins/editor';
 import {
-	convertToRaw,
-	DraftHandleValue,
-	EditorState,
-	RichUtils
-} from 'draft-js';
-import { draftToMarkdown } from 'markdown-draft-js';
-import createLinkifyPlugin from '@draft-js-plugins/linkify';
-import createToolbarPlugin from '@draft-js-plugins/static-toolbar';
-import {
-	BoldButton,
-	ItalicButton,
-	UnorderedListButton
-} from '@draft-js-plugins/buttons';
-import createEmojiPlugin from '@draft-js-plugins/emoji';
+	MessageSubmitInfo,
+	MessageSubmitInfoInterface
+} from './MessageSubmitInfo';
 import {
 	emojiPickerCustomClasses,
 	escapeMarkdownChars,
@@ -64,42 +101,8 @@ import {
 	handleEditorPastedText,
 	toolbarCustomClasses
 } from './richtextHelpers';
-import { ReactComponent as EmojiIcon } from '../../resources/img/icons/smiley-positive.svg';
-import { ReactComponent as ClipIcon } from '../../resources/img/icons/clip.svg';
-import { ReactComponent as RichtextToggleIcon } from '../../resources/img/icons/richtext-toggle.svg';
-import { ReactComponent as RemoveIcon } from '../../resources/img/icons/x.svg';
-import { ReactComponent as CalendarMonthIcon } from '../../resources/img/icons/calendar-month-navigation.svg';
-import './emojiPicker.styles';
-import './messageSubmitInterface.styles';
-import './messageSubmitInterface.yellowTheme.styles';
-import clsx from 'clsx';
-import { mobileListView } from '../app/navigationHandler';
-import { ActiveSessionContext } from '../../globalState/provider/ActiveSessionProvider';
-import { Button, ButtonItem, BUTTON_TYPES } from '../button/Button';
-import { Headline } from '../headline/Headline';
-import { useTranslation } from 'react-i18next';
-import {
-	encryptAttachment,
-	encryptText,
-	getSignature
-} from '../../utils/encryptionHelpers';
-import { useE2EE } from '../../hooks/useE2EE';
-import { apiPostError, ERROR_LEVEL_WARN } from '../../api/apiPostError';
-import { useE2EEViewElements } from '../../hooks/useE2EEViewElements';
-import { Overlay } from '../overlay/Overlay';
-import { useTimeoutOverlay } from '../../hooks/useTimeoutOverlay';
-import { SubscriptionKeyLost } from '../session/SubscriptionKeyLost';
-import { RoomNotFound } from '../session/RoomNotFound';
+import { SendMessageButton } from './SendMessageButton';
 import { useDraftMessage } from './useDraftMessage';
-import {
-	STORAGE_KEY_ATTACHMENT_ENCRYPTION,
-	useDevToolbar
-} from '../devToolbar/DevToolbar';
-import {
-	OVERLAY_E2EE,
-	OVERLAY_REQUEST
-} from '../../globalState/interfaces/AppConfig/OverlaysConfigInterface';
-import { getIconForAttachmentType } from '../message/messageHelpers';
 
 //Linkify Plugin
 const omitKey = (key, { [key]: _, ...obj }) => obj;
@@ -683,13 +686,9 @@ export const MessageSubmitInterfaceComponent = ({
 	);
 
 	const prepareAndSendMessage = useCallback(async () => {
-		const attachmentInput: any = attachmentInputRef.current;
-		const selectedFiles = attachmentInput
-			? Array.from(attachmentInput.files as FileList)
-			: [];
 		const attachments: File[] = preselectedFile
 			? [preselectedFile]
-			: selectedFiles;
+			: attachmentSelected;
 
 		if (isE2eeEnabled && encrypted && !keyID) {
 			console.error("Can't send message without key");
@@ -749,6 +748,7 @@ export const MessageSubmitInterfaceComponent = ({
 		}
 	}, [
 		activeSession.isFeedback,
+		attachmentSelected,
 		encrypted,
 		feedbackChatKey,
 		feedbackChatKeyId,
@@ -824,11 +824,29 @@ export const MessageSubmitInterfaceComponent = ({
 
 	const handleAttachmentSelect = useCallback(() => {
 		const attachmentInput: any = attachmentInputRef.current;
+		if (!attachmentInput) {
+			return;
+		}
+		// Reset value so selecting the same file again still triggers onChange
+		attachmentInput.value = '';
 		attachmentInput.click();
 	}, []);
 
 	const displayAttachmentToUpload = useCallback((attachments: File[]) => {
 		setAttachmentSelected(attachments);
+		setActiveInfo('');
+	}, []);
+
+	const appendAttachmentsToUpload = useCallback((attachments: File[]) => {
+		setAttachmentSelected((prev) => {
+			const existing = new Set(
+				prev.map((f) => `${f.name}_${f.size}_${f.lastModified}`)
+			);
+			const deduped = attachments.filter(
+				(f) => !existing.has(`${f.name}_${f.size}_${f.lastModified}`)
+			);
+			return [...prev, ...deduped];
+		});
 		setActiveInfo('');
 	}, []);
 
@@ -847,11 +865,10 @@ export const MessageSubmitInterfaceComponent = ({
 			setActiveInfo(INFO_TYPES.ATTACHMENT_SIZE_ERROR);
 		}
 		if (validFiles.length > 0) {
-			displayAttachmentToUpload(validFiles);
-		} else {
-			removeSelectedAttachment();
+			appendAttachmentsToUpload(validFiles);
 		}
-	}, [displayAttachmentToUpload, removeSelectedAttachment]);
+		removeSelectedAttachment();
+	}, [appendAttachmentsToUpload, removeSelectedAttachment]);
 
 	const handlePreselectedAttachmentChange = useCallback(() => {
 		const attachment = preselectedFile;
@@ -1102,20 +1119,21 @@ export const MessageSubmitInterfaceComponent = ({
 										tabIndex={0}
 									/>
 								</div>
+								{hasUploadFunctionality && (
+									<span className="textarea__attachmentSelect">
+										<ClipIcon
+											aria-label={translate(
+												'enquiry.write.input.attachement'
+											)}
+											title={translate(
+												'enquiry.write.input.attachement'
+											)}
+											onClick={handleAttachmentSelect}
+										/>
+									</span>
+								)}
 								{hasUploadFunctionality &&
-									(attachmentSelected.length === 0 ? (
-										<span className="textarea__attachmentSelect">
-											<ClipIcon
-												aria-label={translate(
-													'enquiry.write.input.attachement'
-												)}
-												title={translate(
-													'enquiry.write.input.attachement'
-												)}
-												onClick={handleAttachmentSelect}
-											/>
-										</span>
-									) : (
+									attachmentSelected.length > 0 && (
 										<div
 											className="textarea__attachmentWrapper"
 											ref={attachmentWrapperRef}
@@ -1192,7 +1210,7 @@ export const MessageSubmitInterfaceComponent = ({
 												{translate('app.removeAll')}
 											</span>
 										</div>
-									))}
+									)}
 							</span>
 							<div className="textarea__buttons">
 								<SendMessageButton
