@@ -126,6 +126,7 @@ export const de = {
 		'claim': 'Online. Anonym. Sicher.',
 		'save': 'Speichern',
 		'remove': 'Entfernen',
+		'removeAll': 'Alle entfernen',
 		'download': 'Herunterladen',
 		'stage.title': 'Beratung & Hilfe',
 		'logout': 'Abmelden',
