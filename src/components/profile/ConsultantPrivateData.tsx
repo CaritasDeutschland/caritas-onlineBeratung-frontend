@@ -35,6 +35,8 @@ export const ConsultantPrivateData = () => {
 	const [firstName, setFirstName] = useState<string>();
 	const [lastName, setLastName] = useState<string>();
 	const [overlayActive, setOverlayActive] = useState(false);
+	const [emailInfoOverlayActive, setEmailInfoOverlayActive] = useState(false);
+	const [emailInfoOverlayShown, setEmailInfoOverlayShown] = useState(false);
 
 	const cancelEditButton: ButtonItem = {
 		label: translate('profile.data.edit.button.cancel'),
@@ -61,8 +63,17 @@ export const ConsultantPrivateData = () => {
 		}
 	}, [email, firstName, lastName]);
 
+	useEffect(() => {
+		// Reset the "shown" flag whenever the user leaves edit mode so the
+		// info popup is shown again the next time they start editing the email.
+		if (isEditDisabled) {
+			setEmailInfoOverlayShown(false);
+		}
+	}, [isEditDisabled]);
+
 	const handleCancelEditButton = () => {
 		setIsEditDisabled(true);
+		setEmailInfoOverlayShown(false);
 	};
 
 	const saveEditButton: ButtonItem = {
@@ -143,11 +154,71 @@ export const ConsultantPrivateData = () => {
 		);
 	};
 
+	const emailInfoOverlay = () => {
+		return (
+			<div className="profile__emailInfoOverlay">
+				<Headline
+					text={translate(
+						'twoFactorAuth.email.change.infoOverlay.title'
+					)}
+					semanticLevel="2"
+				/>
+				<Text
+					text={translate(
+						'twoFactorAuth.email.change.infoOverlay.intro'
+					)}
+					type="infoLargeStandard"
+				/>
+				<Headline
+					text={translate(
+						'twoFactorAuth.email.change.infoOverlay.options.app.title'
+					)}
+					semanticLevel="3"
+				/>
+				<Text
+					text={translate(
+						'twoFactorAuth.email.change.infoOverlay.options.app.copy'
+					)}
+					type="infoLargeStandard"
+				/>
+				<Headline
+					text={translate(
+						'twoFactorAuth.email.change.infoOverlay.options.reset.title'
+					)}
+					semanticLevel="3"
+				/>
+				<Text
+					text={translate(
+						'twoFactorAuth.email.change.infoOverlay.options.reset.copy'
+					)}
+					type="infoLargeStandard"
+				/>
+			</div>
+		);
+	};
+
+	const handleEmailInfoOverlayAction = (buttonFunction: string) => {
+		if (buttonFunction === OVERLAY_FUNCTIONS.CLOSE) {
+			setEmailInfoOverlayActive(false);
+			setEmailInfoOverlayShown(true);
+		}
+	};
+
+	const handleEmailFieldFocus = () => {
+		if (!emailInfoOverlayShown) {
+			setEmailInfoOverlayActive(true);
+		}
+		if (isEmail2faActive) {
+			setOverlayActive(true);
+		}
+	};
+
 	const handleOverlayAction = (buttonFunction: string) => {
 		switch (buttonFunction) {
 			case OVERLAY_FUNCTIONS.CLOSE:
 				setOverlayActive(false);
 				setIsEditDisabled(true);
+				setEmailInfoOverlayShown(false);
 				break;
 			case OVERLAY_FUNCTIONS.CONFIRM_EDIT:
 				if (isTwoFactorBinding) {
@@ -216,7 +287,7 @@ export const ConsultantPrivateData = () => {
 				onBeforeRemoveButtonClick={() =>
 					isEmail2faActive && setOverlayActive(true)
 				}
-				onSingleFocus={() => isEmail2faActive && setOverlayActive(true)}
+				onSingleFocus={handleEmailFieldFocus}
 			/>
 			<EditableData
 				label={translate('profile.data.firstName')}
@@ -251,6 +322,27 @@ export const ConsultantPrivateData = () => {
 						buttonHandle={handleSaveEditButton}
 					/>
 				</div>
+			)}
+			{emailInfoOverlayActive && (
+				<Overlay
+					handleOverlayClose={() => {
+						setEmailInfoOverlayActive(false);
+						setEmailInfoOverlayShown(true);
+					}}
+					item={{
+						nestedComponent: emailInfoOverlay(),
+						buttonSet: [
+							{
+								type: BUTTON_TYPES.PRIMARY,
+								function: OVERLAY_FUNCTIONS.CLOSE,
+								label: translate(
+									'twoFactorAuth.email.change.infoOverlay.button.close'
+								)
+							}
+						],
+						handleOverlay: handleEmailInfoOverlayAction
+					}}
+				/>
 			)}
 			{overlayActive && (
 				<Overlay

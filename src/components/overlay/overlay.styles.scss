@@ -415,6 +415,13 @@ $overlay-illustration-size-large: 160px;
 		}
 	}
 
+	&__copyAfterButton {
+		&.text {
+			text-align: left;
+			margin-top: $grid-base-four;
+		}
+	}
+
 	.button {
 		&__wrapper {
 			margin-top: $grid-base-two;

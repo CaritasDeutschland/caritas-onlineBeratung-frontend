@@ -10,7 +10,13 @@ export const de = {
 			},
 
 			'copy': 'Ihre Abwesenheitsnachricht ist momentan aktiviert. <br> Möchten Sie diese deaktivieren?',
-			'headline': 'Willkommen zurück!'
+			'headline': 'Willkommen zurück!',
+			'activation': {
+				headline: 'Abwesenheitsnotiz aktivieren',
+				copy: '<ul><li>Ratsuchende aus Ihren laufenden Beratungen sehen diese Abwesenheitsnachricht und können Ihnen trotzdem weiterhin schreiben.</li><li><strong>Beachten Sie:</strong> Erstanfragen an Ihre Beratungsstelle sind immer noch möglich, auch wenn alle Ihre Kolleg*innen und Sie die Abwesenheitsnotiz einschalten. Falls Sie wünschen, dass keine Erstanfragen mehr an Ihre Beratungsstelle gesendet werden können, wenden Sie sich für eine temporäre Deaktivierung an Ihre*n Service-Admin.</li></ul>',
+				confirmLabel: 'Aktivieren',
+				cancelLabel: 'Abbrechen'
+			}
 		},
 		'checkbox.label': 'Ratsuchende über meine Abwesenheit informieren',
 		'input.infoText':
@@ -120,6 +126,7 @@ export const de = {
 		'claim': 'Online. Anonym. Sicher.',
 		'save': 'Speichern',
 		'remove': 'Entfernen',
+		'removeAll': 'Alle entfernen',
 		'download': 'Herunterladen',
 		'stage.title': 'Beratung & Hilfe',
 		'logout': 'Abmelden',
@@ -520,7 +527,7 @@ export const de = {
 		'write': {
 			infotext: {
 				copy: {
-					facts: '<ul><li>Was ist passiert?</li><li>Wie ist Ihre aktuelle Situation?</li><li>Was beschäftigt Sie?</li><li>Haben Sie eine bestimmte Frage oder wissen Sie vielleicht selbst noch nicht so genau was Ihnen helfen könnte?</li></ul>',
+					facts: '<ul><li>Was ist passiert?</li><li>Wie ist Ihre aktuelle Situation?</li><li>Was beschäftigt Sie?</li><li>Haben Sie eine bestimmte Frage oder wissen Sie vielleicht selbst noch nicht so genau was Ihnen helfen könnte?</li><li>Schreiben Sie uns direkt eine kurze Nachricht, damit dieser Account aktiv bleibt. Ohne erste Nachricht wird dieser Account in der kommenden Nacht automatisch gelöscht. Danach müssen Sie sich zunächst neu registrieren, bevor Sie Ihre Nachricht verfassen können..</li></ul>',
 					title: 'Vielleicht helfen Ihnen folgende Punkte bei der Formulierung weiter:'
 				},
 				headline: 'Hier ist Platz für Ihre Anliegen.',
@@ -1699,7 +1706,8 @@ export const de = {
 				button: 'Nachricht verfassen',
 				copy: 'Sie haben sich erfolgreich registriert.',
 				headline:
-					'Herzlich willkommen<br>bei der Beratung & Hilfe der Caritas.'
+					'Herzlich willkommen<br>bei der Beratung & Hilfe der Caritas.',
+				note: '* Schreiben Sie uns direkt eine kurze Nachricht, damit dieser Account aktiv bleibt. Ohne erste Nachricht wird dieser Account in der kommenden Nacht automatisch gelöscht. Danach müssen Sie sich zunächst neu registrieren, bevor Sie Ihre Nachricht verfassen können..'
 			}
 		},
 		'password': {
@@ -2137,6 +2145,23 @@ export const de = {
 						confirm: 'Authentifizierung deaktivieren',
 						deny: 'Abbrechen',
 						edit: 'Zweiter Faktor bearbeiten'
+					}
+				},
+				infoOverlay: {
+					title: 'E-Mail-Adresse bearbeiten',
+					intro: 'Du kannst Deine E-Mail Adresse nicht ändern solange Du diese als zweiten Faktor für eine sichere Anmeldung verwendest. Du hast zwei Möglichkeiten:',
+					options: {
+						app: {
+							title: 'Umstellung auf App',
+							copy: 'Wechsel den zweiten Faktor von "E-Mail Adresse" zu "App". Dann kannst Du Deine E-Mail Adresse ändern.'
+						},
+						reset: {
+							title: 'Rücksetzen der 2-Faktor-Authentifizierung (2FA)',
+							copy: 'Bitte deine*n Service-Admin ein Ticket zur Zurücksetzung der 2FA im Service-Portal zu öffnen unter Angabe deiner "alten" E-Mail-Adresse. Beim nächsten Login (noch mit der alten E-Mail-Adresse) wirst du dazu aufgefordert deine 2FA neu einzurichten und verwendest dafür deine neue E-Mail-Adresse. Fertig!'
+						}
+					},
+					button: {
+						close: 'Verstanden'
 					}
 				}
 			},

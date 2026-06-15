@@ -131,6 +131,8 @@ describe('profile', () => {
 				absent: true
 			});
 			cy.get('#absenceForm .mr--1').click();
+			cy.contains('Abwesenheitsnotiz aktivieren');
+			cy.get('.overlay__buttons .button__primary').click();
 			cy.get('.button__autoClose').click();
 			cy.contains(
 				'Deaktivieren Sie Ihre Abwesenheit, um eine Nachricht zu hinterlegen oder sie zu bearbeiten.'
@@ -163,6 +165,8 @@ describe('profile', () => {
 				)
 				.get('#absenceForm .mr--1')
 				.click();
+			cy.contains('Abwesenheitsnotiz aktivieren');
+			cy.get('.overlay__buttons .button__primary').click();
 			cy.get('.button__autoClose').click();
 			cy.contains(
 				'Deaktivieren Sie Ihre Abwesenheit, um eine Nachricht zu hinterlegen oder sie zu bearbeiten.'

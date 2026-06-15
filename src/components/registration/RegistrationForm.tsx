@@ -104,7 +104,8 @@ export const RegistrationForm = () => {
 				function: OVERLAY_FUNCTIONS.REDIRECT_WITH_BLUR,
 				type: BUTTON_TYPES.PRIMARY
 			}
-		]
+		],
+		copyAfterButton: translate('registration.overlay.success.note')
 	};
 
 	const handleOverlayAction = (buttonFunction: string) => {
