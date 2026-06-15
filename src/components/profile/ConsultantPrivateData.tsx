@@ -165,31 +165,31 @@ export const ConsultantPrivateData = () => {
 				/>
 				<Text
 					text={translate(
-						'twoFactorAuth.email.change.infoOverlay.lead'
+						'twoFactorAuth.email.change.infoOverlay.intro'
 					)}
 					type="infoLargeStandard"
 				/>
+				<Headline
+					text={translate(
+						'twoFactorAuth.email.change.infoOverlay.options.app.title'
+					)}
+					semanticLevel="3"
+				/>
 				<Text
 					text={translate(
-						'twoFactorAuth.email.change.infoOverlay.stepsIntro'
+						'twoFactorAuth.email.change.infoOverlay.options.app.copy'
 					)}
 					type="infoLargeStandard"
 				/>
-				<ol className="profile__emailInfoOverlay__steps">
-					{['1', '2', '3', '4'].map((step) => (
-						<li key={step}>
-							<Text
-								text={translate(
-									`twoFactorAuth.email.change.infoOverlay.steps.${step}`
-								)}
-								type="infoLargeStandard"
-							/>
-						</li>
-					))}
-				</ol>
+				<Headline
+					text={translate(
+						'twoFactorAuth.email.change.infoOverlay.options.reset.title'
+					)}
+					semanticLevel="3"
+				/>
 				<Text
 					text={translate(
-						'twoFactorAuth.email.change.infoOverlay.success'
+						'twoFactorAuth.email.change.infoOverlay.options.reset.copy'
 					)}
 					type="infoLargeStandard"
 				/>

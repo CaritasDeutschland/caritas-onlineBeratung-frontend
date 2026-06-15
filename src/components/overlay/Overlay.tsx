@@ -1,17 +1,20 @@
+import './overlay.styles';
+
 import * as React from 'react';
-import { v4 as uuid } from 'uuid';
 import { useContext, useEffect, useState, VFC } from 'react';
 import { createPortal } from 'react-dom';
-import { ButtonItem, Button } from '../button/Button';
-import { Text } from '../text/Text';
-import { Headline, HeadlineLevel } from '../headline/Headline';
-import { ReactComponent as XIcon } from '../../resources/img/icons/x.svg';
+
 import clsx from 'clsx';
-import './overlay.styles';
 import { useTranslation } from 'react-i18next';
+import { v4 as uuid } from 'uuid';
+
 import { ModalContext } from '../../globalState';
 import { OVERLAY_TYPES } from '../../globalState/interfaces/AppConfig/OverlaysConfigInterface';
+import { ReactComponent as XIcon } from '../../resources/img/icons/x.svg';
+import { Button, ButtonItem } from '../button/Button';
+import { Headline, HeadlineLevel } from '../headline/Headline';
 import { LoadingIndicator } from '../loadingIndicator/LoadingIndicator';
+import { Text } from '../text/Text';
 
 const FocusTrap = require('focus-trap-react');
 
@@ -43,6 +46,7 @@ export const OVERLAY_RESET_TIME = 10000;
 export interface OverlayItem {
 	buttonSet?: ButtonItem[];
 	copy?: string;
+	copyAfterButton?: string;
 	headline?: string;
 	headlineStyleLevel?: HeadlineLevel;
 	illustrationBackground?: 'error' | 'neutral' | 'info' | 'large';
@@ -340,6 +344,15 @@ const OverlayContent: VFC<Omit<OverlayProps, 'name'>> = (props) => {
 										)}
 									</div>
 								)}
+							{activeOverlay.copyAfterButton && (
+								<Text
+									className="overlay__copyAfterButton"
+									text={translate(
+										activeOverlay.copyAfterButton
+									)}
+									type="standard"
+								/>
+							)}
 						</div>
 					)}
 				</div>
