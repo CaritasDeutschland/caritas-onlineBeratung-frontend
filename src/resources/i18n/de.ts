@@ -1703,7 +1703,7 @@ export const de = {
 		'overline': 'Willkommen bei der Online-Beratung',
 		'overlay': {
 			success: {
-				button: 'Nachricht verfassen*',
+				button: 'Nachricht verfassen *',
 				copy: 'Sie haben sich erfolgreich registriert.',
 				headline:
 					'Herzlich willkommen<br>bei der Beratung & Hilfe der Caritas.',
