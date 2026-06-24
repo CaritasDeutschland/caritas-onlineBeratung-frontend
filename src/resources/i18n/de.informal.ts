@@ -136,7 +136,7 @@ export const deInformal = {
 				headline: 'Hier ist Platz für Deine Anliegen.',
 				copy: {
 					title: 'Vielleicht helfen Dir folgende Punkte bei der Formulierung weiter:',
-					facts: '<ul><li>Was ist passiert?</li><li>Wie ist Deine aktuelle Situation?</li><li>Was beschäftigt Dich?</li><li>Hast Du eine bestimmte Frage oder weißt Du vielleicht selbst noch nicht so genau was Dir helfen könnte?</li></ul>'
+					facts: '<ul><li>Was ist passiert?</li><li>Wie ist Deine aktuelle Situation?</li><li>Was beschäftigt Dich?</li><li>Hast Du eine bestimmte Frage oder weißt Du vielleicht selbst noch nicht so genau was Dir helfen könnte?</li><li>Schreib uns direkt eine kurze Nachricht, damit dieser Account aktiv bleibt. Ohne erste Nachricht wird dieser Account in der kommenden Nacht automatisch gelöscht. Danach musst Du dich zunächst neu registrieren, bevor Du Deine Nachricht verfassen kannst.</li></ul>'
 				}
 			},
 			overlay: {
@@ -493,7 +493,8 @@ export const deInformal = {
 		},
 		'overlay': {
 			success: {
-				copy: 'Du hast Dich erfolgreich registriert.'
+				copy: 'Du hast Dich erfolgreich registriert.',
+				note: '* Schreib uns direkt eine kurze Nachricht, damit dieser Account aktiv bleibt. Ohne erste Nachricht wird dieser Account in der kommenden Nacht automatisch gelöscht. Danach musst Du dich zunächst neu registrieren, bevor Du Deine Nachricht verfassen kannst.'
 			}
 		},
 		'welcomeScreen': {
