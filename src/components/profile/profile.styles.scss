@@ -478,6 +478,13 @@ $profile-footer-justify-content: center !default;
 		}
 	}
 
+	&__emailOverlay {
+		.headline--3 {
+			margin-top: $grid-base-four;
+			margin-bottom: $grid-base;
+		}
+	}
+
 	&__footer {
 		flex: 0;
 		display: flex;
@@ -514,27 +521,4 @@ $profile-footer-justify-content: center !default;
 			margin: 0 8px;
 		}
 	}
-
-	&__emailInfoOverlay {
-		text-align: left;
-
-		.headline,
-		.text {
-			text-align: left;
-		}
-
-		.text {
-			margin-top: $grid-base;
-		}
-
-		h3.headline {
-			margin-top: $grid-base-three;
-		}
-	}
-}
-
-.overlay .profile__emailInfoOverlay,
-.overlay .profile__emailInfoOverlay .headline,
-.overlay .profile__emailInfoOverlay .text {
-	text-align: left;
 }

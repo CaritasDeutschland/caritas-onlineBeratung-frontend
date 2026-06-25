@@ -527,7 +527,7 @@ export const de = {
 		'write': {
 			infotext: {
 				copy: {
-					facts: '<ul><li>Was ist passiert?</li><li>Wie ist Ihre aktuelle Situation?</li><li>Was beschäftigt Sie?</li><li>Haben Sie eine bestimmte Frage oder wissen Sie vielleicht selbst noch nicht so genau was Ihnen helfen könnte?</li><li>Schreiben Sie uns direkt eine kurze Nachricht, damit dieser Account aktiv bleibt. Ohne erste Nachricht wird dieser Account in der kommenden Nacht automatisch gelöscht. Danach müssen Sie sich zunächst neu registrieren, bevor Sie Ihre Nachricht verfassen können..</li></ul>',
+					facts: '<ul><li>Was ist passiert?</li><li>Wie ist Ihre aktuelle Situation?</li><li>Was beschäftigt Sie?</li><li>Haben Sie eine bestimmte Frage oder wissen Sie vielleicht selbst noch nicht so genau was Ihnen helfen könnte?</li><li>Schreiben Sie uns direkt eine kurze Nachricht, damit dieser Account aktiv bleibt. Ohne erste Nachricht wird dieser Account in der kommenden Nacht automatisch gelöscht. Danach müssen Sie sich zunächst neu registrieren, bevor Sie Ihre Nachricht verfassen können.</li></ul>',
 					title: 'Vielleicht helfen Ihnen folgende Punkte bei der Formulierung weiter:'
 				},
 				headline: 'Hier ist Platz für Ihre Anliegen.',
@@ -1703,11 +1703,11 @@ export const de = {
 		'overline': 'Willkommen bei der Online-Beratung',
 		'overlay': {
 			success: {
-				button: 'Nachricht verfassen',
+				button: 'Nachricht verfassen *',
 				copy: 'Sie haben sich erfolgreich registriert.',
 				headline:
 					'Herzlich willkommen<br>bei der Beratung & Hilfe der Caritas.',
-				note: '* Schreiben Sie uns direkt eine kurze Nachricht, damit dieser Account aktiv bleibt. Ohne erste Nachricht wird dieser Account in der kommenden Nacht automatisch gelöscht. Danach müssen Sie sich zunächst neu registrieren, bevor Sie Ihre Nachricht verfassen können..'
+				note: '* Schreiben Sie uns direkt eine kurze Nachricht, damit dieser Account aktiv bleibt. Ohne erste Nachricht wird dieser Account in der kommenden Nacht automatisch gelöscht. Danach müssen Sie sich zunächst neu registrieren, bevor Sie Ihre Nachricht verfassen können.'
 			}
 		},
 		'password': {
@@ -2141,27 +2141,21 @@ export const de = {
 							'2': 'Wechseln Sie den zweiten Faktor von "E-Mail Adresse" zu "App". Dann können Sie Ihre E-Mail Adresse ändern.'
 						}
 					},
+					consultant: {
+						intro: 'Sie können Ihre E-Mail Adresse nicht ändern solange Sie diese als zweiten Faktor für eine sichere Anmeldung verwenden. Sie haben zwei Möglichkeiten:',
+						appSwitch: {
+							title: 'Umstellung auf App',
+							copy: 'Wechseln Sie den zweiten Faktor von "E-Mail Adresse" zu "App". Dann können Sie Ihre E-Mail Adresse ändern.'
+						},
+						reset: {
+							title: 'Rücksetzen der 2-Faktor-Authentifizierung (2FA)',
+							copy: 'Bitten Sie Ihre*n Service-Admin ein Ticket zur Zurücksetzung der 2FA im Service-Portal zu öffnen unter Angabe Ihrer "alten" E-Mail-Adresse. Beim nächsten Login (noch mit der alten E-Mail-Adresse) werden Sie dazu aufgefordert Ihre 2FA neu einzurichten und verwenden dafür Ihre neue E-Mail-Adresse. Fertig!'
+						}
+					},
 					button: {
 						confirm: 'Authentifizierung deaktivieren',
 						deny: 'Abbrechen',
 						edit: 'Zweiter Faktor bearbeiten'
-					}
-				},
-				infoOverlay: {
-					title: 'E-Mail-Adresse bearbeiten',
-					intro: 'Du kannst Deine E-Mail Adresse nicht ändern solange Du diese als zweiten Faktor für eine sichere Anmeldung verwendest. Du hast zwei Möglichkeiten:',
-					options: {
-						app: {
-							title: 'Umstellung auf App',
-							copy: 'Wechsel den zweiten Faktor von "E-Mail Adresse" zu "App". Dann kannst Du Deine E-Mail Adresse ändern.'
-						},
-						reset: {
-							title: 'Rücksetzen der 2-Faktor-Authentifizierung (2FA)',
-							copy: 'Bitte deine*n Service-Admin ein Ticket zur Zurücksetzung der 2FA im Service-Portal zu öffnen unter Angabe deiner "alten" E-Mail-Adresse. Beim nächsten Login (noch mit der alten E-Mail-Adresse) wirst du dazu aufgefordert deine 2FA neu einzurichten und verwendest dafür deine neue E-Mail-Adresse. Fertig!'
-						}
-					},
-					button: {
-						close: 'Verstanden'
 					}
 				}
 			},

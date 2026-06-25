@@ -136,7 +136,7 @@ export const deInformal = {
 				headline: 'Hier ist Platz für Deine Anliegen.',
 				copy: {
 					title: 'Vielleicht helfen Dir folgende Punkte bei der Formulierung weiter:',
-					facts: '<ul><li>Was ist passiert?</li><li>Wie ist Deine aktuelle Situation?</li><li>Was beschäftigt Dich?</li><li>Hast Du eine bestimmte Frage oder weißt Du vielleicht selbst noch nicht so genau was Dir helfen könnte?</li></ul>'
+					facts: '<ul><li>Was ist passiert?</li><li>Wie ist Deine aktuelle Situation?</li><li>Was beschäftigt Dich?</li><li>Hast Du eine bestimmte Frage oder weißt Du vielleicht selbst noch nicht so genau was Dir helfen könnte?</li><li>Schreib uns direkt eine kurze Nachricht, damit dieser Account aktiv bleibt. Ohne erste Nachricht wird dieser Account in der kommenden Nacht automatisch gelöscht. Danach musst Du dich zunächst neu registrieren, bevor Du Deine Nachricht verfassen kannst.</li></ul>'
 				}
 			},
 			overlay: {
@@ -493,7 +493,8 @@ export const deInformal = {
 		},
 		'overlay': {
 			success: {
-				copy: 'Du hast Dich erfolgreich registriert.'
+				copy: 'Du hast Dich erfolgreich registriert.',
+				note: '* Schreib uns direkt eine kurze Nachricht, damit dieser Account aktiv bleibt. Ohne erste Nachricht wird dieser Account in der kommenden Nacht automatisch gelöscht. Danach musst Du dich zunächst neu registrieren, bevor Du Deine Nachricht verfassen kannst.'
 			}
 		},
 		'welcomeScreen': {
@@ -670,6 +671,17 @@ export const deInformal = {
 						copy: {
 							'1': 'Du kannst Deine E-Mail Adresse nicht ändern solange Du diese als zweiten Faktor für eine sichere Anmeldung verwendest.',
 							'2': 'Wechsel den zweiten Faktor von "E-Mail Adresse" zu "App". Dann kannst Du Deine E-Mail Adresse ändern.'
+						}
+					},
+					consultant: {
+						intro: 'Du kannst Deine E-Mail Adresse nicht ändern solange Du diese als zweiten Faktor für eine sichere Anmeldung verwendest. Du hast zwei Möglichkeiten:',
+						appSwitch: {
+							title: 'Umstellung auf App',
+							copy: 'Wechsel den zweiten Faktor von "E-Mail Adresse" zu "App". Dann kannst Du Deine E-Mail Adresse ändern.'
+						},
+						reset: {
+							title: 'Rücksetzen der 2-Faktor-Authentifizierung (2FA)',
+							copy: 'Bitte deine*n Service-Admin ein Ticket zur Zurücksetzung der 2FA im Service-Portal zu öffnen unter Angabe deiner "alten" E-Mail-Adresse. Beim nächsten Login (noch mit der alten E-Mail-Adresse) wirst du dazu aufgefordert deine 2FA neu einzurichten und verwendest dafür deine neue E-Mail-Adresse. Fertig!'
 						}
 					}
 				}
