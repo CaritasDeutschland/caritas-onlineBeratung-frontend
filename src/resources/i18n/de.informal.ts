@@ -555,9 +555,9 @@ export const deInformal = {
 						title: '{{oldConsultant}} möchte Dich an {{newConsultant}} übergeben.',
 						description: {
 							noTeam: '{{newConsultant}} kann somit den kompletten Nachrichtenverlauf lesen und ist für Dich verantwortlich. {{oldConsultant}} hat keinen Zugriff mehr auf die Nachrichten.',
-							team: '{{newConsultant}} kann somit den kompletten Nachrichtenverlauf lesen und ist für Sie verantwortlich.'
+							team: '{{newConsultant}} kann somit den kompletten Nachrichtenverlauf lesen und ist für Dich verantwortlich.'
 						},
-						question: 'Stimmst Du der Übergabe zu?.',
+						question: 'Stimmst Du der Übergabe zu?',
 						accepted: {
 							'title': {
 								self: '{{oldConsultant}} hat Dir {{client}} übergeben.'
