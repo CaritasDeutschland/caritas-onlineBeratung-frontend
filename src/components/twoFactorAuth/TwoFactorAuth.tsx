@@ -40,10 +40,7 @@ import { Tooltip } from '../tooltip/Tooltip';
 import { TwoFactorAuthResendMail } from './TwoFactorAuthResendMail';
 import { useTranslation } from 'react-i18next';
 import { useAppConfig } from '../../hooks/useAppConfig';
-import {
-	STORAGE_KEY_DISABLE_2FA_DUTY,
-	useDevToolbar
-} from '../devToolbar/DevToolbar';
+import { STORAGE_KEY_SUPPRESS_2FA_NAG } from './twoFactorNagStorage';
 
 export const OTP_LENGTH = 6;
 
@@ -95,7 +92,6 @@ export const TwoFactorAuth = () => {
 		AUTHORITIES.CONSULTANT_DEFAULT,
 		userData
 	);
-	const { getDevToolbarOption } = useDevToolbar();
 
 	useEffect(() => {
 		if (location.state?.openTwoFactor) {
@@ -121,6 +117,14 @@ export const TwoFactorAuth = () => {
 		(buttonFunction: string) => {
 			if (buttonFunction === 'DISABLE_2FA') {
 				apiDeleteTwoFactorAuth()
+					.then(() => {
+						// Suppress the enforcement nag for the rest of this
+						// session; 2FA is re-enforced on the next login.
+						sessionStorage.setItem(
+							STORAGE_KEY_SUPPRESS_2FA_NAG,
+							'1'
+						);
+					})
 					.then(reloadUserData)
 					.then(() => setOverlayActive(false))
 					.catch(console.log);
@@ -342,16 +346,16 @@ export const TwoFactorAuth = () => {
 						function: OVERLAY_FUNCTIONS.NEXT_STEP,
 						type: BUTTON_TYPES.PRIMARY
 					},
-					(!isConsultant ||
-						getDevToolbarOption(STORAGE_KEY_DISABLE_2FA_DUTY) ===
-							'1') &&
-						userData.twoFactorAuth.isActive && {
-							label: translate(
-								'twoFactorAuth.activate.step1.disable'
-							),
-							function: 'DISABLE_2FA',
-							type: BUTTON_TYPES.SECONDARY
-						}
+					// Always offer the disable action when 2FA is active, even
+					// when it is enforced (e.g. for consultants). Re-enforcement
+					// then happens via TwoFactorNag on the next login.
+					userData.twoFactorAuth.isActive && {
+						label: translate(
+							'twoFactorAuth.activate.step1.disable'
+						),
+						function: 'DISABLE_2FA',
+						type: BUTTON_TYPES.SECONDARY
+					}
 				].filter(Boolean)
 			}
 		],
@@ -360,10 +364,8 @@ export const TwoFactorAuth = () => {
 			twoFactorType,
 			translate,
 			userData.twoFactorAuth.type,
-			isConsultant,
 			userData.twoFactorAuth.isActive,
-			handleOverlayAction,
-			getDevToolbarOption
+			handleOverlayAction
 		]
 	);
 

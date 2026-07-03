@@ -10,6 +10,7 @@ import {
 import { appConfig } from '../../utils/appConfig';
 import { calcomLogout } from './calcomLogout';
 import { callEventListeners } from '../../utils/eventHandler';
+import { STORAGE_KEY_SUPPRESS_2FA_NAG } from '../twoFactorAuth/twoFactorNagStorage';
 
 export const EVENT_PRE_LOGOUT = 'pre_logout';
 
@@ -47,6 +48,7 @@ const invalidateCookies = (
 	removeAllCookies();
 	removeTokenExpiryFromLocalStorage();
 	removeRocketChatMasterKeyFromLocalStorage();
+	sessionStorage.removeItem(STORAGE_KEY_SUPPRESS_2FA_NAG);
 	if (withRedirect) {
 		redirectAfterLogout(redirectUrl);
 	}
