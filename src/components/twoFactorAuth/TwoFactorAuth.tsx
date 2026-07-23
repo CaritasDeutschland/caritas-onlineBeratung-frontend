@@ -119,7 +119,10 @@ export const TwoFactorAuth = () => {
 				apiDeleteTwoFactorAuth()
 					.then(() => {
 						// Suppress the enforcement nag for the rest of this
-						// session; 2FA is re-enforced on the next login.
+						// session; 2FA is re-enforced on the next login. The flag
+						// also marks that 2FA was deactivated this session, which
+						// forces a logout once the user changes their e-mail (see
+						// ConsultantPrivateData).
 						sessionStorage.setItem(
 							STORAGE_KEY_SUPPRESS_2FA_NAG,
 							'1'
@@ -346,7 +349,7 @@ export const TwoFactorAuth = () => {
 						function: OVERLAY_FUNCTIONS.NEXT_STEP,
 						type: BUTTON_TYPES.PRIMARY
 					},
-					// Always offer the disable action when 2FA is active, even
+					// Always offer the reset action when 2FA is active, even
 					// when it is enforced (e.g. for consultants). Re-enforcement
 					// then happens via TwoFactorNag on the next login.
 					userData.twoFactorAuth.isActive && {
