@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button, ButtonItem, BUTTON_TYPES } from '../button/Button';
 import { Text } from '../text/Text';
 
-/** CARITAS-976: only URLs containing this domain are accepted as a registration redirect. */
+/** only URLs containing this domain are accepted as a registration redirect. */
 export const ALLOWED_REGISTRATION_DOMAIN = 'caritas-onlineberatung.de';
 
 export const isValidRegistrationUrl = (value: string): boolean =>
@@ -23,7 +23,7 @@ export const RegistrationUrlInput = ({
 }: RegistrationUrlInputProps) => {
 	const { t: translate } = useTranslation();
 	const [value, setValue] = useState(initialValue ?? '');
-	// CARITAS-976: track the last persisted value locally so the buttons update
+	// track the last persisted value locally so the buttons update
 	// immediately after a successful save/delete, independent of the reload round-trip.
 	const [savedValue, setSavedValue] = useState(initialValue ?? '');
 	const [isSubmitting, setIsSubmitting] = useState(false);

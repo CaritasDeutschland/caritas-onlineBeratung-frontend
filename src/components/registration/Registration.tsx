@@ -65,7 +65,7 @@ export const Registration = ({
 			return;
 		}
 
-		// CARITAS-976: if a redirect override is configured for the consultant (cid) or the
+		// if a redirect override is configured for the consultant (cid) or the
 		// agency (aid) whose deep link was opened, send the visitor there instead of showing
 		// the registration form (the deep link "returns" the override).
 		const redirectTarget = consultantId

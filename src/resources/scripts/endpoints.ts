@@ -127,7 +127,7 @@ export const endpoints = {
 	twoFactorAuthEmail: apiUrl + '/service/users/2fa/email',
 	updateMessage: apiUrl + '/service/messages/',
 	userData: apiUrl + '/service/users/data',
-	// CARITAS-976 shared agency registration redirect override (set/removed by consultants)
+	// shared agency registration redirect override (set/removed by consultants)
 	consultantAgencyRegistrationUrl: (agencyId: number) =>
 		apiUrl +
 		`/service/users/consultants/agencies/${agencyId}/registration-url`,

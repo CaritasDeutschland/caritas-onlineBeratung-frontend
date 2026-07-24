@@ -29,7 +29,7 @@ export interface UserDataInterface {
 	termsAndConditionsConfirmation: string;
 	dataPrivacyConfirmation: string;
 	emailNotifications?: EmailNotificationsInterface;
-	// CARITAS-976: personal registration redirect override
+	// personal registration redirect override
 	registrationUrl?: string;
 }
 
@@ -53,7 +53,7 @@ export interface AgencyDataInterface {
 	url?: string;
 	external?: boolean;
 	tenantId?: number;
-	// CARITAS-976: shared agency registration redirect override
+	// shared agency registration redirect override
 	registrationUrl?: string;
 }
 

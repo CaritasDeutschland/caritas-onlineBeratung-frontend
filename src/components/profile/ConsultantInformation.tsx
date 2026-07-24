@@ -28,7 +28,7 @@ export const ConsultantInformation = () => {
 	const [isEditEnabled, setIsEditEnabled] = useState(false);
 	const [editedDisplayName, setEditedDisplayName] = useState('');
 	const [initialDisplayName, setInitialDisplayName] = useState('');
-	// CARITAS-976: the personal redirect link is edited together with the profile (pencil).
+	// the personal redirect link is edited together with the profile (pencil).
 	const [editedRegistrationUrl, setEditedRegistrationUrl] = useState('');
 
 	const isConsultant = hasUserAuthority(
@@ -45,7 +45,7 @@ export const ConsultantInformation = () => {
 		type: BUTTON_TYPES.LINK
 	};
 
-	// CARITAS-976: an empty url is valid (it removes the override); a non-empty one must
+	// an empty url is valid (it removes the override); a non-empty one must
 	// contain the allowed domain.
 	const trimmedRegistrationUrl = editedRegistrationUrl.trim();
 	const isRegistrationUrlValid =
