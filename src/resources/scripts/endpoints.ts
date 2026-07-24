@@ -127,6 +127,16 @@ export const endpoints = {
 	twoFactorAuthEmail: apiUrl + '/service/users/2fa/email',
 	updateMessage: apiUrl + '/service/messages/',
 	userData: apiUrl + '/service/users/data',
+	// CARITAS-976 registration redirect override
+	consultantRegistrationUrl: apiUrl + '/service/users/consultants/registration-url',
+	consultantAgencyRegistrationUrl: (agencyId: number) =>
+		apiUrl +
+		`/service/users/consultants/agencies/${agencyId}/registration-url`,
+	consultantRegistrationRedirect: (consultantId: string) =>
+		apiUrl +
+		`/service/users/consultants/${consultantId}/registration-redirect`,
+	agencyRegistrationRedirect: (agencyId: number) =>
+		apiUrl + `/service/agencies/${agencyId}/registration-redirect`,
 	userDataBySessionId: (sessionId: number) =>
 		apiUrl + `/service/users/consultants/sessions/${sessionId}`,
 	userSessionsListView: '/sessions/user/view',

@@ -18,8 +18,13 @@ import { PenIcon } from '../../resources/img/icons';
 import { Button, ButtonItem, BUTTON_TYPES } from '../button/Button';
 import { EditableData } from '../editableData/EditableData';
 import { apiPatchUserData } from '../../api/apiPatchUserData';
+import {
+	apiSetConsultantRegistrationUrl,
+	apiDeleteConsultantRegistrationUrl
+} from '../../api/apiRegistrationUrl';
+import { RegistrationUrlInput } from './RegistrationUrlInput';
+import { endpoints } from '../../resources/scripts/endpoints';
 import { useTranslation } from 'react-i18next';
-import { useAppConfig } from '../../hooks/useAppConfig';
 
 export const ConsultantInformation = () => {
 	const { t: translate } = useTranslation();
@@ -97,10 +102,25 @@ export const ConsultantInformation = () => {
 					)}
 				</div>
 				{hasUserAuthority(AUTHORITIES.CONSULTANT_DEFAULT, userData) && (
-					<PersonalRegistrationLink
-						cid={userData.userId}
-						className="profile__user__personal_link mb--1"
-					/>
+					<>
+						<RegistrationUrlInput
+							initialValue={userData.registrationUrl}
+							onSave={(url) =>
+								apiSetConsultantRegistrationUrl(url).then(() =>
+									reloadUserData().catch(console.log)
+								)
+							}
+							onDelete={() =>
+								apiDeleteConsultantRegistrationUrl().then(() =>
+									reloadUserData().catch(console.log)
+								)
+							}
+						/>
+						<PersonalRegistrationLink
+							cid={userData.userId}
+							className="profile__user__personal_link mb--1"
+						/>
+					</>
 				)}
 			</div>
 			{isDisplayNameFeatureEnabled && (
@@ -211,14 +231,13 @@ const PersonalRegistrationLink = ({
 	className
 }: PersonalRegistrationLinkProps) => {
 	const { t: translate } = useTranslation();
-	const settings = useAppConfig();
 
 	const { addNotification } = useContext(NotificationsContext);
 
+	const registrationRedirectUrl = endpoints.consultantRegistrationRedirect(cid);
+
 	const copyRegistrationLink = useCallback(async () => {
-		await copyTextToClipboard(
-			`${settings.urls.registration}?cid=${cid}`,
-			() => {
+		await copyTextToClipboard(registrationRedirectUrl, () => {
 				addNotification({
 					notificationType: NOTIFICATION_TYPE_SUCCESS,
 					title: translate(
@@ -230,7 +249,7 @@ const PersonalRegistrationLink = ({
 				});
 			}
 		);
-	}, [settings.urls.registration, cid, addNotification, translate]);
+	}, [registrationRedirectUrl, addNotification, translate]);
 
 	return (
 		<div
@@ -238,7 +257,7 @@ const PersonalRegistrationLink = ({
 		>
 			<div className="mt--1">
 				<GenerateQrCode
-					url={`${settings.urls.registration}?cid=${cid}`}
+					url={registrationRedirectUrl}
 					filename={'kontaktlink'}
 					headline={translate(`qrCode.personal.overlay.headline`)}
 					text={translate(`qrCode.personal.overlay.info`)}
