@@ -14,11 +14,9 @@ export const apiSetAgencyRegistrationUrl = async (
 		method: FETCH_METHODS.PUT,
 		bodyData: JSON.stringify({ registrationUrl }),
 		rcValidation: true,
-		responseHandling: [
-			FETCH_ERRORS.BAD_REQUEST,
-			FETCH_ERRORS.FORBIDDEN,
-			FETCH_ERRORS.EMPTY
-		]
+		// The endpoint answers 204 on success; do NOT pass FETCH_ERRORS.EMPTY here, otherwise
+		// fetchData turns the successful 204 into a rejection (CARITAS-976).
+		responseHandling: [FETCH_ERRORS.BAD_REQUEST, FETCH_ERRORS.FORBIDDEN]
 	});
 };
 
@@ -33,6 +31,8 @@ export const apiDeleteAgencyRegistrationUrl = async (
 		url: endpoints.consultantAgencyRegistrationUrl(agencyId),
 		method: FETCH_METHODS.DELETE,
 		rcValidation: true,
-		responseHandling: [FETCH_ERRORS.FORBIDDEN, FETCH_ERRORS.EMPTY]
+		// The endpoint answers 204 on success; do NOT pass FETCH_ERRORS.EMPTY here, otherwise
+		// fetchData turns the successful 204 into a rejection (CARITAS-976).
+		responseHandling: [FETCH_ERRORS.FORBIDDEN]
 	});
 };
