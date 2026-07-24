@@ -10,7 +10,7 @@ import { Headline } from '../headline/Headline';
 import { copyTextToClipboard } from '../../utils/clipboardHelpers';
 import { GenerateQrCode } from '../generateQrCode/GenerateQrCode';
 import { useTranslation } from 'react-i18next';
-import { endpoints } from '../../resources/scripts/endpoints';
+import { useAppConfig } from '../../hooks/useAppConfig';
 import { RegistrationUrlInput } from './RegistrationUrlInput';
 import {
 	apiSetAgencyRegistrationUrl,
@@ -18,6 +18,7 @@ import {
 } from '../../api/apiRegistrationUrl';
 
 export const ConsultantAgencies = () => {
+	const settings = useAppConfig();
 	const { t: translate } = useTranslation(['common', 'agencies']);
 
 	const { userData, reloadUserData } = useContext(UserDataContext);
@@ -69,9 +70,7 @@ export const ConsultantAgencies = () => {
 							<div className="flex flex--fd-row mt--1 flex-l--fd-column mt-l--0 ml-l--2 flex--ai-c flex-l--ai-fs">
 								<div>
 									<GenerateQrCode
-										url={endpoints.agencyRegistrationRedirect(
-											item.id
-										)}
+										url={`${settings.urls.registration}?aid=${item.id}`}
 										filename={'beratungsstelle'}
 										headline={translate(
 											`qrCode.agency.overlay.headline`
@@ -102,15 +101,14 @@ type AgencyRegistrationLinkProps = {
 
 const AgencyRegistrationLink = ({ agency }: AgencyRegistrationLinkProps) => {
 	const { t: translate } = useTranslation();
+	const settings = useAppConfig();
 
 	const { addNotification } = useContext(NotificationsContext);
 
-	const registrationRedirectUrl = endpoints.agencyRegistrationRedirect(
-		agency.id
-	);
+	const registrationLink = `${settings.urls.registration}?aid=${agency.id}`;
 
 	const copyRegistrationLink = useCallback(async () => {
-		await copyTextToClipboard(registrationRedirectUrl, () => {
+		await copyTextToClipboard(registrationLink, () => {
 			addNotification({
 				notificationType: NOTIFICATION_TYPE_SUCCESS,
 
@@ -122,7 +120,7 @@ const AgencyRegistrationLink = ({ agency }: AgencyRegistrationLinkProps) => {
 				)
 			});
 		});
-	}, [registrationRedirectUrl, addNotification, translate]);
+	}, [registrationLink, addNotification, translate]);
 
 	return (
 		<button
