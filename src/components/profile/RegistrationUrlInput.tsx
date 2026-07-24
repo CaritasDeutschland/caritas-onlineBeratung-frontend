@@ -23,15 +23,19 @@ export const RegistrationUrlInput = ({
 }: RegistrationUrlInputProps) => {
 	const { t: translate } = useTranslation();
 	const [value, setValue] = useState(initialValue ?? '');
+	// CARITAS-976: track the last persisted value locally so the buttons update
+	// immediately after a successful save/delete, independent of the reload round-trip.
+	const [savedValue, setSavedValue] = useState(initialValue ?? '');
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	useEffect(() => {
 		setValue(initialValue ?? '');
+		setSavedValue(initialValue ?? '');
 	}, [initialValue]);
 
 	const trimmed = value.trim();
-	const hasStoredValue = !!(initialValue && initialValue.length > 0);
-	const isDirty = trimmed !== (initialValue ?? '');
+	const hasStoredValue = savedValue.length > 0;
+	const isDirty = trimmed !== savedValue;
 	const showInvalid = trimmed.length > 0 && !isValidRegistrationUrl(trimmed);
 	const isSaveDisabled =
 		isSubmitting || !isDirty || trimmed.length === 0 || showInvalid;
@@ -41,12 +45,19 @@ export const RegistrationUrlInput = ({
 			return;
 		}
 		setIsSubmitting(true);
-		onSave(trimmed).finally(() => setIsSubmitting(false));
+		onSave(trimmed)
+			.then(() => setSavedValue(trimmed))
+			.finally(() => setIsSubmitting(false));
 	};
 
 	const handleDelete = () => {
 		setIsSubmitting(true);
-		onDelete().finally(() => setIsSubmitting(false));
+		onDelete()
+			.then(() => {
+				setSavedValue('');
+				setValue('');
+			})
+			.finally(() => setIsSubmitting(false));
 	};
 
 	const saveButton: ButtonItem = {
@@ -56,6 +67,7 @@ export const RegistrationUrlInput = ({
 	};
 
 	const deleteButton: ButtonItem = {
+		disabled: isSubmitting,
 		label: translate('profile.data.registrationLink.override.delete'),
 		type: BUTTON_TYPES.LINK
 	};

@@ -545,4 +545,14 @@ $profile-footer-justify-content: center !default;
 		margin-top: 4px;
 		color: $form-error;
 	}
+
+	// CARITAS-976: keep the Speichern/Entfernen buttons left aligned like the rest
+	// of the agency section (overrides the default flex-end of editableData__buttonSet).
+	.editableData__buttonSet {
+		justify-content: flex-start;
+
+		.button__wrapper:first-of-type {
+			margin-left: 0;
+		}
+	}
 }
