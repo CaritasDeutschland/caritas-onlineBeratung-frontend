@@ -1321,7 +1321,8 @@ export const en = {
 				override: {
 					label: 'Redirect link (optional)',
 					placeholder: 'https://caritas-onlineberatung.de/...',
-					invalid: 'The link must contain the domain caritas-onlineberatung.de.',
+					invalid:
+						'The link must contain the domain caritas-onlineberatung.de.',
 					save: 'Save',
 					delete: 'Remove'
 				}
@@ -1586,6 +1587,12 @@ export const en = {
 			'headline': 'Choose consulting center'
 		},
 		'consultingType.preselected.prefix': 'Your pre-selected topic: ',
+		'deadDirectLink': {
+			headline: 'Direct link no longer available',
+			description:
+				'Unfortunately, the direct link you opened is no longer available. Please register your concern with one of our active online counseling centers to get in touch with their counselors.',
+			buttonLabel: 'To registration'
+		},
 		'error': {
 			required_field_missing: {
 				title: 'Something went wrong.',

@@ -13,21 +13,36 @@ export const UrlParamsContext = createContext<{
 	consultant: ConsultantDataInterface | null;
 	topic: TopicsDataInterface | null;
 	loaded: boolean;
+	deadDirectLink: boolean;
 }>({
 	agency: null,
 	consultingType: null,
 	consultant: null,
 	topic: null,
-	loaded: false
+	loaded: false,
+	deadDirectLink: false
 });
 
 export const UrlParamsProvider: FC = ({ children }) => {
-	const { agency, consultingType, consultant, topic, loaded } =
-		useUrlParamsLoader();
+	const {
+		agency,
+		consultingType,
+		consultant,
+		topic,
+		loaded,
+		deadDirectLink
+	} = useUrlParamsLoader();
 
 	return (
 		<UrlParamsContext.Provider
-			value={{ agency, consultingType, consultant, topic, loaded }}
+			value={{
+				agency,
+				consultingType,
+				consultant,
+				topic,
+				loaded,
+				deadDirectLink
+			}}
 		>
 			{children}
 		</UrlParamsContext.Provider>

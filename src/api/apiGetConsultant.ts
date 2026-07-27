@@ -15,7 +15,11 @@ export const apiGetConsultant = async (
 		url: url,
 		method: FETCH_METHODS.GET,
 		skipAuth: true,
-		responseHandling: [FETCH_ERRORS.EMPTY, FETCH_ERRORS.NO_MATCH]
+		responseHandling: [
+			FETCH_ERRORS.EMPTY,
+			FETCH_ERRORS.NO_MATCH,
+			FETCH_ERRORS.UNAUTHORIZED
+		]
 	}).then((user) => {
 		if (!fetchConsultingTypes) {
 			return user;

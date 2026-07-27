@@ -435,6 +435,10 @@ export const deInformal = {
 		},
 		'consultingType.preselected.prefix':
 			'Dein vorausgewähltes Themenfeld: ',
+		'deadDirectLink': {
+			description:
+				'Der von Dir aufgerufene Direktlink ist leider nicht mehr erreichbar. Bitte registriere Dich mit Deinem Anliegen bei einer unserer aktiven Online-Beratungsstellen, um mit deren Beratenden in Kontakt zu treten.'
+		},
 		'user': {
 			infoText:
 				'Um Deine Anonymität zu schützen, raten wir Dir nicht Deinen tatsächlichen Namen oder Initialien zu verwenden.<br>Wähle bitte einen geeigneten Benutzernamen mit min. 5 Zeichen und ohne Leerzeichen.',
