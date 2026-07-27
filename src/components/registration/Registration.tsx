@@ -65,6 +65,19 @@ export const Registration = ({
 			return;
 		}
 
+		// if a redirect override is configured for the consultant (cid) or the
+		// agency (aid) whose deep link was opened, send the visitor there instead of showing
+		// the registration form (the deep link "returns" the override).
+		const redirectTarget = consultantId
+			? consultant?.registrationUrl
+			: agencyId
+			? agency?.registrationUrl
+			: null;
+		if (redirectTarget) {
+			window.location.replace(redirectTarget);
+			return;
+		}
+
 		if (!consultingType && !agency && !consultant) {
 			console.error(
 				'No `consultingType`, `consultant` or `agency` found in URL.'
@@ -148,6 +161,7 @@ export const Registration = ({
 		consultant,
 		loaded,
 		consultantId,
+		agencyId,
 		handleUnmatchConsultant,
 		handleUnmatchConsultingType,
 		consultingTypeSlug,
