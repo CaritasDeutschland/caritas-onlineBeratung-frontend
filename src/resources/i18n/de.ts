@@ -1303,6 +1303,16 @@ export const de = {
 						'Teilen Sie Ihren persönlichen Kontakt-Link mit jemanden, damit diese Person eine Onlineberatung direkt mit Ihnen starten kann.'
 				}
 			},
+			registrationLink: {
+				override: {
+					label: 'Weiterleitungs-Link (optional)',
+					placeholder:
+						'https://caritas-onlineberatung.de/...',
+					invalid: 'Der Link muss die Domain caritas-onlineberatung.de enthalten.',
+					save: 'Speichern',
+					delete: 'Entfernen'
+				}
+			},
 			register: {
 				'consultingModeInfo': {
 					groupChats:

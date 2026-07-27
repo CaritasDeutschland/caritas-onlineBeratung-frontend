@@ -1317,6 +1317,15 @@ export const en = {
 						'Share your personal contact link with someone so they can start an online consultation directly with you.'
 				}
 			},
+			registrationLink: {
+				override: {
+					label: 'Redirect link (optional)',
+					placeholder: 'https://caritas-onlineberatung.de/...',
+					invalid: 'The link must contain the domain caritas-onlineberatung.de.',
+					save: 'Save',
+					delete: 'Remove'
+				}
+			},
 			register: {
 				'headline':
 					'Do you also need advice or help on other topics?<br>We will be happy to support you.',
