@@ -40,10 +40,7 @@ import { Tooltip } from '../tooltip/Tooltip';
 import { TwoFactorAuthResendMail } from './TwoFactorAuthResendMail';
 import { useTranslation } from 'react-i18next';
 import { useAppConfig } from '../../hooks/useAppConfig';
-import {
-	STORAGE_KEY_DISABLE_2FA_DUTY,
-	useDevToolbar
-} from '../devToolbar/DevToolbar';
+import { logout } from '../logout/logout';
 
 export const OTP_LENGTH = 6;
 
@@ -95,7 +92,6 @@ export const TwoFactorAuth = () => {
 		AUTHORITIES.CONSULTANT_DEFAULT,
 		userData
 	);
-	const { getDevToolbarOption } = useDevToolbar();
 
 	useEffect(() => {
 		if (location.state?.openTwoFactor) {
@@ -117,17 +113,17 @@ export const TwoFactorAuth = () => {
 		translate
 	]);
 
-	const handleOverlayAction = useCallback(
-		(buttonFunction: string) => {
-			if (buttonFunction === 'DISABLE_2FA') {
-				apiDeleteTwoFactorAuth()
-					.then(reloadUserData)
-					.then(() => setOverlayActive(false))
-					.catch(console.log);
-			}
-		},
-		[reloadUserData]
-	);
+	const handleOverlayAction = useCallback((buttonFunction: string) => {
+		if (buttonFunction === 'DISABLE_2FA') {
+			apiDeleteTwoFactorAuth()
+				.then(() => {
+					// Force logout as soon as the 2FA is deactivated; the
+					// user signs in again and sets up 2FA on the next login.
+					logout();
+				})
+				.catch(console.log);
+		}
+	}, []);
 
 	const handleSwitchChange = () => {
 		if (!isSwitchChecked) {
@@ -342,16 +338,16 @@ export const TwoFactorAuth = () => {
 						function: OVERLAY_FUNCTIONS.NEXT_STEP,
 						type: BUTTON_TYPES.PRIMARY
 					},
-					(!isConsultant ||
-						getDevToolbarOption(STORAGE_KEY_DISABLE_2FA_DUTY) ===
-							'1') &&
-						userData.twoFactorAuth.isActive && {
-							label: translate(
-								'twoFactorAuth.activate.step1.disable'
-							),
-							function: 'DISABLE_2FA',
-							type: BUTTON_TYPES.SECONDARY
-						}
+					// Always offer the reset action when 2FA is active, even
+					// when it is enforced (e.g. for consultants). Re-enforcement
+					// then happens via TwoFactorNag on the next login.
+					userData.twoFactorAuth.isActive && {
+						label: translate(
+							'twoFactorAuth.activate.step1.disable'
+						),
+						function: 'DISABLE_2FA',
+						type: BUTTON_TYPES.SECONDARY
+					}
 				].filter(Boolean)
 			}
 		],
@@ -360,10 +356,8 @@ export const TwoFactorAuth = () => {
 			twoFactorType,
 			translate,
 			userData.twoFactorAuth.type,
-			isConsultant,
 			userData.twoFactorAuth.isActive,
-			handleOverlayAction,
-			getDevToolbarOption
+			handleOverlayAction
 		]
 	);
 

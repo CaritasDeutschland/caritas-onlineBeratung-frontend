@@ -1306,9 +1306,9 @@ export const de = {
 			registrationLink: {
 				override: {
 					label: 'Weiterleitungs-Link (optional)',
-					placeholder:
-						'https://caritas-onlineberatung.de/...',
-					invalid: 'Der Link muss die Domain caritas-onlineberatung.de enthalten.',
+					placeholder: 'https://caritas-onlineberatung.de/...',
+					invalid:
+						'Der Link muss die Domain caritas-onlineberatung.de enthalten.',
 					save: 'Speichern',
 					delete: 'Entfernen'
 				}
@@ -2031,11 +2031,11 @@ export const de = {
 		activate: {
 			step1: {
 				'app': 'Mit Authenticator Application',
-				'copy': 'Installieren Sie sich auf Ihrem Smartphone oder Tablet eine passende Authenticator-App. Alternativ können Sie auch Ihre E-Mail-Adresse als zweiten Faktor verwenden.',
+				'copy': 'Installieren Sie sich auf Ihrem Smartphone oder Tablet eine passende Authenticator-App. Alternativ können Sie auch Ihre E-Mail-Adresse für die Zwei-Faktor-Athentifizierung (2FA) verwenden.',
 				'email': 'Per E-Mail',
 				'title': 'Zweiten Faktor wählen',
 				'visualisation.label': 'Auswahl',
-				'disable': 'Authentifizierung deaktivieren'
+				'disable': '2FA zurücksetzen'
 			},
 			radio: {
 				label: {
@@ -2155,11 +2155,11 @@ export const de = {
 						intro: 'Sie können Ihre E-Mail Adresse nicht ändern solange Sie diese als zweiten Faktor für eine sichere Anmeldung verwenden. Sie haben zwei Möglichkeiten:',
 						appSwitch: {
 							title: 'Umstellung auf App',
-							copy: 'Wechseln Sie den zweiten Faktor von "E-Mail Adresse" zu "App". Dann können Sie Ihre E-Mail Adresse ändern.'
+							copy: 'Wechseln Sie den zweiten Faktor von "E-Mail Adresse" zu "App". Dann können Sie Ihre E-Mail Adresse hier ändern.'
 						},
 						reset: {
 							title: 'Rücksetzen der 2-Faktor-Authentifizierung (2FA)',
-							copy: 'Bitten Sie Ihre*n Service-Admin ein Ticket zur Zurücksetzung der 2FA im Service-Portal zu öffnen unter Angabe Ihrer "alten" E-Mail-Adresse. Beim nächsten Login (noch mit der alten E-Mail-Adresse) werden Sie dazu aufgefordert Ihre 2FA neu einzurichten und verwenden dafür Ihre neue E-Mail-Adresse. Fertig!'
+							copy: 'Klicken Sie im nächsten Fenster auf „2FA zurücksetzen“. Sie werden anschließend automatisch abgemeldet. Melden Sie sich danach noch einmal mit Ihrer bisherigen E-Mail-Adresse an. Beim nächsten Login richten Sie die Zwei-Faktor-Authentifizierung erneut ein. Geben Sie dabei Ihre neue E-Mail-Adresse an. Diese wird automatisch in Ihrem Profil übernommen.'
 						}
 					},
 					button: {

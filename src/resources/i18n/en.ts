@@ -1321,7 +1321,8 @@ export const en = {
 				override: {
 					label: 'Redirect link (optional)',
 					placeholder: 'https://caritas-onlineberatung.de/...',
-					invalid: 'The link must contain the domain caritas-onlineberatung.de.',
+					invalid:
+						'The link must contain the domain caritas-onlineberatung.de.',
 					save: 'Save',
 					delete: 'Remove'
 				}
