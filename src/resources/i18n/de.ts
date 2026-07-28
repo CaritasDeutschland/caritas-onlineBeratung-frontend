@@ -1692,6 +1692,12 @@ export const de = {
 				suffix: ' zur Kenntnis genommen. Für Authentifizierung und Navigation verwendet diese Webseite Cookies.'
 			}
 		},
+		'deadDirectLink': {
+			headline: 'Direktlink nicht mehr erreichbar',
+			description:
+				'Der von Ihnen aufgerufene Direktlink ist leider nicht mehr erreichbar. Bitte registrieren Sie sich mit Ihrem Anliegen bei einer unserer aktiven Online-Beratungsstellen, um mit deren Beratenden in Kontakt zu treten.',
+			buttonLabel: 'Zur Registrierung'
+		},
 		'error': {
 			required_field_missing: {
 				title: 'Leider ist etwas schiefgelaufen.',
