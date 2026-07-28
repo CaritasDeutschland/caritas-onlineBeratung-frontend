@@ -13,9 +13,7 @@ import {
 	X_REASON
 } from '../../api';
 import { TWO_FACTOR_TYPES } from '../twoFactorAuth/TwoFactorAuth';
-import { STORAGE_KEY_SUPPRESS_2FA_NAG } from '../twoFactorAuth/twoFactorNagStorage';
 import { Overlay, OVERLAY_FUNCTIONS } from '../overlay/Overlay';
-import { logout } from '../logout/logout';
 import { useTranslation } from 'react-i18next';
 import { useAppConfig } from '../../hooks/useAppConfig';
 import { useHistory } from 'react-router-dom';
@@ -79,14 +77,6 @@ export const ConsultantPrivateData = () => {
 		}
 		if (!isRequestInProgress) {
 			setIsRequestInProgress(true);
-			const isEmailChanged = userData.email !== email.trim();
-			// The flag is set when the user deactivated their (enforced) 2FA
-			// this session. A consultant who both deactivates their 2FA and
-			// changes their e-mail is logged out afterwards: they sign in again
-			// and set up 2FA with the new e-mail on the next login.
-			const wasTwoFactorDeactivated = !!sessionStorage.getItem(
-				STORAGE_KEY_SUPPRESS_2FA_NAG
-			);
 			apiPutConsultantData({
 				email: email.trim(),
 				firstname: firstName.trim(),
@@ -98,9 +88,6 @@ export const ConsultantPrivateData = () => {
 					setIsRequestInProgress(false);
 					setIsEditDisabled(true);
 					setEmailLabel(translate('profile.data.email'));
-					if (isEmailChanged && wasTwoFactorDeactivated) {
-						logout();
-					}
 				})
 				.catch((error: Response) => {
 					const reason = error.headers?.get(FETCH_ERRORS.X_REASON);

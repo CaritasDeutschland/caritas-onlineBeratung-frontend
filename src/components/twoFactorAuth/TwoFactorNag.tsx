@@ -12,7 +12,6 @@ import {
 	useDevToolbar
 } from '../devToolbar/DevToolbar';
 import { OVERLAY_TWO_FACTOR_NAG } from '../../globalState/interfaces/AppConfig/OverlaysConfigInterface';
-import { STORAGE_KEY_SUPPRESS_2FA_NAG } from './twoFactorNagStorage';
 
 interface TwoFactorNagProps {}
 
@@ -40,7 +39,6 @@ export const TwoFactorNag: React.FC<TwoFactorNagProps> = () => {
 			!userData.twoFactorAuth?.isActive &&
 			!location.state?.openTwoFactor &&
 			!forceHideTwoFactorNag &&
-			!sessionStorage.getItem(STORAGE_KEY_SUPPRESS_2FA_NAG) &&
 			todaysDate >= settings.twofactor.startObligatoryHint &&
 			getDevToolbarOption(STORAGE_KEY_2FA) === '1'
 		) {

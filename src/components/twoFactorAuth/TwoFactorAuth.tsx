@@ -40,7 +40,7 @@ import { Tooltip } from '../tooltip/Tooltip';
 import { TwoFactorAuthResendMail } from './TwoFactorAuthResendMail';
 import { useTranslation } from 'react-i18next';
 import { useAppConfig } from '../../hooks/useAppConfig';
-import { STORAGE_KEY_SUPPRESS_2FA_NAG } from './twoFactorNagStorage';
+import { logout } from '../logout/logout';
 
 export const OTP_LENGTH = 6;
 
@@ -113,28 +113,17 @@ export const TwoFactorAuth = () => {
 		translate
 	]);
 
-	const handleOverlayAction = useCallback(
-		(buttonFunction: string) => {
-			if (buttonFunction === 'DISABLE_2FA') {
-				apiDeleteTwoFactorAuth()
-					.then(() => {
-						// Suppress the enforcement nag for the rest of this
-						// session; 2FA is re-enforced on the next login. The flag
-						// also marks that 2FA was deactivated this session, which
-						// forces a logout once the user changes their e-mail (see
-						// ConsultantPrivateData).
-						sessionStorage.setItem(
-							STORAGE_KEY_SUPPRESS_2FA_NAG,
-							'1'
-						);
-					})
-					.then(reloadUserData)
-					.then(() => setOverlayActive(false))
-					.catch(console.log);
-			}
-		},
-		[reloadUserData]
-	);
+	const handleOverlayAction = useCallback((buttonFunction: string) => {
+		if (buttonFunction === 'DISABLE_2FA') {
+			apiDeleteTwoFactorAuth()
+				.then(() => {
+					// Force logout as soon as the 2FA is deactivated; the
+					// user signs in again and sets up 2FA on the next login.
+					logout();
+				})
+				.catch(console.log);
+		}
+	}, []);
 
 	const handleSwitchChange = () => {
 		if (!isSwitchChecked) {
