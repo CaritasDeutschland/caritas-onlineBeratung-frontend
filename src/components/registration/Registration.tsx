@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom';
 import { useContext, useEffect, useState } from 'react';
 import { getUrlParameter } from '../../utils/getUrlParameter';
 import { WelcomeScreen } from './WelcomeScreen';
+import { DeadDirectLink } from './DeadDirectLink';
 import { InformalContext } from '../../globalState';
 import { RegistrationForm } from './RegistrationForm';
 import '../../resources/styles/styles';
@@ -57,11 +58,11 @@ export const Registration = ({
 		window.scrollTo({ top: 0 });
 	};
 
-	const { agency, consultingType, consultant, loaded } =
+	const { agency, consultingType, consultant, loaded, deadDirectLink } =
 		useContext(UrlParamsContext);
 
 	useEffect(() => {
-		if (!loaded) {
+		if (!loaded || deadDirectLink) {
 			return;
 		}
 
@@ -166,10 +167,24 @@ export const Registration = ({
 		handleUnmatchConsultingType,
 		consultingTypeSlug,
 		translate,
-		setInformal
+		setInformal,
+		deadDirectLink
 	]);
 
 	const isFirstVisit = useIsFirstVisit();
+
+	if (loaded && deadDirectLink) {
+		return (
+			<StageLayout
+				showLegalLinks={true}
+				showLoginLink={false}
+				stage={<Stage hasAnimation={isFirstVisit} isReady={true} />}
+				loginParams={loginParams}
+			>
+				<DeadDirectLink />
+			</StageLayout>
+		);
+	}
 
 	return (
 		<StageLayout

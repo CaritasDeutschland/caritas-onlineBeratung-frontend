@@ -34,15 +34,22 @@ export default function useUrlParamsLoader() {
 		useState<ConsultantDataInterface | null>(null);
 	const [loaded, setLoaded] = useState<boolean>(false);
 	const [topic, setTopic] = useState<TopicsDataInterface | null>(null);
+	const [deadDirectLink, setDeadDirectLink] = useState<boolean>(false);
 
 	useEffect(() => {
 		(async () => {
 			try {
 				let agency,
 					consultingType = null;
+				// a direct link (aid/cid) that points to an agency or consultant
+				// that does not exist (anymore) - offline agencies are still resolved
+				let deadLink = false;
 
 				if (isNumber(agencyId)) {
 					agency = await apiGetAgencyById(agencyId).catch(() => null);
+					if (!agency) {
+						deadLink = true;
+					}
 				}
 
 				if (consultingTypeSlug || agency) {
@@ -57,10 +64,7 @@ export default function useUrlParamsLoader() {
 						consultantId,
 						true,
 						'basic'
-					).catch(() => {
-						// consultant not found -> go to registration
-						document.location.href = settings.urls.toRegistration;
-					});
+					).catch(() => null);
 
 					if (consultant) {
 						setConsultant(consultant);
@@ -88,6 +92,8 @@ export default function useUrlParamsLoader() {
 						) {
 							consultingType = null;
 						}
+					} else {
+						deadLink = true;
 					}
 				}
 
@@ -120,6 +126,7 @@ export default function useUrlParamsLoader() {
 
 				setConsultingType(consultingType);
 				setAgency(agency);
+				setDeadDirectLink(deadLink);
 				setLoaded(true);
 			} catch (error) {
 				console.log(error);
@@ -130,8 +137,7 @@ export default function useUrlParamsLoader() {
 		agencyId,
 		consultantId,
 		topicIdOrName,
-		settings.multitenancyWithSingleDomainEnabled,
-		settings.urls.toRegistration
+		settings.multitenancyWithSingleDomainEnabled
 	]);
 
 	useEffect(() => {
@@ -140,5 +146,12 @@ export default function useUrlParamsLoader() {
 		}
 	}, [language, setLocale]);
 
-	return { agency, consultant, consultingType, loaded, topic };
+	return {
+		agency,
+		consultant,
+		consultingType,
+		loaded,
+		topic,
+		deadDirectLink
+	};
 }
