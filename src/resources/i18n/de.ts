@@ -1305,10 +1305,10 @@ export const de = {
 			},
 			registrationLink: {
 				override: {
-					label: 'Weiterleitungs-Link (optional)',
+					label: 'Direktlink aus der OBP 2.1 (sobald verfügbar)',
 					placeholder: 'https://caritas-onlineberatung.de/...',
 					invalid:
-						'Der Link muss die Domain caritas-onlineberatung.de enthalten.',
+						'Bitte geben Sie einen gültigen https-Link auf der Domain caritas-onlineberatung.de ein.',
 					save: 'Speichern',
 					delete: 'Entfernen'
 				}

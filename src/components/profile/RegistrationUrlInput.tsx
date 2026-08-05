@@ -4,11 +4,31 @@ import { useTranslation } from 'react-i18next';
 import { Button, ButtonItem, BUTTON_TYPES } from '../button/Button';
 import { Text } from '../text/Text';
 
-/** only URLs containing this domain are accepted as a registration redirect. */
+/** the registration redirect URL must point at this domain or a subdomain of it. */
 export const ALLOWED_REGISTRATION_DOMAIN = 'caritas-onlineberatung.de';
 
-export const isValidRegistrationUrl = (value: string): boolean =>
-	value.toLowerCase().includes(ALLOWED_REGISTRATION_DOMAIN);
+/**
+ * Accepts only an absolute https URL without user-info whose host is exactly the allowed domain or a
+ * subdomain of it. This rejects look-alike bypasses such as
+ * `https://caritas-onlineberatung.de.evil.com`, `https://evil-caritas-onlineberatung.de`,
+ * `https://evil.com/caritas-onlineberatung.de` and `https://caritas-onlineberatung.de@evil.com`.
+ */
+export const isValidRegistrationUrl = (value: string): boolean => {
+	let url: URL;
+	try {
+		url = new URL(value.trim());
+	} catch {
+		return false;
+	}
+	if (url.protocol !== 'https:' || url.username || url.password) {
+		return false;
+	}
+	const host = url.hostname.toLowerCase();
+	return (
+		host === ALLOWED_REGISTRATION_DOMAIN ||
+		host.endsWith(`.${ALLOWED_REGISTRATION_DOMAIN}`)
+	);
+};
 
 type RegistrationUrlInputProps = {
 	initialValue?: string;
