@@ -1319,10 +1319,10 @@ export const en = {
 			},
 			registrationLink: {
 				override: {
-					label: 'Redirect link (optional)',
+					label: 'Direct link from OBP 2.1 (when available)',
 					placeholder: 'https://caritas-onlineberatung.de/...',
 					invalid:
-						'The link must contain the domain caritas-onlineberatung.de.',
+						'Please enter a valid https link on the domain caritas-onlineberatung.de.',
 					save: 'Save',
 					delete: 'Remove'
 				}

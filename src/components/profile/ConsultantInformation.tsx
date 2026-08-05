@@ -130,6 +130,10 @@ export const ConsultantInformation = () => {
 				</div>
 				{isConsultant && (
 					<>
+						<PersonalRegistrationLink
+							cid={userData.userId}
+							className="profile__user__personal_link mb--1"
+						/>
 						<div className="profile__registrationUrlOverride mt--1">
 							<label
 								className="text--small tertiary"
@@ -162,10 +166,6 @@ export const ConsultantInformation = () => {
 								/>
 							)}
 						</div>
-						<PersonalRegistrationLink
-							cid={userData.userId}
-							className="profile__user__personal_link mb--1"
-						/>
 					</>
 				)}
 			</div>
