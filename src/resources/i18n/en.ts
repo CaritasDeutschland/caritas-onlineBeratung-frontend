@@ -1317,6 +1317,16 @@ export const en = {
 						'Share your personal contact link with someone so they can start an online consultation directly with you.'
 				}
 			},
+			registrationLink: {
+				override: {
+					label: 'Direct link from OBP 2.1 (when available)',
+					placeholder: 'https://caritas-onlineberatung.de/...',
+					invalid:
+						'Please enter a valid https link on the domain caritas-onlineberatung.de.',
+					save: 'Save',
+					delete: 'Remove'
+				}
+			},
 			register: {
 				'headline':
 					'Do you also need advice or help on other topics?<br>We will be happy to support you.',
@@ -1577,6 +1587,12 @@ export const en = {
 			'headline': 'Choose consulting center'
 		},
 		'consultingType.preselected.prefix': 'Your pre-selected topic: ',
+		'deadDirectLink': {
+			headline: 'Direct link no longer available',
+			description:
+				'Unfortunately, the direct link you opened is no longer available. Please register your concern with one of our active online counseling centers to get in touch with their counselors.',
+			buttonLabel: 'To registration'
+		},
 		'error': {
 			required_field_missing: {
 				title: 'Something went wrong.',

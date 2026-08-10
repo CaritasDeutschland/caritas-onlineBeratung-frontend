@@ -1303,6 +1303,16 @@ export const de = {
 						'Teilen Sie Ihren persönlichen Kontakt-Link mit jemanden, damit diese Person eine Onlineberatung direkt mit Ihnen starten kann.'
 				}
 			},
+			registrationLink: {
+				override: {
+					label: 'Direktlink aus der OBP 2.1 (sobald verfügbar)',
+					placeholder: 'https://caritas-onlineberatung.de/...',
+					invalid:
+						'Bitte geben Sie einen gültigen https-Link auf der Domain caritas-onlineberatung.de ein.',
+					save: 'Speichern',
+					delete: 'Entfernen'
+				}
+			},
 			register: {
 				'consultingModeInfo': {
 					groupChats:
@@ -1682,6 +1692,12 @@ export const de = {
 				suffix: ' zur Kenntnis genommen. Für Authentifizierung und Navigation verwendet diese Webseite Cookies.'
 			}
 		},
+		'deadDirectLink': {
+			headline: 'Direktlink nicht mehr erreichbar',
+			description:
+				'Der von Ihnen aufgerufene Direktlink ist leider nicht mehr erreichbar. Bitte registrieren Sie sich mit Ihrem Anliegen bei einer unserer aktiven Online-Beratungsstellen, um mit deren Beratenden in Kontakt zu treten.',
+			buttonLabel: 'Zur Registrierung'
+		},
 		'error': {
 			required_field_missing: {
 				title: 'Leider ist etwas schiefgelaufen.',
@@ -2021,11 +2037,11 @@ export const de = {
 		activate: {
 			step1: {
 				'app': 'Mit Authenticator Application',
-				'copy': 'Installieren Sie sich auf Ihrem Smartphone oder Tablet eine passende Authenticator-App. Alternativ können Sie auch Ihre E-Mail-Adresse als zweiten Faktor verwenden.',
+				'copy': 'Installieren Sie sich auf Ihrem Smartphone oder Tablet eine passende Authenticator-App. Alternativ können Sie auch Ihre E-Mail-Adresse für die Zwei-Faktor-Athentifizierung (2FA) verwenden.',
 				'email': 'Per E-Mail',
 				'title': 'Zweiten Faktor wählen',
 				'visualisation.label': 'Auswahl',
-				'disable': 'Authentifizierung deaktivieren'
+				'disable': '2FA zurücksetzen'
 			},
 			radio: {
 				label: {
@@ -2145,11 +2161,11 @@ export const de = {
 						intro: 'Sie können Ihre E-Mail Adresse nicht ändern solange Sie diese als zweiten Faktor für eine sichere Anmeldung verwenden. Sie haben zwei Möglichkeiten:',
 						appSwitch: {
 							title: 'Umstellung auf App',
-							copy: 'Wechseln Sie den zweiten Faktor von "E-Mail Adresse" zu "App". Dann können Sie Ihre E-Mail Adresse ändern.'
+							copy: 'Wechseln Sie den zweiten Faktor von "E-Mail Adresse" zu "App". Dann können Sie Ihre E-Mail Adresse hier ändern.'
 						},
 						reset: {
 							title: 'Rücksetzen der 2-Faktor-Authentifizierung (2FA)',
-							copy: 'Bitten Sie Ihre*n Service-Admin ein Ticket zur Zurücksetzung der 2FA im Service-Portal zu öffnen unter Angabe Ihrer "alten" E-Mail-Adresse. Beim nächsten Login (noch mit der alten E-Mail-Adresse) werden Sie dazu aufgefordert Ihre 2FA neu einzurichten und verwenden dafür Ihre neue E-Mail-Adresse. Fertig!'
+							copy: 'Klicken Sie im nächsten Fenster auf „2FA zurücksetzen“. Sie werden anschließend automatisch abgemeldet. Melden Sie sich danach noch einmal mit Ihrer bisherigen E-Mail-Adresse an. Beim nächsten Login richten Sie die Zwei-Faktor-Authentifizierung erneut ein. Geben Sie dabei Ihre neue E-Mail-Adresse an. Diese wird automatisch in Ihrem Profil übernommen.'
 						}
 					},
 					button: {

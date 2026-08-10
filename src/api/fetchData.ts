@@ -208,6 +208,11 @@ export const fetchData = ({
 						responseHandling.includes(FETCH_ERRORS.ABORTED)
 					) {
 						reject(new Error(FETCH_ERRORS.ABORTED));
+					} else if (
+						response.status === 401 &&
+						responseHandling.includes(FETCH_ERRORS.UNAUTHORIZED)
+					) {
+						reject(new Error(FETCH_ERRORS.UNAUTHORIZED));
 					} else if (response.status === 401) {
 						logout(true, appConfig.urls.toLogin);
 					}

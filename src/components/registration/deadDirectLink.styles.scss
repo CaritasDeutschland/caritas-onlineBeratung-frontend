@@ -1,0 +1,16 @@
+.registrationDeadDirectLink {
+	max-width: 500px;
+
+	h2 {
+		margin: 0 0 $grid-base-two;
+	}
+
+	.text {
+		margin: 0 0 $grid-base-two;
+	}
+
+	.button__wrapper {
+		display: flex;
+		justify-content: center;
+	}
+}
