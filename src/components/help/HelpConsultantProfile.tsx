@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Headline } from '../headline/Headline';
 import { Text } from '../text/Text';
 
-const SERVICE_ITEM_COUNT = 20;
+const SERVICE_ITEM_COUNT = 19;
 
 export const HelpConsultantProfile: React.FC = () => {
 	const { t: translate } = useTranslation();
