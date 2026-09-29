@@ -1254,6 +1254,7 @@ export const de = {
 				public: 'Mit diesem Anzeigenamen erscheinen Sie bei den Ratsuchenden. Anzeigenamen sind per Default der erste Buchstabe ihres Vornamens gefolgt von .Nachname (Beispiel: M.Mustermensch). Wenn Sie Änderungen an ihrem Anzeigenamen vornehmen, wählen Sie bitte innerhalb Ihrer Beratungsstelle ein einheitliches Format zusammengesetzt aus folgenden, optionalen Bestandteilen jeweils getrennt durch einen Unterstrich:'
 			},
 			displayNameOverlay: {
+				headline: 'Hinweis zur Benachrichtigung von Ratsuchenden',
 				copy: 'Ratsuchende erhalten keine automatisierte Systemnachricht darüber, dass Sie Ihr Pseudonym geändert haben. Bitte informieren Sie Ihre aktuellen Ratsuchenden, dass nur ein Pseudonym-Wechsel stattgefunden hat, Sie aber immer noch die gleiche beratende Person sind!',
 				button: 'Verstanden'
 			},

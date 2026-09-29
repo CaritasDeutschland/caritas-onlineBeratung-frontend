@@ -280,6 +280,9 @@ export const ConsultantInformation = () => {
 				<Overlay
 					items={[
 						{
+							headline: translate(
+								'profile.data.displayNameOverlay.headline'
+							),
 							copy: translate(
 								'profile.data.displayNameOverlay.copy'
 							),
