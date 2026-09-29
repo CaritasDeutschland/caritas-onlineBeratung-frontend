@@ -342,6 +342,9 @@ export const deInformal = {
 			info: {
 				public: 'Mit dem Anzeigenamen erscheinst Du bei den Ratsuchenden.'
 			},
+			displayNameOverlay: {
+				copy: 'Ratsuchende erhalten keine automatisierte Systemnachricht darüber, dass du dein Pseudonym geändert hast. Bitte informiere deine aktuellen Ratsuchenden, dass nur ein Pseudonym-Wechsel stattgefunden hat, du aber immer noch die gleiche beratende Person bist!'
+			},
 			emailInfo:
 				'Die Angabe deiner E-Mail ist freiwillig und wird ausschließlich verwendet, um dich über neue Antworten deine_r Berater_in zu informieren. Deine E-mail-Adresse ist für Berater_innen nicht sichtbar.'
 		},

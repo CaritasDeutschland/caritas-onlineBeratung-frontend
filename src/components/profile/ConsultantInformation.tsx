@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useCallback, useContext, useState, useEffect } from 'react';
+import { useCallback, useContext, useState, useEffect, useRef } from 'react';
 import { ReactComponent as CopyIcon } from '../../resources/img/icons/documents.svg';
 import { ReactComponent as InfoIcon } from '../../resources/img/icons/i.svg';
 import {
@@ -19,6 +19,7 @@ import { Button, ButtonItem, BUTTON_TYPES } from '../button/Button';
 import { EditableData } from '../editableData/EditableData';
 import { apiPatchUserData } from '../../api/apiPatchUserData';
 import { isValidRegistrationUrl } from './RegistrationUrlInput';
+import { Overlay, OVERLAY_FUNCTIONS } from '../overlay/Overlay';
 import { useTranslation } from 'react-i18next';
 import { useAppConfig } from '../../hooks/useAppConfig';
 
@@ -28,6 +29,9 @@ export const ConsultantInformation = () => {
 	const [isEditEnabled, setIsEditEnabled] = useState(false);
 	const [editedDisplayName, setEditedDisplayName] = useState('');
 	const [initialDisplayName, setInitialDisplayName] = useState('');
+	const [displayNameOverlayActive, setDisplayNameOverlayActive] =
+		useState(false);
+	const overlayJustClosedRef = useRef(false);
 	// the personal redirect link is edited together with the profile (pencil).
 	const [editedRegistrationUrl, setEditedRegistrationUrl] = useState('');
 
@@ -250,6 +254,15 @@ export const ConsultantInformation = () => {
 				initialValue={initialDisplayName}
 				isDisabled={!isDisplayNameFeatureEnabled || !isEditEnabled}
 				onValueIsValid={handleValidDisplayName}
+				onSingleFocus={() => {
+					if (overlayJustClosedRef.current) {
+						overlayJustClosedRef.current = false;
+						return;
+					}
+					if (isDisplayNameFeatureEnabled) {
+						setDisplayNameOverlayActive(true);
+					}
+				}}
 			/>
 			{isEditable && isEditEnabled && (
 				<div className="editableData__buttonSet editableData__buttonSet--edit">
@@ -262,6 +275,30 @@ export const ConsultantInformation = () => {
 						buttonHandle={handleSaveEditButton}
 					/>
 				</div>
+			)}
+			{displayNameOverlayActive && (
+				<Overlay
+					items={[
+						{
+							copy: translate(
+								'profile.data.displayNameOverlay.copy'
+							),
+							buttonSet: [
+								{
+									type: BUTTON_TYPES.PRIMARY,
+									function: OVERLAY_FUNCTIONS.CLOSE,
+									label: translate(
+										'profile.data.displayNameOverlay.button'
+									)
+								}
+							],
+							handleOverlay: () => {
+								overlayJustClosedRef.current = true;
+								setDisplayNameOverlayActive(false);
+							}
+						}
+					]}
+				/>
 			)}
 		</div>
 	);
