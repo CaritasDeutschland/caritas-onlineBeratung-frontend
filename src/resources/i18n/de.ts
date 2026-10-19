@@ -841,11 +841,10 @@ export const de = {
 				'13': 'Löschung eines Berater:innen-Accounts',
 				'14': 'Anlage eines neuen U25 Berater:innen-Accounts',
 				'15': 'Löschung eines U25 Berater:innen-Accounts',
-				'16': 'Zurücksetzung der 2-Faktor-Authentifizierung des Berater:innen-Accounts',
-				'17': 'Änderung der Signatur des Berater:innen-Accounts',
-				'18': 'Änderungen der E-Mail-Adresse des Berater:innen-Accounts',
-				'19': 'Erteilung von Administrationsrechten im Service-Portal für den Berater:innen-Account',
-				'20': 'Entzug von Administrationsrechten im Service-Portal für den Berater:innen-Account'
+				'16': 'Änderung der Signatur des Berater:innen-Accounts',
+				'17': 'Änderungen der E-Mail-Adresse des Berater:innen-Accounts',
+				'18': 'Erteilung von Administrationsrechten im Service-Portal für den Berater:innen-Account',
+				'19': 'Entzug von Administrationsrechten im Service-Portal für den Berater:innen-Account'
 			},
 			note: 'Hinweis: Wenn Sie nicht selbst Service-Admin sind, kontaktieren Sie bitte Ihre*n Service-Admin, um ein solches Anliegen auf den Weg zu bringen. Sie wissen nicht wer ihr Service-Admin ist? Dann wenden Sie sich bitte an ',
 			noteEmail: 'online-beratung@caritas.de'
@@ -1252,6 +1251,11 @@ export const de = {
 			info: {
 				private: 'Diese Daten können die Ratsuchenden nicht einsehen.',
 				public: 'Mit diesem Anzeigenamen erscheinen Sie bei den Ratsuchenden. Anzeigenamen sind per Default der erste Buchstabe ihres Vornamens gefolgt von .Nachname (Beispiel: M.Mustermensch). Wenn Sie Änderungen an ihrem Anzeigenamen vornehmen, wählen Sie bitte innerhalb Ihrer Beratungsstelle ein einheitliches Format zusammengesetzt aus folgenden, optionalen Bestandteilen jeweils getrennt durch einen Unterstrich:'
+			},
+			displayNameOverlay: {
+				headline: 'Hinweis zur Benachrichtigung von Ratsuchenden',
+				copy: 'Ratsuchende erhalten keine automatisierte Systemnachricht darüber, dass Sie Ihr Pseudonym geändert haben. Bitte informieren Sie Ihre aktuellen Ratsuchenden, dass nur ein Pseudonym-Wechsel stattgefunden hat, Sie aber immer noch die gleiche beratende Person sind!',
+				button: 'Verstanden'
 			},
 			displayNameHint: {
 				formatItem1: '"Berater*in"',
