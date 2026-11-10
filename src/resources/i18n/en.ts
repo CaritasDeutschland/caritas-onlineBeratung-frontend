@@ -1327,8 +1327,7 @@ export const en = {
 					delete: 'Remove',
 					error: {
 						title: 'An error occurred',
-						text:
-							'The direct link could not be saved or removed. Please try again.'
+						text: 'The direct link could not be saved or removed. Please try again.'
 					}
 				}
 			},

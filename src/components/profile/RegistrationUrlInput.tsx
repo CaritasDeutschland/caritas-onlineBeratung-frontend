@@ -122,10 +122,7 @@ export const RegistrationUrlInput = ({
 
 	return (
 		<div className="profile__registrationUrlOverride mt--1">
-			<label
-				className="text--small tertiary"
-				htmlFor={inputId}
-			>
+			<label className="text--small tertiary" htmlFor={inputId}>
 				{translate('profile.data.registrationLink.override.label')}
 			</label>
 			<input

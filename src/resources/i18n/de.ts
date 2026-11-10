@@ -1317,8 +1317,7 @@ export const de = {
 					delete: 'Entfernen',
 					error: {
 						title: 'Es ist ein Fehler aufgetreten',
-						text:
-							'Der Direktlink konnte nicht gespeichert bzw. entfernt werden. Bitte versuchen Sie es erneut.'
+						text: 'Der Direktlink konnte nicht gespeichert bzw. entfernt werden. Bitte versuchen Sie es erneut.'
 					}
 				}
 			},
