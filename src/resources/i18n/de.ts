@@ -1314,7 +1314,12 @@ export const de = {
 					invalid:
 						'Bitte geben Sie einen gültigen https-Link auf der Domain caritas-onlineberatung.de ein.',
 					save: 'Speichern',
-					delete: 'Entfernen'
+					delete: 'Entfernen',
+					error: {
+						title: 'Es ist ein Fehler aufgetreten',
+						text:
+							'Der Direktlink konnte nicht gespeichert bzw. entfernt werden. Bitte versuchen Sie es erneut.'
+					}
 				}
 			},
 			register: {
