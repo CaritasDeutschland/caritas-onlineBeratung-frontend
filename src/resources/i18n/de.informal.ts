@@ -340,7 +340,7 @@ export const deInformal = {
 				}
 			},
 			info: {
-				public: 'Mit dem Anzeigenamen erscheinst Du bei den Ratsuchenden.'
+				public: 'Mit diesem Anzeigenamen erscheinst du bei den Ratsuchenden. Anzeigenamen werden bei der Konto-Anlage von euch vergeben. Wenn ihr Änderungen an euren Anzeigenamen vornehmt, wählt bitte innerhalb eurer Beratungsstelle ein einheitliches Format.'
 			},
 			displayNameOverlay: {
 				copy: 'Ratsuchende erhalten keine automatisierte Systemnachricht darüber, dass du dein Pseudonym geändert hast. Bitte informiere deine aktuellen Ratsuchenden, dass nur ein Pseudonym-Wechsel stattgefunden hat, du aber immer noch die gleiche beratende Person bist!'
